@@ -11,18 +11,15 @@ jobs:
   test:
     name: Test BoxMaker Functionality
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.12', '3.13']
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.13
       uses: actions/setup-python@v6
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.13
 
     - name: Install and cache APT packages
       uses: tecolicom/actions-use-apt-tools@v1
