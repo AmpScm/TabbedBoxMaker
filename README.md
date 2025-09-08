@@ -1,6 +1,6 @@
 # TabbedBoxMaker: A free Inkscape extension for generating tab-jointed box patterns
 
-[![CI - Test and Validate BoxMaker](https://github.com/paulh-rnd/TabbedBoxMaker/actions/workflows/ci.yaml/badge.svg)](https://github.com/paulh-rnd/TabbedBoxMaker/actions/workflows/ci.yaml)
+[![CI - Test and Validate BoxMaker](https://github.com/ampscm/TabbedBoxMaker/actions/workflows/ci.yaml/badge.svg)](https://github.com/ampscm/TabbedBoxMaker/actions/workflows/ci.yaml)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
@@ -9,6 +9,7 @@ _version 1.2.0 - 4 Dec 2023_
 Original box maker by Elliot White (formerly of twot.eu, domain name now squatted)
 
 Heavily modified by [Paul Hutchison](https://github.com/paulh-rnd)
+No maintained by [Bert Huijben](https://github.com/rhuijben)
 
 ## About
  This tool is designed to simplify the process of making practical boxes from sheet material using almost any kind of CNC cutter (laser, plasma, water jet or mill). The box edges are "finger-jointed" or "tab-jointed", and may include press-fit dimples, internal dividers, dogbone corners (for endmill cutting), and more.
@@ -18,7 +19,7 @@ Heavily modified by [Paul Hutchison](https://github.com/paulh-rnd)
  An additional extension which uses the same TabbedBoxMaker generator script is also included: Schroff Box Maker. The Schroff addition was created by [John Slee](https://github.com/jsleeio). If you create further derivative box generators, feel free to send me a pull request!
 
 ## Release Notes
-This is a major upgrade to support Inkscape v1.0 and CNC mills (with dogbone cuts), plus an updated dialog layout and documentation, and a number of smaller fixes. So far no serious bugs (i.e causing runtime errors) have been found. The program works with Python 3 ONLY. See [issues](https://github.com/paulh-rnd/TabbedBoxMaker/issues) for known issues, or to log issues and enhancement requests.
+This is a major upgrade to support Inkscape v1.0 and CNC mills (with dogbone cuts), plus an updated dialog layout and documentation, and a number of smaller fixes. So far no serious bugs (i.e causing runtime errors) have been found. The program works with Python 3 ONLY. See [issues](https://github.com/ampscm/TabbedBoxMaker/issues) for known issues, or to log issues and enhancement requests.
 
 Note that in this release the extension has *moved from the Laser Tools to the CNC Tools submenu*.  This is to better reflect that this tool can be used on a wide variety of CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
  
@@ -153,7 +154,7 @@ schroffmaker --hp=42 --rows=2 --depth=160 --thickness=3 --output=schroff.svg
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/paulh-rnd/TabbedBoxMaker.git
+   git clone https://github.com/ampscm/TabbedBoxMaker.git
    cd TabbedBoxMaker
    ```
 
@@ -257,7 +258,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. Before con
 
 ### Reporting Issues
 
-Please use the [GitHub Issues](https://github.com/paulh-rnd/TabbedBoxMaker/issues) page to report bugs or request features.
+Please use the [GitHub Issues](https://github.com/ampscm/TabbedBoxMaker/issues) page to report bugs or request features.
 
 ## License
 
