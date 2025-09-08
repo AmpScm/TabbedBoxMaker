@@ -8,8 +8,8 @@ _version 1.2.0 - 4 Dec 2023_
 
 Original box maker by Elliot White (formerly of twot.eu, domain name now squatted)
 
-Heavily modified by [Paul Hutchison](https://github.com/paulh-rnd)
-No maintained by [Bert Huijben](https://github.com/rhuijben)
+Heavily modified by [Paul Hutchison](https://github.com/paulh-rnd).
+Now maintained by [Bert Huijben](https://github.com/rhuijben).
 
 ## About
  This tool is designed to simplify the process of making practical boxes from sheet material using almost any kind of CNC cutter (laser, plasma, water jet or mill). The box edges are "finger-jointed" or "tab-jointed", and may include press-fit dimples, internal dividers, dogbone corners (for endmill cutting), and more.
@@ -23,13 +23,6 @@ This is a major upgrade to support Inkscape v1.0 and CNC mills (with dogbone cut
 
 Note that in this release the extension has *moved from the Laser Tools to the CNC Tools submenu*.  This is to better reflect that this tool can be used on a wide variety of CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
  
-## Donate
- Any donations will be gratefully received:
-
- [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/SparkItUp)
-
- Many thanks to those who have donated.
-
 ## To do
 * Tidy, modularise and simplify the code - it is rough and unpythonic.  Needs some work by a master Python guru.
 * Add tests and perhaps get it submitted as a core extension to be installed with Inkscape?
