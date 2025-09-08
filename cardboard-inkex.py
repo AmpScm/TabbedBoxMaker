@@ -1,5 +1,5 @@
 #! /usr/bin/env python -t
-'''
+"""
 Generates Inkscape SVG file containing box components needed to
 CNC (laser/mill) cut a card board box
 
@@ -20,7 +20,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 
 from tabbedboxmaker.cardboard import main
 

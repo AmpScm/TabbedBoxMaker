@@ -1,5 +1,5 @@
 #! /usr/bin/env python -t
-'''
+"""
 Generates Inkscape SVG file containing box components needed to
 CNC (laser/mill) cut a box with tabbed joints taking kerf and clearance into account
 
@@ -19,7 +19,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 from inkex.utils import filename_arg
 
 import os
@@ -33,8 +33,8 @@ from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust
 _ = gettext.gettext
 
 def log(text):
-    if 'SCHROFF_LOG' in os.environ:
-        f = open(os.environ.get('SCHROFF_LOG'), 'a')
+    if "SCHROFF_LOG" in os.environ:
+        f = open(os.environ.get("SCHROFF_LOG"), "a")
         f.write(text + "\n")
 
 
@@ -58,11 +58,12 @@ class TabbedBoxMaker(inkex.Effect):
     def makeId(self, prefix: str | None) -> str:
         """Generate a new unique ID with the given prefix."""
 
-        prefix = prefix if prefix is not None else 'id'
-        if prefix not in nextId:
-            id = nextId[prefix] = 0
-   
-        nextId[prefix] = id = nextId[prefix] + 1
+        prefix = prefix if prefix is not None else "id"
+        if prefix not in self.nextId:
+            id = self.nextId[prefix] = 0
+        
+        self.nextId[prefix] = id = self.nextId[prefix] + 1
+
         return f"{prefix}_{id:03d}"
 
 
@@ -73,26 +74,26 @@ class TabbedBoxMaker(inkex.Effect):
         return group
 
 
-    def makeLine(self, path : inkex.Path, id='side') -> inkex.PathElement:
+
+    def makeLine(self, path , id : str = "line") -> inkex.PathElement:
         line = inkex.PathElement(id=self.makeId(id))
-        line.style = { 'stroke': '#000000', 'stroke-width'  : str(self.linethickness), 'fill': 'none' }
-        line.path = inkex.Path(path)
+        line.style = { "stroke": "#000000", "stroke-width"  : str(self.linethickness), "fill": "none" }
+        line.path = inkex.paths.Path(path)
         return line
 
 
-    # jslee - shamelessly adapted from sample code on below Inkscape wiki page 2015-07-28
-    # http://wiki.inkscape.org/wiki/index.php/Generating_objects_from_extensions
-    def makeCircle(self, r, c, id='circle') -> inkex.PathElement:
+
+    def makeCircle(self,r, c, id : str = "circle"):
         (cx, cy) = c
         log("putting circle at (%d,%d)" % (cx,cy))
-        circle = inkex.PathElement.arc((cx, cy), r, id=self.makeId(circle))
-        circle.style = { 'stroke': '#000000', 'stroke-width': str(self.linethickness), 'fill': 'none' }
+        circle = inkex.PathElement.arc((cx, cy), r, id=self.makeId(id))
+        circle.style = { "stroke": "#000000", "stroke-width": str(self.linethickness), "fill": "none" }
         return circle
 
 
     def dimpleStr(self, tabVector, vectorX, vectorY, dirX,
                 dirY, dirxN, diryN, ddir, isTab):
-        ds = ''
+        ds = ""
         if not isTab:
             ddir = -ddir
         if dimpleHeight > 0 and tabVector != 0:
@@ -104,16 +105,16 @@ class TabbedBoxMaker(inkex.Effect):
                 tabSgn = -1
             Vxd = vectorX + dirxN * dimpleStart
             Vyd = vectorY + diryN * dimpleStart
-            ds += 'L ' + str(Vxd) + ',' + str(Vyd) + ' '
+            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
             Vxd = Vxd + (tabSgn * dirxN - ddir * dirX) * dimpleHeight
             Vyd = Vyd + (tabSgn * diryN - ddir * dirY) * dimpleHeight
-            ds += 'L ' + str(Vxd) + ',' + str(Vyd) + ' '
+            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
             Vxd = Vxd + tabSgn * dirxN * dimpleLength
             Vyd = Vyd + tabSgn * diryN * dimpleLength
-            ds += 'L ' + str(Vxd) + ',' + str(Vyd) + ' '
+            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
             Vxd = Vxd + (tabSgn * dirxN + ddir * dirX) * dimpleHeight
             Vyd = Vyd + (tabSgn * diryN + ddir * dirY) * dimpleHeight
-            ds += 'L ' + str(Vxd) + ',' + str(Vyd) + ' '
+            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
         return ds
 
 
@@ -169,7 +170,7 @@ class TabbedBoxMaker(inkex.Effect):
             # dividerEdgeOffsetY = ;
             vectorX = rootX + (0 if dirX and prevTab else startOffsetX * thickness)
             vectorY = rootY + (0 if dirY and prevTab else startOffsetY * thickness)
-            s = 'M ' + str(vectorX) + ',' + str(vectorY) + ' '
+            s = "M " + str(vectorX) + "," + str(vectorY) + " "
             vectorX = rootX + (startOffsetX if startOffsetX else dirX) * thickness
             vectorY = rootY + (startOffsetY if startOffsetY else dirY) * thickness
             if notDirX and tabVec:
@@ -181,7 +182,7 @@ class TabbedBoxMaker(inkex.Effect):
                                 thickness, rootY + startOffsetY * thickness)
             dividerEdgeOffsetX = dirY * thickness
             dividerEdgeOffsetY = dirX * thickness
-            s = 'M ' + str(vectorX) + ',' + str(vectorY) + ' '
+            s = "M " + str(vectorX) + "," + str(vectorY) + " "
             if notDirX:
                 vectorY = rootY  # set correct line start for tab generation
             if notDirY:
@@ -213,20 +214,20 @@ class TabbedBoxMaker(inkex.Effect):
                         halfkerf + dirY * dogbone * halfkerf - dogbone * first * dirY
                     if tabDivision == 1 and tabSymmetry == 0:
                         Dx += startOffsetX * thickness
-                    h = 'M ' + str(Dx) + ',' + str(Dy) + ' '
+                    h = "M " + str(Dx) + "," + str(Dy) + " "
                     Dx = Dx + holeLenX
                     Dy = Dy + holeLenY
-                    h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
+                    h += "L " + str(Dx) + "," + str(Dy) + " "
                     Dx = Dx + notDirX * (secondVec - kerf)
                     Dy = Dy + notDirY * (secondVec + kerf)
-                    h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
+                    h += "L " + str(Dx) + "," + str(Dy) + " "
                     Dx = Dx - holeLenX
                     Dy = Dy - holeLenY
-                    h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
+                    h += "L " + str(Dx) + "," + str(Dy) + " "
                     Dx = Dx - notDirX * (secondVec - kerf)
                     Dy = Dy - notDirY * (secondVec + kerf)
-                    h += 'L ' + str(Dx) + ',' + str(Dy) + ' Z'
-                    nodes.append(self.makeLine(h, id='hole'))
+                    h += "L " + str(Dx) + "," + str(Dy) + " Z"
+                    nodes.append(self.makeLine(h, id="hole"))
             if tabDivision % 2:
                 if tabDivision == 1 and numDividers > 0 and isDivider:  # draw slots for dividers to slot into each other
                     for dividerNumber in range(1, int(numDividers) + 1):
@@ -234,40 +235,40 @@ class TabbedBoxMaker(inkex.Effect):
                             dividerEdgeOffsetX + notDirX * halfkerf
                         Dy = vectorY + dirX * dividerSpacing * dividerNumber - \
                             dividerEdgeOffsetY + notDirY * halfkerf
-                        h = 'M ' + str(Dx) + ',' + str(Dy) + ' '
+                        h = "M " + str(Dx) + "," + str(Dy) + " "
                         Dx = Dx + dirX * (first + length / 2)
                         Dy = Dy + dirY * (first + length / 2)
-                        h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
+                        h += "L " + str(Dx) + "," + str(Dy) + " "
                         Dx = Dx + notDirX * (thickness - kerf)
                         Dy = Dy + notDirY * (thickness - kerf)
-                        h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
+                        h += "L " + str(Dx) + "," + str(Dy) + " "
                         Dx = Dx - dirX * (first + length / 2)
                         Dy = Dy - dirY * (first + length / 2)
-                        h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
+                        h += "L " + str(Dx) + "," + str(Dy) + " "
                         Dx = Dx - notDirX * (thickness - kerf)
                         Dy = Dy - notDirY * (thickness - kerf)
-                        h += 'L ' + str(Dx) + ',' + str(Dy) + ' Z'
-                        nodes.append(self.makeLine(h, id='slot'))
+                        h += "L " + str(Dx) + "," + str(Dy) + " Z"
+                        nodes.append(self.makeLine(h, id="slot"))
                 # draw the gap
                 vectorX += dirX * (gapWidth + (isTab & dogbone & 1 ^ 0x1)
                                 * first + dogbone * kerf * isTab) + notDirX * firstVec
                 vectorY += dirY * (gapWidth + (isTab & dogbone & 1 ^ 0x1)
                                 * first + dogbone * kerf * isTab) + notDirY * firstVec
-                s += 'L ' + str(vectorX) + ',' + str(vectorY) + ' '
+                s += "L " + str(vectorX) + "," + str(vectorY) + " "
                 if dogbone and isTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += 'L ' + str(vectorX) + ',' + str(vectorY) + ' '
+                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
                 # draw the starting edge of the tab
                 s += self.dimpleStr(secondVec, vectorX, vectorY, dirX,
                             dirY, notDirX, notDirY, 1, isTab)
                 vectorX += notDirX * secondVec
                 vectorY += notDirY * secondVec
-                s += 'L ' + str(vectorX) + ',' + str(vectorY) + ' '
+                s += "L " + str(vectorX) + "," + str(vectorY) + " "
                 if dogbone and notTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += 'L ' + str(vectorX) + ',' + str(vectorY) + ' Z'
+                    s += "L " + str(vectorX) + "," + str(vectorY) + " Z"
 
             else:
                 # draw the tab
@@ -275,27 +276,27 @@ class TabbedBoxMaker(inkex.Effect):
                                 notTab) + notDirX * firstVec
                 vectorY += dirY * (tabWidth + dogbone * kerf *
                                 notTab) + notDirY * firstVec
-                s += 'L ' + str(vectorX) + ',' + str(vectorY) + ' '
+                s += "L " + str(vectorX) + "," + str(vectorY) + " "
                 if dogbone and notTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += 'L ' + str(vectorX) + ',' + str(vectorY) + ' '
+                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
                 # draw the ending edge of the tab
                 s += self.dimpleStr(secondVec, vectorX, vectorY, dirX,
                             dirY, notDirX, notDirY, -1, isTab)
                 vectorX += notDirX * secondVec
                 vectorY += notDirY * secondVec
-                s += 'L ' + str(vectorX) + ',' + str(vectorY) + ' '
+                s += "L " + str(vectorX) + "," + str(vectorY) + " "
                 if dogbone and isTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += 'L ' + str(vectorX) + ',' + str(vectorY) + ' '
+                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
             (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
             first = 0
 
         # finish the line off
-        s += 'L ' + str(rootX + endOffsetX * thickness + dirX * length) + \
-            ',' + str(rootY + endOffsetY * thickness + dirY * length) + ' '
+        s += "L " + str(rootX + endOffsetX * thickness + dirX * length) + \
+            "," + str(rootY + endOffsetY * thickness + dirY * length) + " "
 
         # draw last for divider joints in side walls
         if isTab and numDividers > 0 and tabSymmetry == 0 and not isDivider:
@@ -324,7 +325,7 @@ class TabbedBoxMaker(inkex.Effect):
                 h += 'L ' + str(Dx) + ',' + str(Dy) + ' Z'
                 nodes.append(self.makeLine(h, id='hole'))
 
-        nodes = [self.makeLine(s, id='side')] + nodes
+        nodes = [self.makeLine(s, id="side")] + nodes
         for node in nodes:
             group.add(node)
         return s
@@ -334,9 +335,9 @@ class TabbedBoxMaker(inkex.Effect):
         """Define options"""
 
         if self.cli:
-            # We don't need an input file in CLI mode
+            # We don"t need an input file in CLI mode
             for action in self.arg_parser._actions:
-                if action.dest == 'input_file':
+                if action.dest == "input_file":
                     self.arg_parser._actions.remove(action)
 
             self.arg_parser.add_argument(
@@ -345,68 +346,233 @@ class TabbedBoxMaker(inkex.Effect):
                 metavar="INPUT_FILE",
                 type=filename_arg,
                 help="Filename of the input file",
-                default=None
+                default=None,
             )
 
-        self.arg_parser.add_argument('--schroff', action='store', type=int,
-                                     dest='schroff', default=0, help='Enable Schroff mode')
-        self.arg_parser.add_argument('--rail_height', action='store', type=float,
-                                     dest='rail_height', default=10.0, help='Height of rail')
-        self.arg_parser.add_argument('--rail_mount_depth', action='store', type=float,
-                                     dest='rail_mount_depth', default=17.4, help='Depth at which to place hole for rail mount bolt')
-        self.arg_parser.add_argument('--rail_mount_centre_offset', action='store', type=float,
-                                     dest='rail_mount_centre_offset', default=0.0, help='How far toward row centreline to offset rail mount bolt (from rail centreline)')
-        self.arg_parser.add_argument('--rows', action='store', type=int,
-                                     dest='rows', default=0, help='Number of Schroff rows')
-        self.arg_parser.add_argument('--hp', action='store', type=int,
-                                     dest='hp', default=0, help='Width (TE/HP units) of Schroff rows')
-        self.arg_parser.add_argument('--row_spacing', action='store', type=float,
-                                     dest='row_spacing', default=10.0, help='Height of rail')
-        self.arg_parser.add_argument('--unit', action='store', type=str,
-                                     dest='unit', default='mm', help='Measure Units')
-        self.arg_parser.add_argument('--inside', action='store', type=int,
-                                     dest='inside', default=0, help='Int/Ext Dimension')
-        self.arg_parser.add_argument('--length', action='store', type=float,
-                                     dest='length', default=100, help='Length of Box')
-        self.arg_parser.add_argument('--width', action='store', type=float,
-                                     dest='width', default=100, help='Width of Box')
-        self.arg_parser.add_argument('--depth', action='store', type=float,
-                                     dest='height', default=100, help='Height of Box')
-        self.arg_parser.add_argument('--tab', action='store', type=float,
-                                     dest='tab', default=25, help='Nominal Tab Width')
-        self.arg_parser.add_argument('--equal', action='store', type=int,
-                                     dest='equal', default=0, help='Equal/Prop Tabs')
-        self.arg_parser.add_argument('--tabsymmetry', action='store', type=int,
-                                     dest='tabsymmetry', default=0, help='Tab style')
-        self.arg_parser.add_argument('--tabtype', action='store', type=int,
-                                     dest='tabtype', default=0, help='Tab type: regular or dogbone')
-        self.arg_parser.add_argument('--dimpleheight', action='store', type=float,
-                                     dest='dimpleheight', default=0, help='Tab Dimple Height')
-        self.arg_parser.add_argument('--dimplelength', action='store', type=float,
-                                     dest='dimplelength', default=0, help='Tab Dimple Tip Length')
-        self.arg_parser.add_argument('--hairline', action='store', type=int,
-                                     dest='hairline', default=0, help='Line Thickness')
-        self.arg_parser.add_argument('--thickness', action='store', type=float,
-                                     dest='thickness', default=10, help='Thickness of Material')
-        self.arg_parser.add_argument('--kerf', action='store', type=float,
-                                     dest='kerf', default=0.5, help='Kerf (width of cut)')
-        self.arg_parser.add_argument('--style', action='store', type=int,
-                                     dest='style', default=25, help='Layout/Style')
-        self.arg_parser.add_argument('--spacing', action='store', type=float,
-                                     dest='spacing', default=25, help='Part Spacing')
-        self.arg_parser.add_argument('--boxtype', action='store', type=int,
-                                     dest='boxtype', default=25, help='Box type')
-        self.arg_parser.add_argument('--div_l', action='store', type=int,
-                                     dest='div_l', default=25, help='Dividers (Length axis)')
-        self.arg_parser.add_argument('--div_w', action='store', type=int,
-                                     dest='div_w', default=25, help='Dividers (Width axis)')
-        self.arg_parser.add_argument('--keydiv', action='store', type=int,
-                                     dest='keydiv', default=3, help='Key dividers into walls/floor')
-        self.arg_parser.add_argument('--optimize', action='store', type=inkex.utils.Boolean,
-                                     dest='optimize', default=True, help='Optimize paths')
-      
-        global nextId
-        nextId = {}
+        self.arg_parser.add_argument(
+            "--schroff",
+            action="store",
+            type=bool,
+            dest="schroff",
+            default=self.schroff,
+            help="Enable Schroff mode",
+        )
+        self.arg_parser.add_argument(
+            "--rail_height",
+            action="store",
+            type=float,
+            dest="rail_height",
+            default=10.0,
+            help="Height of rail",
+        )
+        self.arg_parser.add_argument(
+            "--rail_mount_depth",
+            action="store",
+            type=float,
+            dest="rail_mount_depth",
+            default=17.4,
+            help="Depth at which to place hole for rail mount bolt",
+        )
+        self.arg_parser.add_argument(
+            "--rail_mount_centre_offset",
+            action="store",
+            type=float,
+            dest="rail_mount_centre_offset",
+            default=0.0,
+            help="How far toward row centreline to offset rail mount bolt (from rail centreline)",
+        )
+        self.arg_parser.add_argument(
+            "--rows",
+            action="store",
+            type=int,
+            dest="rows",
+            default=0,
+            help="Number of Schroff rows",
+        )
+        self.arg_parser.add_argument(
+            "--hp",
+            action="store",
+            type=int,
+            dest="hp",
+            default=0,
+            help="Width (TE/HP units) of Schroff rows",
+        )
+        self.arg_parser.add_argument(
+            "--row_spacing",
+            action="store",
+            type=float,
+            dest="row_spacing",
+            default=10.0,
+            help="Height of rail",
+        )
+        self.arg_parser.add_argument(
+            "--unit",
+            action="store",
+            type=str,
+            dest="unit",
+            default="mm",
+            help="Measure Units",
+        )
+        self.arg_parser.add_argument(
+            "--inside",
+            action="store",
+            type=int,
+            dest="inside",
+            default=0,
+            help="Int/Ext Dimension",
+        )
+        self.arg_parser.add_argument(
+            "--length",
+            action="store",
+            type=float,
+            dest="length",
+            default=100,
+            help="Length of Box",
+        )
+        self.arg_parser.add_argument(
+            "--width",
+            action="store",
+            type=float,
+            dest="width",
+            default=100,
+            help="Width of Box",
+        )
+        self.arg_parser.add_argument(
+            "--depth",
+            action="store",
+            type=float,
+            dest="height",
+            default=100,
+            help="Height of Box",
+        )
+        self.arg_parser.add_argument(
+            "--tab",
+            action="store",
+            type=float,
+            dest="tab",
+            default=25,
+            help="Nominal Tab Width",
+        )
+        self.arg_parser.add_argument(
+            "--equal",
+            action="store",
+            type=int,
+            dest="equal",
+            default=0,
+            help="Equal/Prop Tabs",
+        )
+        self.arg_parser.add_argument(
+            "--tabsymmetry",
+            action="store",
+            type=int,
+            dest="tabsymmetry",
+            default=0,
+            help="Tab style",
+        )
+        self.arg_parser.add_argument(
+            "--tabtype",
+            action="store",
+            type=int,
+            dest="tabtype",
+            default=0,
+            help="Tab type: regular or dogbone",
+        )
+        self.arg_parser.add_argument(
+            "--dimpleheight",
+            action="store",
+            type=float,
+            dest="dimpleheight",
+            default=0,
+            help="Tab Dimple Height",
+        )
+        self.arg_parser.add_argument(
+            "--dimplelength",
+            action="store",
+            type=float,
+            dest="dimplelength",
+            default=0,
+            help="Tab Dimple Tip Length",
+        )
+        self.arg_parser.add_argument(
+            "--hairline",
+            action="store",
+            type=int,
+            dest="hairline",
+            default=0,
+            help="Line Thickness",
+        )
+        self.arg_parser.add_argument(
+            "--thickness",
+            action="store",
+            type=float,
+            dest="thickness",
+            default=10,
+            help="Thickness of Material",
+        )
+        self.arg_parser.add_argument(
+            "--kerf",
+            action="store",
+            type=float,
+            dest="kerf",
+            default=0.5,
+            help="Kerf (width of cut)",
+        )
+        self.arg_parser.add_argument(
+            "--style",
+            action="store",
+            type=int,
+            dest="style",
+            default=25,
+            help="Layout/Style",
+        )
+        self.arg_parser.add_argument(
+            "--spacing",
+            action="store",
+            type=float,
+            dest="spacing",
+            default=25,
+            help="Part Spacing",
+        )
+        self.arg_parser.add_argument(
+            "--boxtype",
+            action="store",
+            type=int,
+            dest="boxtype",
+            default=25,
+            help="Box type",
+        )
+        self.arg_parser.add_argument(
+            "--div_l",
+            action="store",
+            type=int,
+            dest="div_l",
+            default=25,
+            help="Dividers (Length axis)",
+        )
+        self.arg_parser.add_argument(
+            "--div_w",
+            action="store",
+            type=int,
+            dest="div_w",
+            default=25,
+            help="Dividers (Width axis)",
+        )
+        self.arg_parser.add_argument(
+            "--keydiv",
+            action="store",
+            type=int,
+            dest="keydiv",
+            default=3,
+            help="Key dividers into walls/floor",
+        )
+        self.arg_parser.add_argument(
+            "--optimize",
+            action="store",
+            type=inkex.utils.Boolean,
+            dest="optimize",
+            default=True,
+            help="Optimize paths",
+        )
 
 
     def parse_arguments(self, args: list[str]) -> None:
@@ -414,9 +580,10 @@ class TabbedBoxMaker(inkex.Effect):
         super().parse_arguments(args)
         self.cli_args = deepcopy(args)
 
-        if (self.cli and self.options.input_file is None):
+        if self.cli and self.options.input_file is None:
             self.options.input_file = os.path.join(
-                os.path.dirname(__file__), 'blank.svg')
+                os.path.dirname(__file__), "blank.svg"
+            )
 
 
 
@@ -426,7 +593,7 @@ class TabbedBoxMaker(inkex.Effect):
         svg = self.document.getroot()
 
         layer = svg.get_current_layer()
-        layer.add(inkex.etree.Element('metadata', text=f"createArgs={self.cli_args}"))
+        layer.add(inkex.etree.Element("metadata", text=f"createArgs={self.cli_args}"))
 
         self._run_effect()
 
@@ -439,10 +606,10 @@ class TabbedBoxMaker(inkex.Effect):
         svg = self.document.getroot()
 
         # Get the attributes:
-        widthDoc = self.svg.unittouu(svg.get('width'))
-        heightDoc = self.svg.unittouu(svg.get('height'))
+        widthDoc = self.svg.unittouu(svg.get("width"))
+        heightDoc = self.svg.unittouu(svg.get("height"))
 
-        # Get script's option values.
+        # Get script"s option values.
         hairline = self.options.hairline
         unit = self.options.unit
         inside = self.options.inside
@@ -451,19 +618,19 @@ class TabbedBoxMaker(inkex.Effect):
         halfkerf = kerf / 2
 
         # Set the line thickness
-        self.linethickness = round(self.svg.unittouu('0.002in'), 8) if hairline else 1
+        self.linethickness = round(self.svg.unittouu("0.002in"), 8) if hairline else 1
 
         if schroff:
             rows = self.options.rows
-            rail_height = self.svg.unittouu(
-                str(self.options.rail_height) + unit)
+            rail_height = self.svg.unittouu(str(self.options.rail_height) + unit)
             row_centre_spacing = self.svg.unittouu(str(122.5) + unit)
-            row_spacing = self.svg.unittouu(
-                str(self.options.row_spacing) + unit)
+            row_spacing = self.svg.unittouu(str(self.options.row_spacing) + unit)
             rail_mount_depth = self.svg.unittouu(
-                str(self.options.rail_mount_depth) + unit)
+                str(self.options.rail_mount_depth) + unit
+            )
             rail_mount_centre_offset = self.svg.unittouu(
-                str(self.options.rail_mount_centre_offset) + unit)
+                str(self.options.rail_mount_centre_offset) + unit
+            )
             rail_mount_radius = self.svg.unittouu(str(2.5) + unit)
 
         # minimally different behaviour for schroffmaker.inx vs. boxmaker.inx
@@ -482,13 +649,10 @@ class TabbedBoxMaker(inkex.Effect):
             Y = row_height + row_spacing_total
         else:
             # boxmaker.inx
-            X = self.svg.unittouu(
-                str(self.options.length + self.options.kerf) + unit)
-            Y = self.svg.unittouu(
-                str(self.options.width + self.options.kerf) + unit)
+            X = self.svg.unittouu(str(self.options.length + self.options.kerf) + unit)
+            Y = self.svg.unittouu(str(self.options.width + self.options.kerf) + unit)
 
-        Z = self.svg.unittouu(
-            str(self.options.height + self.options.kerf) + unit)
+        Z = self.svg.unittouu(str(self.options.height + self.options.kerf) + unit)
         thickness = self.svg.unittouu(str(self.options.thickness) + unit)
         nomTab = self.svg.unittouu(str(self.options.tab) + unit)
         equalTabs = self.options.equal
@@ -517,31 +681,31 @@ class TabbedBoxMaker(inkex.Effect):
         error = False
 
         if min(X, Y, Z) == 0:
-            inkex.errormsg(_('Error: Dimensions must be non zero'))
+            inkex.errormsg(_("Error: Dimensions must be non zero"))
             error = True
         if max(X, Y, Z) > max(widthDoc, heightDoc) * 10:  # crude test
-            inkex.errormsg(_('Error: Dimensions Too Large'))
+            inkex.errormsg(_("Error: Dimensions Too Large"))
             error = True
         if min(X, Y, Z) < 3 * nomTab:
-            inkex.errormsg(_('Error: Tab size too large'))
+            inkex.errormsg(_("Error: Tab size too large"))
             error = True
         if nomTab < thickness:
-            inkex.errormsg(_('Error: Tab size too small'))
+            inkex.errormsg(_("Error: Tab size too small"))
             error = True
         if thickness == 0:
-            inkex.errormsg(_('Error: Thickness is zero'))
+            inkex.errormsg(_("Error: Thickness is zero"))
             error = True
         if thickness > min(X, Y, Z) / 3:  # crude test
-            inkex.errormsg(_('Error: Material too thick'))
+            inkex.errormsg(_("Error: Material too thick"))
             error = True
         if kerf > min(X, Y, Z) / 3:  # crude test
-            inkex.errormsg(_('Error: Kerf too large'))
+            inkex.errormsg(_("Error: Kerf too large"))
             error = True
         if spacing > max(X, Y, Z) * 10:  # crude test
-            inkex.errormsg(_('Error: Spacing too large'))
+            inkex.errormsg(_("Error: Spacing too large"))
             error = True
         if spacing < kerf:
-            inkex.errormsg(_('Error: Spacing too small'))
+            inkex.errormsg(_("Error: Spacing too small"))
             error = True
 
         if error:
@@ -566,21 +730,21 @@ class TabbedBoxMaker(inkex.Effect):
         # else boxtype==1, full box, has all sides
 
         # Determine where the tabs go based on the tab style
-        if tabSymmetry == 2:     # Antisymmetric (deprecated)
+        if tabSymmetry == 2:  # Antisymmetric (deprecated)
             tpTabInfo = 0b0110
             bmTabInfo = 0b1100
             ltTabInfo = 0b1100
             rtTabInfo = 0b0110
             ftTabInfo = 0b1100
             bkTabInfo = 0b1001
-        elif tabSymmetry == 1:   # Rotationally symmetric (Waffle-blocks)
+        elif tabSymmetry == 1:  # Rotationally symmetric (Waffle-blocks)
             tpTabInfo = 0b1111
             bmTabInfo = 0b1111
             ltTabInfo = 0b1111
             rtTabInfo = 0b1111
             ftTabInfo = 0b1111
             bkTabInfo = 0b1111
-        else:               # XY symmetric
+        else:  # XY symmetric
             tpTabInfo = 0b0000
             bmTabInfo = 0b0000
             ltTabInfo = 0b1111
@@ -591,12 +755,12 @@ class TabbedBoxMaker(inkex.Effect):
         def fixTabBits(tabbed, tabInfo, bit):
             newTabbed = tabbed & ~bit
             if inside:
-                newTabInfo = tabInfo | bit      # set bit to 1 to use tab base line
+                newTabInfo = tabInfo | bit  # set bit to 1 to use tab base line
             else:
-                newTabInfo = tabInfo & ~bit     # set bit to 0 to use tab tip line
+                newTabInfo = tabInfo & ~bit  # set bit to 0 to use tab tip line
             return newTabbed, newTabInfo
 
-        # Update the tab bits based on which sides of the box don't exist
+        # Update the tab bits based on which sides of the box don"t exist
         tpTabbed = bmTabbed = ltTabbed = rtTabbed = ftTabbed = bkTabbed = 0b1111
         if not hasTp:
             bkTabbed, bkTabInfo = fixTabBits(bkTabbed, bkTabInfo, 0b0010)
@@ -636,20 +800,20 @@ class TabbedBoxMaker(inkex.Effect):
             rtTabbed = 0
 
         # Layout positions are specified in a grid of rows and columns
-        row0 = (1, 0, 0, 0)      # top row
-        row1y = (2, 0, 1, 0)     # second row, offset by Y
-        row1z = (2, 0, 0, 1)     # second row, offset by Z
-        row2 = (3, 0, 1, 1)      # third row, always offset by Y+Z
+        row0 = (1, 0, 0, 0)  # top row
+        row1y = (2, 0, 1, 0)  # second row, offset by Y
+        row1z = (2, 0, 0, 1)  # second row, offset by Z
+        row2 = (3, 0, 1, 1)  # third row, always offset by Y+Z
 
-        col0 = (1, 0, 0, 0)      # left column
-        col1x = (2, 1, 0, 0)     # second column, offset by X
-        col1z = (2, 0, 0, 1)     # second column, offset by Z
-        col2xx = (3, 2, 0, 0)    # third column, offset by 2*X
-        col2xz = (3, 1, 0, 1)    # third column, offset by X+Z
-        col3xzz = (4, 1, 0, 2)   # fourth column, offset by X+2*Z
-        col3xxz = (4, 2, 0, 1)   # fourth column, offset by 2*X+Z
-        col4 = (5, 2, 0, 2)      # fifth column, always offset by 2*X+2*Z
-        col5 = (6, 3, 0, 2)      # sixth column, always offset by 3*X+2*Z
+        col0 = (1, 0, 0, 0)  # left column
+        col1x = (2, 1, 0, 0)  # second column, offset by X
+        col1z = (2, 0, 0, 1)  # second column, offset by Z
+        col2xx = (3, 2, 0, 0)  # third column, offset by 2*X
+        col2xz = (3, 1, 0, 1)  # third column, offset by X+Z
+        col3xzz = (4, 1, 0, 2)  # fourth column, offset by X+2*Z
+        col3xxz = (4, 2, 0, 1)  # fourth column, offset by 2*X+Z
+        col4 = (5, 2, 0, 2)  # fifth column, always offset by 2*X+2*Z
+        col5 = (6, 3, 0, 2)  # sixth column, always offset by 3*X+2*Z
 
         # layout format:(rootx),(rooty),Xlength,Ylength,tabInfo,tabbed,pieceType
         # root= (spacing,X,Y,Z) * values in tuple
@@ -683,35 +847,26 @@ class TabbedBoxMaker(inkex.Effect):
             if not hasRt:
                 reduceOffsets(cc, 2, 0, 0, 1)
             if hasBk:
-                pieces.append(
-                    [cc[1], rr[2], X, Z, bkTabInfo, bkTabbed, bkFace])
+                pieces.append([cc[1], rr[2], X, Z, bkTabInfo, bkTabbed, bkFace])
             if hasLt:
-                pieces.append(
-                    [cc[0], rr[1], Z, Y, ltTabInfo, ltTabbed, ltFace])
+                pieces.append([cc[0], rr[1], Z, Y, ltTabInfo, ltTabbed, ltFace])
             if hasBm:
-                pieces.append(
-                    [cc[1], rr[1], X, Y, bmTabInfo, bmTabbed, bmFace])
+                pieces.append([cc[1], rr[1], X, Y, bmTabInfo, bmTabbed, bmFace])
             if hasRt:
-                pieces.append(
-                    [cc[2], rr[1], Z, Y, rtTabInfo, rtTabbed, rtFace])
+                pieces.append([cc[2], rr[1], Z, Y, rtTabInfo, rtTabbed, rtFace])
             if hasTp:
-                pieces.append(
-                    [cc[3], rr[1], X, Y, tpTabInfo, tpTabbed, tpFace])
+                pieces.append([cc[3], rr[1], X, Y, tpTabInfo, tpTabbed, tpFace])
             if hasFt:
-                pieces.append(
-                    [cc[1], rr[0], X, Z, ftTabInfo, ftTabbed, ftFace])
+                pieces.append([cc[1], rr[0], X, Z, ftTabInfo, ftTabbed, ftFace])
         elif layout == 2:  # 3 Piece Layout
             rr = deepcopy([row0, row1y])
             cc = deepcopy([col0, col1z])
             if hasBk:
-                pieces.append(
-                    [cc[1], rr[1], X, Z, bkTabInfo, bkTabbed, bkFace])
+                pieces.append([cc[1], rr[1], X, Z, bkTabInfo, bkTabbed, bkFace])
             if hasLt:
-                pieces.append(
-                    [cc[0], rr[0], Z, Y, ltTabInfo, ltTabbed, ltFace])
+                pieces.append([cc[0], rr[0], Z, Y, ltTabInfo, ltTabbed, ltFace])
             if hasBm:
-                pieces.append(
-                    [cc[1], rr[0], X, Y, bmTabInfo, bmTabbed, bmFace])
+                pieces.append([cc[1], rr[0], X, Y, bmTabInfo, bmTabbed, bmFace])
         elif layout == 3:  # Inline(compact) Layout
             rr = deepcopy([row0])
             cc = deepcopy([col0, col1x, col2xx, col3xxz, col4, col5])
@@ -727,32 +882,27 @@ class TabbedBoxMaker(inkex.Effect):
             if not hasBk:
                 reduceOffsets(cc, 4, 1, 0, 0)
             if hasBk:
-                pieces.append(
-                    [cc[4], rr[0], X, Z, bkTabInfo, bkTabbed, bkFace])
+                pieces.append([cc[4], rr[0], X, Z, bkTabInfo, bkTabbed, bkFace])
             if hasLt:
-                pieces.append(
-                    [cc[2], rr[0], Z, Y, ltTabInfo, ltTabbed, ltFace])
+                pieces.append([cc[2], rr[0], Z, Y, ltTabInfo, ltTabbed, ltFace])
             if hasTp:
-                pieces.append(
-                    [cc[0], rr[0], X, Y, tpTabInfo, tpTabbed, tpFace])
+                pieces.append([cc[0], rr[0], X, Y, tpTabInfo, tpTabbed, tpFace])
             if hasBm:
-                pieces.append(
-                    [cc[1], rr[0], X, Y, bmTabInfo, bmTabbed, bmFace])
+                pieces.append([cc[1], rr[0], X, Y, bmTabInfo, bmTabbed, bmFace])
             if hasRt:
-                pieces.append(
-                    [cc[3], rr[0], Z, Y, rtTabInfo, rtTabbed, rtFace])
+                pieces.append([cc[3], rr[0], Z, Y, rtTabInfo, rtTabbed, rtFace])
             if hasFt:
-                pieces.append(
-                    [cc[5], rr[0], X, Z, ftTabInfo, ftTabbed, ftFace])
+                pieces.append([cc[5], rr[0], X, Z, ftTabInfo, ftTabbed, ftFace])
 
-        for idx, piece in enumerate(
-                pieces):  # generate and draw each piece of the box
+        for idx, piece in enumerate(pieces):  # generate and draw each piece of the box
             (xs, xx, xy, xz) = piece[0]
             (ys, yx, yy, yz) = piece[1]
-            x = xs * spacing + xx * X + xy * Y + xz * \
-                Z + initOffsetX  # root x co-ord for piece
-            y = ys * spacing + yx * X + yy * Y + yz * \
-                Z + initOffsetY  # root y co-ord for piece
+            x = (
+                xs * spacing + xx * X + xy * Y + xz * Z + initOffsetX
+            )  # root x co-ord for piece
+            y = (
+                ys * spacing + yx * X + yy * Y + yz * Z + initOffsetY
+            )  # root y co-ord for piece
             dx = piece[2]
             dy = piece[3]
             tabs = piece[4]
@@ -777,8 +927,10 @@ class TabbedBoxMaker(inkex.Effect):
             groups = [group]
 
             if schroff and railholes:
-                log("rail holes enabled on piece %d at (%d, %d)" %
-                    (idx, x + thickness, y + thickness))
+                log(
+                    "rail holes enabled on piece %d at (%d, %d)"
+                    % (idx, x + thickness, y + thickness)
+                )
                 log("abcd = (%d,%d,%d,%d)" % (a, b, c, d))
                 log("dxdy = (%d,%d)" % (dx, dy))
                 rhxoffset = rail_mount_depth + thickness
@@ -894,8 +1046,11 @@ class TabbedBoxMaker(inkex.Effect):
             if self.options.optimize:
                 # Step 1: Combine paths to form the outer boundary
                 for group in groups:
-                    for path_element in [child for child in group.descendants(
-                    ) if isinstance(child, inkex.PathElement)]:
+                    for path_element in [
+                        child
+                        for child in group.descendants()
+                        if isinstance(child, inkex.PathElement)
+                    ]:
                         path = inkex.Path(path_element.path)
 
                         if path[-1].letter in "zZ":
@@ -904,8 +1059,11 @@ class TabbedBoxMaker(inkex.Effect):
                         path_first = path[0]
                         path_last = path[-1]
 
-                        for other_element in [child for child in group.descendants(
-                        ) if isinstance(child, inkex.PathElement)]:
+                        for other_element in [
+                            child
+                            for child in group.descendants()
+                            if isinstance(child, inkex.PathElement)
+                        ]:
                             if other_element == path_element:
                                 continue
 
@@ -917,11 +1075,17 @@ class TabbedBoxMaker(inkex.Effect):
                             other_first = other_path[0]
                             other_last = other_path[-1]
 
-                            if other_first.x == path_last.x and other_first.y == path_last.y:
+                            if (
+                                other_first.x == path_last.x
+                                and other_first.y == path_last.y
+                            ):
                                 other_element.path = str(path + other_path[1:])
                                 group.remove(path_element)
                                 break
-                            elif other_last.x == path_first.x and other_last.y == path_last.y:
+                            elif (
+                                other_last.x == path_first.x
+                                and other_last.y == path_last.y
+                            ):
                                 other_element.path = str(other_path + path[1:])
                                 group.remove(path_element)
                                 break
@@ -932,12 +1096,16 @@ class TabbedBoxMaker(inkex.Effect):
                     # Step 2: Close the first (outline) path, if not already
                     # closed
                     last_path_element = [
-                        child for child in group.descendants() if isinstance(
-                            child, inkex.PathElement)][0]
+                        child
+                        for child in group.descendants()
+                        if isinstance(child, inkex.PathElement)
+                    ][0]
                     path = inkex.Path(last_path_element.path)
-                    if path[-1].letter not in "zZ":  # Check if the last command is not 'Z'
+                    if (
+                        path[-1].letter not in "zZ"
+                    ):  # Check if the last command is not "Z"
                         path.close()  # Append a close path command
-                        # Update the element's path
+                        # Update the element"s path
                         last_path_element.path = str(path)
 
                     # Step 3: Remove unneeded generated nodes (duplicates and
@@ -950,7 +1118,7 @@ class TabbedBoxMaker(inkex.Effect):
 
                         simplified_path = []
                         prev = None  # Previous point
-                        current_dir = None  # Current direction ('h' or 'v')
+                        current_dir = None  # Current direction ("h" or "v")
 
                         for segment in path:
                             if isinstance(segment, inkex.paths.ZoneClose):
@@ -966,7 +1134,9 @@ class TabbedBoxMaker(inkex.Effect):
                                         continue  # Skip node
 
                                     # Determine the direction
-                                    direction = 'h' if dy == 0 else 'v' if dx == 0 else None
+                                    direction = (
+                                        "h" if dy == 0 else "v" if dx == 0 else None
+                                    )
 
                                     # Skip redundant points on straight lines
                                     if direction == current_dir:

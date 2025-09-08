@@ -26,16 +26,22 @@ jobs:
         cache: yes
 
     - name: Cache pip packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - name: Install inkex
+    - name: Install dependencies
       run: |
-        python -m pip install inkex
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+
+    - name: Run linting with flake8
+      run: |
+        flake8 tabbedboxmaker tests --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 tabbedboxmaker tests --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
 
     - name: Run test suite
       run: |

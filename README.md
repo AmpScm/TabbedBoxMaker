@@ -1,10 +1,15 @@
 # TabbedBoxMaker: A free Inkscape extension for generating tab-jointed box patterns
 
-_version 1.2 - 4 Dec 2023_
+[![CI - Test and Validate BoxMaker](https://github.com/ampscm/TabbedBoxMaker/actions/workflows/ci.yaml/badge.svg)](https://github.com/ampscm/TabbedBoxMaker/actions/workflows/ci.yaml)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+_Version 1.4.0 - September 2025_
 
 Original box maker by Elliot White (formerly of twot.eu, domain name now squatted)
 
-Heavily modified by [Paul Hutchison](https://github.com/paulh-rnd)
+Heavily modified by [Paul Hutchison](https://github.com/paulh-rnd).
+Now maintained by [Bert Huijben](https://github.com/rhuijben).
 
 ## About
  This tool is designed to simplify the process of making practical boxes from sheet material using almost any kind of CNC cutter (laser, plasma, water jet or mill). The box edges are "finger-jointed" or "tab-jointed", and may include press-fit dimples, internal dividers, dogbone corners (for endmill cutting), and more.
@@ -14,17 +19,10 @@ Heavily modified by [Paul Hutchison](https://github.com/paulh-rnd)
  An additional extension which uses the same TabbedBoxMaker generator script is also included: Schroff Box Maker. The Schroff addition was created by [John Slee](https://github.com/jsleeio). If you create further derivative box generators, feel free to send me a pull request!
 
 ## Release Notes
-This is a major upgrade to support Inkscape v1.0 and CNC mills (with dogbone cuts), plus an updated dialog layout and documentation, and a number of smaller fixes. So far no serious bugs (i.e causing runtime errors) have been found. The program works with Python 3 ONLY. See [issues](https://github.com/paulh-rnd/TabbedBoxMaker/issues) for known issues, or to log issues and enhancement requests.
+This is a major upgrade to support Inkscape v1.0 and CNC mills (with dogbone cuts), plus an updated dialog layout and documentation, and a number of smaller fixes. So far no serious bugs (i.e causing runtime errors) have been found. The program works with Python 3 ONLY. See [issues](https://github.com/ampscm/TabbedBoxMaker/issues) for known issues, or to log issues and enhancement requests.
 
-Note that in this release the extension has *moved from the Laser Tools to the CNC Tools submenu*.  This is to better reflect that this tool can be used on a wide variety of CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
+Note that in this release the extension has *moved to the Box Maker submenu*.  This is to better reflect that this tool can be used on a wide variety of CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
  
-## Donate
- Any donations will be gratefully received:
-
- [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/SparkItUp)
-
- Many thanks to those who have donated.
-
 ## To do
 * Tidy, modularise and simplify the code - it is rough and unpythonic.  Needs some work by a master Python guru.
 * Add tests and perhaps get it submitted as a core extension to be installed with Inkscape?
@@ -36,7 +34,7 @@ Note that in this release the extension has *moved from the Laser Tools to the C
 * [Schroff] Add support for 6U row height
 
 ## Use - regular tabbed boxes
- The interface is pretty self explanatory, the extension is 'Tabbed Box Maker' in the 'CNC Tools' group
+ The interface is pretty self explanatory, the three extensions are in the 'Box Maker' group in the 'Extensions' menu.
 
 Parameters in order of appearance:
 
@@ -114,12 +112,105 @@ Much the same as for regular enclosures, except some options are removed, and so
 
 ## Installation
 
+### For End Users
+
+#### Option 1: Installing as Inkscape Extension (Recommended)
+
 1. Download the extension from this GitHub page using the *[Clone or download > Download ZIP](archive/refs/heads/master.zip)* link. If you are using an older version of Inkscape, you will need to download the correct version of the extension (see [Version History](#version-history) below)
 2. Extract the zip file
 3. Copy all files except README.md and LICENSE into the Inkscape extensions directory.  The directory location varies depending on your operating system, and may be customised. The easiest way to find the directory is to open Inkscape, go to _Edit > Preferences > System_ (Win/Linux) or _Inkscape > Preferences > System_ (Mac).
 4. You can either copy the files to the _User extensions_ directory or the _Inkscape extensions_ directory.  The former will install this extension for just the current user, the latter will install it for all users of the machine.
 5. Inkscape *must* be restarted after copying the extension files.
-6. If it has been installed correctly, you should find the extension under the _Extensions > CNC Tools_ menu. Enjoy!
+6. If it has been installed correctly, you should find the extension under the _Extensions > Box Maker_ menu. Enjoy!
+
+#### Option 2: Installing as Python Package
+
+You can install TabbedBoxMaker as a standalone Python package:
+
+```bash
+pip install tabbedboxmaker
+```
+
+This allows you to use it from the command line:
+
+```bash
+# Generate a basic box
+tabbedboxmaker --length=100 --width=80 --depth=60 --thickness=3 --output=mybox.svg
+
+# Generate a Schroff enclosure
+schroffmaker --hp=42 --rows=2 --depth=160 --thickness=3 --output=schroff.svg
+```
+
+### For Developers
+
+#### Development Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ampscm/TabbedBoxMaker.git
+   cd TabbedBoxMaker
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   # On Windows:
+   venv\Scripts\activate
+   # On Unix/macOS:
+   source venv/bin/activate
+   ```
+
+3. Install in development mode:
+   ```bash
+   pip install -e .[dev]
+   ```
+
+4. Install pre-commit hooks (optional but recommended):
+   ```bash
+   pre-commit install
+   ```
+
+#### Running Tests
+
+```bash
+# Run modern pytest tests
+pytest tests/ -v
+
+# Run legacy test suite (for compatibility)
+python run_tests.py
+
+# Run all tests
+make test-all
+```
+
+#### Code Quality
+
+```bash
+# Format code
+make format
+
+# Check formatting
+make format-check
+
+# Run linting
+make lint
+
+# Run all checks
+make check
+```
+
+#### Building and Publishing
+
+```bash
+# Build package
+make build
+
+# Upload to Test PyPI
+make upload-test
+
+# Upload to PyPI (maintainers only)
+make upload
+```
 
 Default installation directories are given below:
 
@@ -137,6 +228,40 @@ Default installation directories are given below:
 
 * User: `~/.config/inkscape/extensions`
 * Machine: Depends on installation method
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. Before contributing:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run the test suite (`make test-all`)
+5. Run code quality checks (`make check`)
+6. Commit your changes (`git commit -m 'Add some amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+### Development Guidelines
+
+- Follow PEP 8 style guidelines (enforced by black and flake8)
+- Add tests for new functionality
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
+
+### Reporting Issues
+
+Please use the [GitHub Issues](https://github.com/ampscm/TabbedBoxMaker/issues) page to report bugs or request features.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 or later - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Original Tabbed Box Maker by Elliot White
+- Major contributions by Paul Hutchison, John Slee, Jim McBeath, and Brad Goodman
+- All contributors who have helped improve this project
 
 ## Version History
 version | Date | Notes
