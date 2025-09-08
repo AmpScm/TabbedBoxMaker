@@ -4,7 +4,7 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-_version 1.2.0 - 4 Dec 2023_
+_Version 1.4.0 - September 2025_
 
 Original box maker by Elliot White (formerly of twot.eu, domain name now squatted)
 
