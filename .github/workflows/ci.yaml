@@ -1,0 +1,25 @@
+name: CI - Test and Validate BoxMaker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test BoxMaker Functionality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.13'  # Latest Python version
+        
+    - name: Run test suite
+      run: |
+        echo "🧪 Running test suite..."
+        python run_tests.py --ci
