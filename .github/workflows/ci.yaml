@@ -22,11 +22,24 @@ jobs:
     - name: Install Cairo dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libcairo2-dev libjpeg-dev libgif-dev
+        sudo apt-get install -y \
+                libgirepository1.0-dev \
+                gir1.2-glib-2.0 \
+                libglib2.0-dev \
+                libcairo2-dev \
+                gobject-introspection \
+                pkg-config \
+                python3-dev
 
-    - name: Install inkex
+    - name: Fix PKG_CONFIG_PATH
       run: |
-        python -m pip install inkex
+        echo 'PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig' >> $GITHUB_ENV
+
+    - name: Install inkex with correct PKG_CONFIG_PATH
+      run: |
+        PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig \
+            python -m pip install inkex
+
 
     - name: Run test suite
       run: |
