@@ -1,0 +1,24 @@
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
+  <sodipodi:namedview id="namedview7" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:document-units="mm" showgrid="false" inkscape:zoom="0.64052329" inkscape:cx="397.33138" inkscape:cy="561.25984" inkscape:window-width="2086" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer1"/>
+  <defs id="defs2"/>
+  <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
+    <path id="side_004" style="fill:none;stroke:#000000;stroke-width:1" d="M 5 5 L 9 5 L 45 5 L 45 8.44444 L 48 8.44444 L 48 14.4444 L 45 14.4444 L 45 20.8889 L 48 20.8889 L 48 26.8889 L 45 26.8889 L 45 33.3333 L 48 33.3333 L 48 39.3333 L 45 39.3333 L 45 45.7778 L 48 45.7778 L 48 51.7778 L 45 51.7778 L 45 58.2222 L 48 58.2222 L 48 64.2222 L 45 64.2222 L 45 70.6667 L 48 70.6667 L 48 76.6667 L 45 76.6667 L 45 83.1111 L 48 83.1111 L 48 89.1111 L 45 89.1111 L 45 95.5556 L 48 95.5556 L 48 101.556 L 45 101.556 L 45 105 L 5 105 L 5 5 Z"/>
+    <path id="side_008" style="fill:none;stroke:#000000;stroke-width:1" d="M 3 209 L 7 209 L 43 209 L 43 212.444 L 46 212.444 L 46 218.444 L 43 218.444 L 43 224.889 L 46 224.889 L 46 230.889 L 43 230.889 L 43 237.333 L 46 237.333 L 46 243.333 L 43 243.333 L 43 249.778 L 46 249.778 L 46 255.778 L 43 255.778 L 43 262.222 L 46 262.222 L 46 268.222 L 43 268.222 L 43 274.667 L 46 274.667 L 46 280.667 L 43 280.667 L 43 287.111 L 46 287.111 L 46 293.111 L 43 293.111 L 43 299.556 L 46 299.556 L 46 305.556 L 43 305.556 L 43 309 L 3 309 L 3 209 Z"/>
+    <g id="piece_003">
+      <path id="side_012" style="fill:none;stroke:#000000;stroke-width:1" d="M 94.5 101.556 L 94.5 95.5556 L 91.5 95.5556 L 91.5 101.556 L 94.5 101.556 Z"/>
+      <path id="side_013" style="fill:none;stroke:#000000;stroke-width:1" d="M 94.5 89.1111 L 94.5 83.1111 L 91.5 83.1111 L 91.5 89.1111 L 94.5 89.1111"/>
+      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:1" d="M 94.5 76.6667 L 94.5 70.6667 L 91.5 70.6667 L 91.5 76.6667 L 94.5 76.6667"/>
+      <path id="side_015" style="fill:none;stroke:#000000;stroke-width:1" d="M 94.5 64.2222 L 94.5 58.2222 L 91.5 58.2222 L 91.5 64.2222 L 94.5 64.2222"/>
+      <path id="side_016" style="fill:none;stroke:#000000;stroke-width:1" d="M 94.5 51.7778 L 94.5 45.7778 L 91.5 45.7778 L 91.5 51.7778 L 94.5 51.7778"/>
+      <path id="side_017" style="fill:none;stroke:#000000;stroke-width:1" d="M 94.5 39.3333 L 94.5 33.3333 L 91.5 33.3333 L 91.5 39.3333 L 94.5 39.3333"/>
+      <path id="side_018" style="fill:none;stroke:#000000;stroke-width:1" d="M 94.5 26.8889 L 94.5 20.8889 L 91.5 20.8889 L 91.5 26.8889 L 94.5 26.8889"/>
+      <path id="side_019" style="fill:none;stroke:#000000;stroke-width:1" d="M 94.5 14.4444 L 94.5 8.44444 L 91.5 8.44444 L 91.5 14.4444 L 94.5 14.4444"/>
+      <path id="side_020" style="fill:none;stroke:#000000;stroke-width:1" d="M 50 5 L 57.1429 5 L 133 5 L 133 105 L 50 105 L 50 101.556 L 53 101.556 L 53 95.5556 L 50 95.5556 L 50 89.1111 L 53 89.1111 L 53 83.1111 L 50 83.1111 L 50 76.6667 L 53 76.6667 L 53 70.6667 L 50 70.6667 L 50 64.2222 L 53 64.2222 L 53 58.2222 L 50 58.2222 L 50 51.7778 L 53 51.7778 L 53 45.7778 L 50 45.7778 L 50 39.3333 L 53 39.3333 L 53 33.3333 L 50 33.3333 L 50 26.8889 L 53 26.8889 L 53 20.8889 L 50 20.8889 L 50 14.4444 L 53 14.4444 L 53 8.44444 L 50 8.44444 L 50 5"/>
+    </g>
+    <g id="piece_004">
+      <path id="side_021" style="fill:none;stroke:#000000;stroke-width:1" d="M 0 305.5 L 43 305.5 L 43 308.5 L 0 308.5 L 0 305.5 Z"/>
+      <path id="side_025" style="fill:none;stroke:#000000;stroke-width:1" d="M 0 257 L 7.14286 257 L 83 257 L 83 357 L 0 357 L 0 353.556 L 3 353.556 L 3 347.556 L 0 347.556 L 0 341.111 L 3 341.111 L 3 335.111 L 0 335.111 L 0 328.667 L 3 328.667 L 3 322.667 L 0 322.667 L 0 316.222 L 3 316.222 L 3 310.222 L 0 310.222 L 0 303.778 L 3 303.778 L 3 297.778 L 0 297.778 L 0 291.333 L 3 291.333 L 3 285.333 L 0 285.333 L 0 278.889 L 3 278.889 L 3 272.889 L 0 272.889 L 0 266.444 L 3 266.444 L 3 260.444 L 0 260.444 L 0 257"/>
+    </g>
+  </g>
+</svg>
