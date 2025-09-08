@@ -4,7 +4,7 @@ import re
 import unittest
 from tabbedboxmaker import BoxMaker
 
-blank_svg=b'''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+blank_svg = b'''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
@@ -51,6 +51,7 @@ blank_svg=b'''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 def mask_panel_ids(svgin: str) -> str:
     return re.sub(r'"panel\d+"', '"panelTEST"', svgin)
 
+
 class TestTabbedBox(unittest.TestCase):
 
     def test_tabbed(self):
@@ -64,7 +65,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=1', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'open_top',
@@ -74,7 +75,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'two_sides_open',
@@ -84,7 +85,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=3', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'three_sides_open',
@@ -94,7 +95,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=4', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'opposite_ends_open',
@@ -104,7 +105,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=5', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'two_panels_only',
@@ -114,7 +115,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=6', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'outside_measurement',
@@ -124,7 +125,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_dogbone',
@@ -134,7 +135,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_dimple',
@@ -144,7 +145,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0.2', '--dimplelength=0.2',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_rotate_symmetry_tabs',
@@ -154,7 +155,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=1', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_thick_lines',
@@ -164,7 +165,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=0', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_nonzero_kerf',
@@ -174,7 +175,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0.1', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'threepiece_layout',
@@ -184,7 +185,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=2',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'inline_layout',
@@ -194,7 +195,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=3',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_dividers_keyed_all',
@@ -204,7 +205,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=0',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_dividers_keyed_floor',
@@ -214,7 +215,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=1',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_dividers_keyed_walls',
@@ -224,7 +225,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=2',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
             {
                 'label': 'with_dividers_keyed_none',
@@ -234,9 +235,9 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=3',
-                    '--spacing=1' ],
+                    '--spacing=1'],
             },
-            #{
+            # {
             #    'label': 'default_tabs',
             #    'args': [
             #        '--unit=mm', '--inside=1', '--length=80', '--width=100',
@@ -245,7 +246,7 @@ class TestTabbedBox(unittest.TestCase):
             #        '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
             #        '--boxtype=1', '--div_l=0', '--div_w=0', '--keydiv=1',
             #        '--spacing=1' ],
-            #},
+            # },
         ]
 
         expected_output_dir = os.path.join(
@@ -282,8 +283,8 @@ class TestTabbedBox(unittest.TestCase):
                 output = outfh.getvalue().decode('utf-8')
 
                 with open(actual_file, 'w', encoding='utf-8') as f:
-                        f.write(output)
-                        
+                    f.write(output)
+
                 output = mask_panel_ids(output)
 
                 # Set self.maxDiff to None to see full diff.

@@ -1,6 +1,6 @@
 #! /usr/bin/env python -t
 '''
-Generates Inkscape SVG file containing box components needed to 
+Generates Inkscape SVG file containing box components needed to
 CNC (laser/mill) cut a card board box
 
 Original Tabbed Box Maker Copyright (C) 2011 elliot white
@@ -27,4 +27,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from tabbedboxmaker.cardboard import main
 
 if __name__ == "__main__":
-  main(cli=False)
+    main(cli=False)

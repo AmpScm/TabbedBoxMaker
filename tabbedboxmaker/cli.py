@@ -1,6 +1,6 @@
 #! /usr/bin/env python -t
 '''
-Generates Inkscape SVG file containing box components needed to 
+Generates Inkscape SVG file containing box components needed to
 CNC (laser/mill) cut a box with tabbed joints taking kerf and clearance into account
 
 Original Tabbed Box Maker Copyright (C) 2011 elliot white
@@ -10,16 +10,16 @@ Changelog:
  - Ability to generate 6, 5, 4, 3 or 2-panel cutouts
  - Ability to also generate evenly spaced dividers within the box
    including tabbed joints to box sides and slots to slot into each other
-   
+
 23/06/2015 by Paul Hutchison:
  - Updated for Inkscape's 0.91 breaking change (unittouu)
- 
+
 v0.93 - 15/8/2016 by Paul Hutchison:
  - Added Hairline option and fixed open box height bug
- 
+
 v0.94 - 05/01/2017 by Paul Hutchison:
  - Added option for keying dividers into walls/floor/none
-   
+
 v0.95 - 2017-04-20 by Jim McBeath
  - Added optional dimples
 
@@ -63,11 +63,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-__version__ = "1.2" ### please report bugs, suggestions etc at https://github.com/paulh-rnd/TabbedBoxMaker ###
+__version__ = "1.2"  # please report bugs, suggestions etc at https://github.com/paulh-rnd/TabbedBoxMaker ###
 from tabbedboxmaker import BoxMaker
 
 
 # Create effect instance and apply it.
-def main(cli = False, schroff = False):
-  effect = BoxMaker()
-  effect.run()
+def main(cli=False, schroff=False):
+    effect = BoxMaker()
+    effect.run()
