@@ -1,6 +1,10 @@
 # TabbedBoxMaker: A free Inkscape extension for generating tab-jointed box patterns
 
-_version 1.2 - 4 Dec 2023_
+[![CI - Test and Validate BoxMaker](https://github.com/paulh-rnd/TabbedBoxMaker/actions/workflows/ci.yaml/badge.svg)](https://github.com/paulh-rnd/TabbedBoxMaker/actions/workflows/ci.yaml)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+_version 1.2.0 - 4 Dec 2023_
 
 Original box maker by Elliot White (formerly of twot.eu, domain name now squatted)
 
@@ -114,12 +118,105 @@ Much the same as for regular enclosures, except some options are removed, and so
 
 ## Installation
 
+### For End Users
+
+#### Option 1: Installing as Inkscape Extension (Recommended)
+
 1. Download the extension from this GitHub page using the *[Clone or download > Download ZIP](archive/refs/heads/master.zip)* link. If you are using an older version of Inkscape, you will need to download the correct version of the extension (see [Version History](#version-history) below)
 2. Extract the zip file
 3. Copy all files except README.md and LICENSE into the Inkscape extensions directory.  The directory location varies depending on your operating system, and may be customised. The easiest way to find the directory is to open Inkscape, go to _Edit > Preferences > System_ (Win/Linux) or _Inkscape > Preferences > System_ (Mac).
 4. You can either copy the files to the _User extensions_ directory or the _Inkscape extensions_ directory.  The former will install this extension for just the current user, the latter will install it for all users of the machine.
 5. Inkscape *must* be restarted after copying the extension files.
 6. If it has been installed correctly, you should find the extension under the _Extensions > CNC Tools_ menu. Enjoy!
+
+#### Option 2: Installing as Python Package
+
+You can install TabbedBoxMaker as a standalone Python package:
+
+```bash
+pip install tabbedboxmaker
+```
+
+This allows you to use it from the command line:
+
+```bash
+# Generate a basic box
+tabbedboxmaker --length=100 --width=80 --depth=60 --thickness=3 --output=mybox.svg
+
+# Generate a Schroff enclosure
+schroffmaker --hp=42 --rows=2 --depth=160 --thickness=3 --output=schroff.svg
+```
+
+### For Developers
+
+#### Development Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/paulh-rnd/TabbedBoxMaker.git
+   cd TabbedBoxMaker
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   # On Windows:
+   venv\Scripts\activate
+   # On Unix/macOS:
+   source venv/bin/activate
+   ```
+
+3. Install in development mode:
+   ```bash
+   pip install -e .[dev]
+   ```
+
+4. Install pre-commit hooks (optional but recommended):
+   ```bash
+   pre-commit install
+   ```
+
+#### Running Tests
+
+```bash
+# Run modern pytest tests
+pytest tests/ -v
+
+# Run legacy test suite (for compatibility)
+python run_tests.py
+
+# Run all tests
+make test-all
+```
+
+#### Code Quality
+
+```bash
+# Format code
+make format
+
+# Check formatting
+make format-check
+
+# Run linting
+make lint
+
+# Run all checks
+make check
+```
+
+#### Building and Publishing
+
+```bash
+# Build package
+make build
+
+# Upload to Test PyPI
+make upload-test
+
+# Upload to PyPI (maintainers only)
+make upload
+```
 
 Default installation directories are given below:
 
@@ -137,6 +234,40 @@ Default installation directories are given below:
 
 * User: `~/.config/inkscape/extensions`
 * Machine: Depends on installation method
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. Before contributing:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run the test suite (`make test-all`)
+5. Run code quality checks (`make check`)
+6. Commit your changes (`git commit -m 'Add some amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+### Development Guidelines
+
+- Follow PEP 8 style guidelines (enforced by black and flake8)
+- Add tests for new functionality
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
+
+### Reporting Issues
+
+Please use the [GitHub Issues](https://github.com/paulh-rnd/TabbedBoxMaker/issues) page to report bugs or request features.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 or later - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Original Tabbed Box Maker by Elliot White
+- Major contributions by Paul Hutchison, John Slee, Jim McBeath, and Brad Goodman
+- All contributors who have helped improve this project
 
 ## Version History
 version | Date | Notes

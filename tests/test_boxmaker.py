@@ -1,10 +1,10 @@
 import io
 import os
 import re
-import unittest
+import pytest
 from tabbedboxmaker import BoxMaker
 
-blank_svg = b'''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+blank_svg = b"""<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
@@ -45,197 +45,485 @@ blank_svg = b'''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
      inkscape:groupmode="layer"
      id="layer1" />
 </svg>
-'''
+"""
 
 
 def mask_panel_ids(svgin: str) -> str:
     return re.sub(r'"panel\d+"', '"panelTEST"', svgin)
 
 
-class TestTabbedBox(unittest.TestCase):
+class TestTabbedBox:
 
     def test_tabbed(self):
         # See boxmaker.inx for arg descriptions
         cases = [
             {
-                'label': 'fully_enclosed',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=1', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "fully_enclosed",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=1",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'open_top',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "open_top",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'two_sides_open',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=3', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "two_sides_open",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=3",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'three_sides_open',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=4', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "three_sides_open",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=4",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'opposite_ends_open',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=5', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "opposite_ends_open",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=5",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'two_panels_only',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=6', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "two_panels_only",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=6",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'outside_measurement',
-                'args': [
-                    '--unit=mm', '--inside=0', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "outside_measurement",
+                "args": [
+                    "--unit=mm",
+                    "--inside=0",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_dogbone',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=1',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_dogbone",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=1",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_dimple',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0.2', '--dimplelength=0.2',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_dimple",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0.2",
+                    "--dimplelength=0.2",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_rotate_symmetry_tabs',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=1', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_rotate_symmetry_tabs",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=1",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_thick_lines',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=0', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_thick_lines",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=0",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_nonzero_kerf',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0.1', '--style=1',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_nonzero_kerf",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0.1",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'threepiece_layout',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=2',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "threepiece_layout",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=2",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'inline_layout',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=3',
-                    '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "inline_layout",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=3",
+                    "--boxtype=2",
+                    "--div_l=0",
+                    "--div_w=0",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_dividers_keyed_all',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=0',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_dividers_keyed_all",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=1",
+                    "--div_w=1",
+                    "--keydiv=0",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_dividers_keyed_floor',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=1',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_dividers_keyed_floor",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=1",
+                    "--div_w=1",
+                    "--keydiv=1",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_dividers_keyed_walls',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=2',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_dividers_keyed_walls",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=1",
+                    "--div_w=1",
+                    "--keydiv=2",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             {
-                'label': 'with_dividers_keyed_none',
-                'args': [
-                    '--unit=mm', '--inside=1', '--length=80', '--width=100',
-                    '--depth=40', '--equal=0', '--tab=6', '--tabtype=0',
-                    '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
-                    '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
-                    '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=3',
-                    '--spacing=1', '--optimize=False'],
+                "label": "with_dividers_keyed_none",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=80",
+                    "--width=100",
+                    "--depth=40",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0",
+                    "--style=1",
+                    "--boxtype=2",
+                    "--div_l=1",
+                    "--div_w=1",
+                    "--keydiv=3",
+                    "--spacing=1",
+                    "--optimize=False",
+                ],
             },
             # {
             #    'label': 'default_tabs',
@@ -249,47 +537,39 @@ class TestTabbedBox(unittest.TestCase):
             # },
         ]
 
-        expected_output_dir = os.path.join(
-            os.path.dirname(__file__), 'expected'
-        )
-        actual_output_dir = os.path.join(
-            os.path.dirname(__file__), 'actual'
-        )
-        
+        expected_output_dir = os.path.join(os.path.dirname(__file__), "expected")
+        actual_output_dir = os.path.join(os.path.dirname(__file__), "actual")
+
         if not os.path.exists(actual_output_dir):
             os.makedirs(actual_output_dir)
 
         for case in cases:
-            print(case['label'])
-            with self.subTest(label=case['label']):
-                infh = io.BytesIO(blank_svg)
-                outfh = io.BytesIO()
-                expected_file = os.path.join(
-                    expected_output_dir, case['label'] + '.svg'
-                )
-                expected = ''
-                actual_file = os.path.join(
-                    actual_output_dir, case['label'] + '.svg'
-                )
-                with open(expected_file, 'r') as f:
-                    expected = mask_panel_ids(f.read())
+            print(case["label"])
+            infh = io.BytesIO(blank_svg)
+            outfh = io.BytesIO()
+            expected_file = os.path.join(expected_output_dir, case["label"] + ".svg")
+            expected = ""
+            actual_file = os.path.join(actual_output_dir, case["label"] + ".svg")
+            with open(expected_file, "r") as f:
+                expected = mask_panel_ids(f.read())
 
-                tbm = BoxMaker()
+            tbm = BoxMaker()
 
-                tbm.parse_arguments(case['args'])
-                tbm.options.input_file = infh
-                tbm.options.output = outfh
+            tbm.parse_arguments(case["args"])
+            tbm.options.input_file = infh
+            tbm.options.output = outfh
 
-                tbm.load_raw()
-                tbm.save_raw(tbm.effect())
+            tbm.load_raw()
+            tbm.save_raw(tbm.effect())
 
-                output = outfh.getvalue().decode('utf-8')
+            output = outfh.getvalue().decode("utf-8")
 
-                with open(actual_file, 'w', encoding='utf-8') as f:
-                    f.write(output)
+            with open(actual_file, "w", encoding="utf-8") as f:
+                f.write(output)
 
-                output = mask_panel_ids(output)
+            output = mask_panel_ids(output)
 
-                # Set self.maxDiff to None to see full diff.
-                self.maxDiff = None
-                self.assertEqual(expected, output)
+            # Compare outputs
+            assert (
+                expected == output
+            ), f"Test case {case['label']} failed - output doesn't match expected"

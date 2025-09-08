@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022-present Manuel Desbonnet
 #
 # SPDX-License-Identifier: GPL-2.0
-'''
+"""
 Changelog:
 19/12/2014 Paul Hutchison:
  - Ability to generate 6, 5, 4, 3 or 2-panel cutouts
@@ -50,6 +50,6 @@ v1.2 - 2023-12-04 contributed by [@mausmaux](https://github.com/mausmaux) - See 
 14/05/2024 Brad Goodman:
     - Created Cardboard Box Maker from Tabbed Box Maker
 
- '''
+"""
 
-__version__ = '1.2.0'
+__version__ = "1.2.0"
