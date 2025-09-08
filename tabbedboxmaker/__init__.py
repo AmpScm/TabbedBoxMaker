@@ -5,52 +5,9 @@ CNC (laser/mill) cut a box with tabbed joints taking kerf and clearance into acc
 
 Original Tabbed Box Maker Copyright (C) 2011 elliot white
 
-Changelog:
-19/12/2014 Paul Hutchison:
- - Ability to generate 6, 5, 4, 3 or 2-panel cutouts
- - Ability to also generate evenly spaced dividers within the box
-   including tabbed joints to box sides and slots to slot into each other
+See changelog in tabbedboxmaker/__about__.py
 
-23/06/2015 by Paul Hutchison:
- - Updated for Inkscape's 0.91 breaking change (unittouu)
-
-v0.93 - 15/8/2016 by Paul Hutchison:
- - Added Hairline option and fixed open box height bug
-
-v0.94 - 05/01/2017 by Paul Hutchison:
- - Added option for keying dividers into walls/floor/none
-
-v0.95 - 2017-04-20 by Jim McBeath
- - Added optional dimples
-
-v0.96 - 2017-04-24 by Jim McBeath
- - Refactored to make box type, tab style, and layout all orthogonal
- - Added Tab Style option to allow creating waffle-block-style tabs
- - Made open box size correct based on inner or outer dimension choice
- - Fixed a few tab bugs
-
-v0.99 - 2020-06-01 by Paul Hutchison
- - Preparatory release with Inkscape 1.0 compatibility upgrades (further fixes to come!)
- - Removed Antisymmetric option as it's broken, kinda pointless and looks weird
- - Fixed divider issues with Rotate Symmetric
- - Made individual panels and their keyholes/slots grouped
-
-v1.0 - 2020-06-17 by Paul Hutchison
- - Removed clearance parameter, as this was just subtracted from kerf - pointless?
- - Corrected kerf adjustments for overall box size and divider keyholes
- - Added dogbone cuts: CNC mills now supported!
- - Fix for floor/ceiling divider key issue (#17)
- - Increased max dividers to 20 (#35)
-
-v1.1 - 2021-08-09 by Paul Hutchison
- - Fixed for current Inkscape release version 1.1 - thanks to PR from https://github.com/roastedneutrons
-
-v1.2 - 2023-12-04 contributed by [@mausmaux](https://github.com/mausmaux) - See [PR59](https://github.com/paulh-rnd/TabbedBoxMaker/pull/59)
- - Fixed bug with unit conversion for the kerf parameter.
- - Fixed bug with dimple unit conversion.
- - Fixed boxes which have omitted sides are incorrectly drawn when using the rotationally symmetric mode.
-
- This program is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -63,7 +20,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-__version__ = "1.2"  # please report bugs, suggestions etc at https://github.com/paulh-rnd/TabbedBoxMaker ###
+from inkex.utils import filename_arg
 
 import os
 import inkex
@@ -86,9 +43,12 @@ class TabbedBoxMaker(inkex.Effect):
     linethickness = 1  # default unless overridden by settings
 
 
-    def __init__(self):
+    def __init__(self, cli=True, schroff=False, inkscape=False):
         # Call the base class constructor.
         super().__init__()
+
+        self.cli = cli
+        self.schroff = schroff
 
         self.nextId = {}
 
@@ -372,6 +332,22 @@ class TabbedBoxMaker(inkex.Effect):
 
     def _setup_arguments(self) -> None:
         """Define options"""
+
+        if self.cli:
+            # We don't need an input file in CLI mode
+            for action in self.arg_parser._actions:
+                if action.dest == 'input_file':
+                    self.arg_parser._actions.remove(action)
+
+            self.arg_parser.add_argument(
+                "--input-file",
+                dest="input_file",
+                metavar="INPUT_FILE",
+                type=filename_arg,
+                help="Filename of the input file",
+                default=None
+            )
+
         self.arg_parser.add_argument('--schroff', action='store', type=int,
                                      dest='schroff', default=0, help='Enable Schroff mode')
         self.arg_parser.add_argument('--rail_height', action='store', type=float,
@@ -437,6 +413,11 @@ class TabbedBoxMaker(inkex.Effect):
         """Parse the given arguments and set 'self.options'"""
         super().parse_arguments(args)
         self.cli_args = deepcopy(args)
+
+        if (self.cli and self.options.input_file is None):
+            self.options.input_file = os.path.join(
+                os.path.dirname(__file__), 'blank.svg')
+
 
 
 
@@ -533,35 +514,35 @@ class TabbedBoxMaker(inkex.Effect):
         # check input values mainly to avoid python errors
         # TODO restrict values to *correct* solutions
         # TODO restrict divisions to logical values
-        error = 0
+        error = False
 
         if min(X, Y, Z) == 0:
             inkex.errormsg(_('Error: Dimensions must be non zero'))
-            error = 1
+            error = True
         if max(X, Y, Z) > max(widthDoc, heightDoc) * 10:  # crude test
             inkex.errormsg(_('Error: Dimensions Too Large'))
-            error = 1
+            error = True
         if min(X, Y, Z) < 3 * nomTab:
             inkex.errormsg(_('Error: Tab size too large'))
-            error = 1
+            error = True
         if nomTab < thickness:
             inkex.errormsg(_('Error: Tab size too small'))
-            error = 1
+            error = True
         if thickness == 0:
             inkex.errormsg(_('Error: Thickness is zero'))
-            error = 1
+            error = True
         if thickness > min(X, Y, Z) / 3:  # crude test
             inkex.errormsg(_('Error: Material too thick'))
-            error = 1
+            error = True
         if kerf > min(X, Y, Z) / 3:  # crude test
             inkex.errormsg(_('Error: Kerf too large'))
-            error = 1
+            error = True
         if spacing > max(X, Y, Z) * 10:  # crude test
             inkex.errormsg(_('Error: Spacing too large'))
-            error = 1
+            error = True
         if spacing < kerf:
             inkex.errormsg(_('Error: Spacing too small'))
-            error = 1
+            error = True
 
         if error:
             exit()
@@ -1009,8 +990,6 @@ class TabbedBoxMaker(inkex.Effect):
                     # Ok, now we still have a group containing as first element the panel and then optionally some gaps that
                     # should be cut out of the panel
 
-
-
                     # Last step: If the group now just contains one path, remove
                     # the group around this path
                     if len(group) == 1:
@@ -1021,5 +1000,5 @@ class TabbedBoxMaker(inkex.Effect):
 
 if __name__ == "__main__":
   # Create effect instance and apply it.
-  effect = TabbedBoxMaker()
+  effect = TabbedBoxMaker(cli=True)
   effect.run()
