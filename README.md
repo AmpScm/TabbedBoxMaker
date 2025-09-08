@@ -21,7 +21,7 @@ Now maintained by [Bert Huijben](https://github.com/rhuijben).
 ## Release Notes
 This is a major upgrade to support Inkscape v1.0 and CNC mills (with dogbone cuts), plus an updated dialog layout and documentation, and a number of smaller fixes. So far no serious bugs (i.e causing runtime errors) have been found. The program works with Python 3 ONLY. See [issues](https://github.com/ampscm/TabbedBoxMaker/issues) for known issues, or to log issues and enhancement requests.
 
-Note that in this release the extension has *moved from the Laser Tools to the CNC Tools submenu*.  This is to better reflect that this tool can be used on a wide variety of CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
+Note that in this release the extension has *moved to the Box Maker submenu*.  This is to better reflect that this tool can be used on a wide variety of CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
  
 ## To do
 * Tidy, modularise and simplify the code - it is rough and unpythonic.  Needs some work by a master Python guru.
@@ -34,7 +34,7 @@ Note that in this release the extension has *moved from the Laser Tools to the C
 * [Schroff] Add support for 6U row height
 
 ## Use - regular tabbed boxes
- The interface is pretty self explanatory, the extension is 'Tabbed Box Maker' in the 'CNC Tools' group
+ The interface is pretty self explanatory, the three extensions are in the 'Box Maker' group in the 'Extensions' menu.
 
 Parameters in order of appearance:
 
@@ -121,7 +121,7 @@ Much the same as for regular enclosures, except some options are removed, and so
 3. Copy all files except README.md and LICENSE into the Inkscape extensions directory.  The directory location varies depending on your operating system, and may be customised. The easiest way to find the directory is to open Inkscape, go to _Edit > Preferences > System_ (Win/Linux) or _Inkscape > Preferences > System_ (Mac).
 4. You can either copy the files to the _User extensions_ directory or the _Inkscape extensions_ directory.  The former will install this extension for just the current user, the latter will install it for all users of the machine.
 5. Inkscape *must* be restarted after copying the extension files.
-6. If it has been installed correctly, you should find the extension under the _Extensions > CNC Tools_ menu. Enjoy!
+6. If it has been installed correctly, you should find the extension under the _Extensions > Box Maker_ menu. Enjoy!
 
 #### Option 2: Installing as Python Package
 
