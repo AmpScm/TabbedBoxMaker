@@ -511,35 +511,35 @@ class BoxMaker(inkex.Effect):
         # check input values mainly to avoid python errors
         # TODO restrict values to *correct* solutions
         # TODO restrict divisions to logical values
-        error = 0
+        error = False
 
         if min(X, Y, Z) == 0:
             inkex.errormsg(_('Error: Dimensions must be non zero'))
-            error = 1
+            error = True
         if max(X, Y, Z) > max(widthDoc, heightDoc) * 10:  # crude test
             inkex.errormsg(_('Error: Dimensions Too Large'))
-            error = 1
+            error = True
         if min(X, Y, Z) < 3 * nomTab:
             inkex.errormsg(_('Error: Tab size too large'))
-            error = 1
+            error = True
         if nomTab < thickness:
             inkex.errormsg(_('Error: Tab size too small'))
-            error = 1
+            error = True
         if thickness == 0:
             inkex.errormsg(_('Error: Thickness is zero'))
-            error = 1
+            error = True
         if thickness > min(X, Y, Z) / 3:  # crude test
             inkex.errormsg(_('Error: Material too thick'))
-            error = 1
+            error = True
         if kerf > min(X, Y, Z) / 3:  # crude test
             inkex.errormsg(_('Error: Kerf too large'))
-            error = 1
+            error = True
         if spacing > max(X, Y, Z) * 10:  # crude test
             inkex.errormsg(_('Error: Spacing too large'))
-            error = 1
+            error = True
         if spacing < kerf:
             inkex.errormsg(_('Error: Spacing too small'))
-            error = 1
+            error = True
 
         if error:
             exit()
