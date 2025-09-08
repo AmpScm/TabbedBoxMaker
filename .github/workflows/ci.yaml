@@ -17,10 +17,11 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
-        python-version: '3.13'  # Latest Python version
+        python-version: '3.12'  # Latest Python version
 
     - name: Install Cairo dependencies
       run: |
+        echo "set man-db/auto-update false" | sudo debconf-communicate
         sudo apt-get update
         sudo apt-get install -y \
                 libgirepository1.0-dev \
@@ -31,9 +32,9 @@ jobs:
                 pkg-config \
                 python3-dev
 
-    - name: Upgrade PyGObject
-      run: |
-        pip install --upgrade PyGObject
+    #- name: Upgrade PyGObject
+    #  run: |
+    #    pip install --upgrade PyGObject
 
     - name: Fix PKG_CONFIG_PATH
       run: |
