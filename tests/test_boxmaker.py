@@ -65,7 +65,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=1', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'open_top',
@@ -75,7 +75,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'two_sides_open',
@@ -85,7 +85,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=3', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'three_sides_open',
@@ -95,7 +95,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=4', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'opposite_ends_open',
@@ -105,7 +105,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=5', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'two_panels_only',
@@ -115,7 +115,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=6', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'outside_measurement',
@@ -125,7 +125,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_dogbone',
@@ -135,7 +135,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_dimple',
@@ -145,7 +145,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0.2', '--dimplelength=0.2',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_rotate_symmetry_tabs',
@@ -155,7 +155,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=1', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_thick_lines',
@@ -165,7 +165,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=0', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_nonzero_kerf',
@@ -175,7 +175,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0.1', '--style=1',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'threepiece_layout',
@@ -185,7 +185,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=2',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'inline_layout',
@@ -195,7 +195,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=3',
                     '--boxtype=2', '--div_l=0', '--div_w=0', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_dividers_keyed_all',
@@ -205,7 +205,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=0',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_dividers_keyed_floor',
@@ -215,7 +215,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=1',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_dividers_keyed_walls',
@@ -225,7 +225,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=2',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             {
                 'label': 'with_dividers_keyed_none',
@@ -235,7 +235,7 @@ class TestTabbedBox(unittest.TestCase):
                     '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0',
                     '--hairline=1', '--thickness=3', '--kerf=0', '--style=1',
                     '--boxtype=2', '--div_l=1', '--div_w=1', '--keydiv=3',
-                    '--spacing=1'],
+                    '--spacing=1', '--optimize=False'],
             },
             # {
             #    'label': 'default_tabs',
@@ -255,6 +255,9 @@ class TestTabbedBox(unittest.TestCase):
         actual_output_dir = os.path.join(
             os.path.dirname(__file__), 'actual'
         )
+        
+        if not os.path.exists(actual_output_dir):
+            os.makedirs(actual_output_dir)
 
         for case in cases:
             print(case['label'])
