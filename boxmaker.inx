@@ -99,6 +99,6 @@
 		</effects-menu>
 	</effect>
 	<script>
-		<command location="inx" interpreter="python">boxmaker-inkex.py</command>
+		<command location="inx" interpreter="python">box-inkex.py</command>
 	</script>
 </inkscape-extension>
