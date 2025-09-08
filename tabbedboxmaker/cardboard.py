@@ -371,8 +371,6 @@ class BoxMaker(inkex.Effect):
             )
 
     def effect(self):
-        global group, nomTab, equalTabs, tabSymmetry, dimpleHeight, dimpleLength, thickness, kerf, halfkerf, dogbone, divx, divy, hairline, linethickness, keydivwalls, keydivfloor
-
         # Get access to main SVG document element and get its dimensions.
         svg = self.document.getroot()
 
