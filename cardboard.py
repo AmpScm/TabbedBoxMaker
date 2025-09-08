@@ -6,11 +6,9 @@ CNC (laser/mill) cut a card board box
 Original Tabbed Box Maker Copyright (C) 2011 elliot white
 Cardboard Box Maker Copyright (C) 2024 Brad Goodman
 
-Changelog:
-14/05/2024 Brad Goodman:
-    - Created from Tabbed Box Maker
+See changelog in tabbedboxmaker/__about__.py
 
- This program is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
