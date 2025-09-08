@@ -15,9 +15,9 @@ def mask_unstable(svgin: str) -> str:
     return re.sub(
         r'<!--.*?-->', '<!-- MASKED -->', re.sub(
         r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"',  re.sub(
+        r'id="[^"]*"', 'id="MASKED"',  re.sub(
         r'<metadata>.*?/>', '<metadata />',  svgin, flags=re.DOTALL),
-        flags=re.DOTALL), flags=re.DOTALL).replace('\r\n', '\n')
-
+        flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL).replace('\r\n', '\n')
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""

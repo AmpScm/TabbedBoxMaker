@@ -1,6 +1,7 @@
 #! /usr/bin/env python -t
-'''
-Generates Inkscape SVG file containing box components needed to 
+"""
+Generates Inkscape SVG file containing box components needed to
+>>>>>>> 4cecfb7 (Modernize package a bit more)
 CNC (laser/mill) cut a box with tabbed joints taking kerf and clearance into account
 
 Original Tabbed Box Maker Copyright (C) 2011 elliot white
@@ -19,7 +20,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 
 from tabbedboxmaker.cli import main
 

@@ -1,7 +1,7 @@
-# SPDX-FileCopyrightText: 2022-present Manuel Desbonnet
+# SPDX-FileCopyrightText: 2025-present Bert Huijben
 #
-# SPDX-License-Identifier: GPL-2.0
-'''
+# SPDX-License-Identifier: GPL-3.0
+"""
 Changelog:
 19/12/2014 Paul Hutchison:
  - Ability to generate 6, 5, 4, 3 or 2-panel cutouts
@@ -48,8 +48,12 @@ v1.2 - 2023-12-04 contributed by [@mausmaux](https://github.com/mausmaux) - See 
  - Fixed boxes which have omitted sides are incorrectly drawn when using the rotationally symmetric mode.
 
 14/05/2024 Brad Goodman:
-    - Created Cardboard Box Maker from Tabbed Box Maker
+ - Created Cardboard Box Maker from Tabbed Box Maker
 
- '''
+v1.4 - 2025-09 (WIP) by Bert Huijben
+ - Moved project to AmpScm. Updated sourcecode to be a proper python package. Added result cleanup
+   from previous PRs in a cleaner way. Integrated tests from other open PRs.
 
-__version__ = '1.2.0'
+"""
+
+__version__ = "1.4.0"

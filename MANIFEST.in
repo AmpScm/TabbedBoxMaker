@@ -1,0 +1,11 @@
+include README.md
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
+include *.inx
+include *.py
+recursive-include tabbedboxmaker *.py *.svg *.inx
+recursive-include tests *.py *.svg
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.orig

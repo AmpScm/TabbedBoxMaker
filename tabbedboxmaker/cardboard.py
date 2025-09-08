@@ -1,5 +1,5 @@
 #! /usr/bin/env python -t
-'''
+"""
 Generates Inkscape SVG file containing box components needed to
 CNC (laser/mill) cut a card board box
 
@@ -23,7 +23,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 from inkex.utils import filename_arg
 
 import os
@@ -33,33 +33,32 @@ import simplestyle
 import gettext
 import math
 from copy import deepcopy
+
 _ = gettext.gettext
 
 linethickness = 1  # default unless overridden by settings
 
 
 def log(text):
-    if 'SCHROFF_LOG' in os.environ:
-        f = open(os.environ.get('SCHROFF_LOG'), 'a')
+    if "SCHROFF_LOG" in os.environ:
+        f = open(os.environ.get("SCHROFF_LOG"), "a")
         f.write(text + "\n")
 
 
 def newGroup(canvas):
     # Create a new group and add element created from line string
-    panelId = canvas.svg.get_unique_id('panel')
+    panelId = canvas.svg.get_unique_id("panel")
     group = canvas.svg.get_current_layer().add(inkex.Group(id=panelId))
     return group
 
 
 def getLine(XYstring, stroke="#000000"):
     line = inkex.PathElement()
-    line.style = {
-        'stroke': stroke,
-        'stroke-width': str(linethickness),
-        'fill': 'none'}
+    line.style = {"stroke": stroke, "stroke-width": str(linethickness), "fill": "none"}
     line.path = XYstring
     # inkex.etree.SubElement(parent, inkex.addNS('path','svg'), drw)
     return line
+
 
 # jslee - shamelessly adapted from sample code on below Inkscape wiki page 2015-07-28
 # http://wiki.inkscape.org/wiki/index.php/Generating_objects_from_extensions
@@ -70,9 +69,10 @@ def getCircle(r, c):
     log("putting circle at (%d,%d)" % (cx, cy))
     circle = inkex.PathElement.arc((cx, cy), r)
     circle.style = {
-        'stroke': '#000000',
-        'stroke-width': str(linethickness),
-        'fill': 'none'}
+        "stroke": "#000000",
+        "stroke-width": str(linethickness),
+        "fill": "none",
+    }
     return circle
 
 
@@ -80,6 +80,7 @@ def getCircle(r, c):
 # Sidenumber is 1-4
 # topside is true of top
 # sidetype is the "boxbottom" or "boxtop" as applicable
+
 
 def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
     h = ""
@@ -92,7 +93,7 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
         t2 *= -1
         k2 *= -1
 
-    if ((sidenumber == 1) or (sidenumber == 3)):
+    if (sidenumber == 1) or (sidenumber == 3):
         wd = ww
         dw = dd
     else:
@@ -100,10 +101,10 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
         dw = ww
 
     # if (sidetype == 1) or ((sidetype == 2) and (sidenumber != 1)):
-    if (sidetype == 1):
+    if sidetype == 1:
         h += f"l {wd + k2},0 "  # Top open (plain flat side)
     else:
-        if ((sidetype == 2) and (sidenumber != 1)):
+        if (sidetype == 2) and (sidenumber != 1):
             # SPECIAL CASE - because this is a double fold (all the way down!)
             # h+=f"l {t5},0 l 0,{-1*((t2*2)-(k2))} l {-1*t5},0 " # DOUBLE
             # Leading Vertical Fold Notch
@@ -118,7 +119,7 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
         if (sidetype == 2) or (sidetype == 5):
             # Flat top w/ Side Folds - Full Depth top on one side, Full height
             # on all else
-            if (sidenumber == 1):
+            if sidenumber == 1:
                 # Top side full depth
                 h += f"l 0,{-1 * (dw + k2)} "
                 # Top Tab - Fill width will be wd+k2
@@ -141,7 +142,7 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
             elif (sidetype == 5) and (sidenumber == 3):
                 # Draw Locking tab
                 # h+=f"l 0,{-1*((dw/2)+(k2))} "
-                if (k2 > 0):
+                if k2 > 0:
                     h += f"l 0,{-k2} "
                 h += f"l {(wd / 3) - t2 + k2},0 "
                 h += f"l 0,{hh / 2} "
@@ -150,12 +151,12 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
 
                 # Trailing Horizontal Fold Notch
                 h += f"a {(t2 - k2) / 2} {(t2 - k2) / 2} 180 1 0 0,{-(t2 - k2)} "
-                if (k2 > 0):
+                if k2 > 0:
                     h += f"l 0,{-k2} "
                 h += f"l {(t2 * 3)},{(-t2 * 4)} "
                 h += f"l {(wd / 3) + k2 - (t2 * 6)},0 "
                 h += f"l {(t2 * 3)},{(t2 * 4)} "
-                if (k2 > 0):
+                if k2 > 0:
                     h += f"l 0,{k2} "
                 # Trailing Horizontal Fold Notch
                 h += f"a {(t2 - k2) / 2} {(t2 - k2) / 2} 180 1 0 0,{t2 - k2} "
@@ -164,7 +165,7 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
                 h += f"l {t2 - k2},0 "
                 h += f"l 0,{hh / -2} "
                 h += f"l {(wd / 3) - (t2) + k2},0 "
-                if (k2 > 0):
+                if k2 > 0:
                     h += f"l 0,{k2} "
                 # h+=f"l 0,{(dw/2)+(k2)} "
             else:
@@ -178,10 +179,10 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
                 h += f"l {t2 / 2},{t2} "
                 h += f"l {wd3 - (k2 / 2)},0 "
                 h += f"l {t2},{hh + (k2)} "
-        elif (sidetype == 4):
+        elif sidetype == 4:
             # Locking fold - Top and bottom are different, sides are mirrors
 
-            if (sidenumber == 1):
+            if sidenumber == 1:
                 h += f"l 0,{(-1 * ((dd) - t2)) - k2} "
                 h += f"l {(dd / 2) + k2},0 "
                 h += f"l 0,{(dd / 2) - t2} "
@@ -191,7 +192,7 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
                 h += f"l {(dd / 2) + k2},0 "
                 h += f"l 0,{(dd) - t2 + k2} "
                 # h+=f"l {wd+k2},0 " # Top open (plain flat side)
-            elif (sidenumber == 3):
+            elif sidenumber == 3:
                 h += f"l 0,{(-1 * (dd / 2)) - k2} "
                 h += f"l {dd / 2},0 "
                 h += f"l 0,{-1 * ((dd / 2) - t2)} "
@@ -199,16 +200,16 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
                 h += f"l 0,{(dd / 2) - t2} "
                 h += f"l {dd / 2},0 "
                 h += f"l 0,{(dd / 2) + k2} "
-            elif (sidenumber == 2):
+            elif sidenumber == 2:
                 h += f"l {t2},{-t5} "
                 h += f"l 0,{-1 * (dd + k2 - t5 - t2)} "
                 h += f"l {(dd / 2) + (dd / 8)},0 "
                 h += f"q {(dd / 4) + (2 * k2)},0 {(-dd / 8) - t2 + k2},{(dd / 2) - t2 - (k2 / 4)} "
                 h += f"l {(dd / 2)},{(dd / 2)} "
-                if (k2 > 0):
+                if k2 > 0:
                     h += f"l 0,{(k2 / 2)} "
-            elif (sidenumber == 4):
-                if (k2 > 0):
+            elif sidenumber == 4:
+                if k2 > 0:
                     h += f"l 0,{-k2} "
                 h += f"l {(dd / 2)},{(-dd / 2) + (k2 / 2)} "
                 h += f"q {(-dd / 2)},{-dd / 3} {(-dd / 8) - t2 + k2},{(-dd / 2) + t2} "
@@ -224,7 +225,7 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
             h += f"l {wd + (k2)},0 "
             h += f"l 0,{(dw / 2) + (k2)} "
 
-        if ((sidetype == 2) and (sidenumber != 1)):
+        if (sidetype == 2) and (sidenumber != 1):
             # SPECIAL CASE - because this is a double fold (all the way down!)
             # h+=f"l {-1*t5},0 l 0,{(2*t2)-(k2)} l {t5},0 " # Trailing Vertical
             # Fold Notch
@@ -236,8 +237,7 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
             # Trailing Vertical Fold Notch
             h += f"a {(t2 - k2) / 2} {(t2 - k2) / 2} 180 1 0 0,{t2 - k2} "
 
-    if ((topside) and (sidenumber != 4)) or (
-            (not topside) and (sidenumber != 1)):
+    if ((topside) and (sidenumber != 4)) or ((not topside) and (sidenumber != 1)):
         # h+=f"l 0,{t5} l {t2-(k2)},0 l 0,{-1*t5} " # Trailing Horizontal Fold
         # Notch
         # Trailing Horizontal Fold Notch
@@ -257,7 +257,7 @@ class BoxMaker(inkex.Effect):
         if cli:
             # We don't need an input file in CLI mode
             for action in self.arg_parser._actions:
-                if action.dest == 'input_file':
+                if action.dest == "input_file":
                     self.arg_parser._actions.remove(action)
 
             self.arg_parser.add_argument(
@@ -266,53 +266,118 @@ class BoxMaker(inkex.Effect):
                 metavar="INPUT_FILE",
                 type=filename_arg,
                 help="Filename of the input file",
-                default=None
+                default=None,
             )
 
-        self.arg_parser.add_argument('--unit', action='store', type=str,
-                                     dest='unit', default='mm', help='Measure Units')
-        self.arg_parser.add_argument('--width', action='store', type=float,
-                                     dest='width', default=100, help='Width of Box')
-        self.arg_parser.add_argument('--depth', action='store', type=float,
-                                     dest='depth', default=100, help='Depth of Box')
-        self.arg_parser.add_argument('--height', action='store', type=float,
-                                     dest='height', default=100, help='Height of Box')
-        self.arg_parser.add_argument('--hairline', action='store', type=int,
-                                     dest='hairline', default=0, help='Line Thickness')
-        self.arg_parser.add_argument('--thickness', action='store', type=float,
-                                     dest='thickness', default=10, help='Thickness of Material')
-        self.arg_parser.add_argument('--kerf', action='store', type=float,
-                                     dest='kerf', default=0.5, help='Kerf (width of cut)')
-        self.arg_parser.add_argument('--boxtype', action='store', type=int,
-                                     dest='boxtype', default=25, help='Box type')
-        self.arg_parser.add_argument('--boxtop', action='store', type=int,
-                                     dest='boxtop', default=25, help='Box Top')
-        self.arg_parser.add_argument('--boxbottom', action='store', type=int,
-                                     dest='boxbottom', default=25, help='Box Bottom')
-        self.arg_parser.add_argument('--sidetab', action='store', type=str,
-                                     dest='sidetab', help='Side Tab')
-        self.arg_parser.add_argument('--foldlines', action='store', type=str,
-                                     dest='foldlines', help='Add Cut Lines')
+        self.arg_parser.add_argument(
+            "--unit",
+            action="store",
+            type=str,
+            dest="unit",
+            default="mm",
+            help="Measure Units",
+        )
+        self.arg_parser.add_argument(
+            "--width",
+            action="store",
+            type=float,
+            dest="width",
+            default=100,
+            help="Width of Box",
+        )
+        self.arg_parser.add_argument(
+            "--depth",
+            action="store",
+            type=float,
+            dest="depth",
+            default=100,
+            help="Depth of Box",
+        )
+        self.arg_parser.add_argument(
+            "--height",
+            action="store",
+            type=float,
+            dest="height",
+            default=100,
+            help="Height of Box",
+        )
+        self.arg_parser.add_argument(
+            "--hairline",
+            action="store",
+            type=int,
+            dest="hairline",
+            default=0,
+            help="Line Thickness",
+        )
+        self.arg_parser.add_argument(
+            "--thickness",
+            action="store",
+            type=float,
+            dest="thickness",
+            default=10,
+            help="Thickness of Material",
+        )
+        self.arg_parser.add_argument(
+            "--kerf",
+            action="store",
+            type=float,
+            dest="kerf",
+            default=0.5,
+            help="Kerf (width of cut)",
+        )
+        self.arg_parser.add_argument(
+            "--boxtype",
+            action="store",
+            type=int,
+            dest="boxtype",
+            default=25,
+            help="Box type",
+        )
+        self.arg_parser.add_argument(
+            "--boxtop",
+            action="store",
+            type=int,
+            dest="boxtop",
+            default=25,
+            help="Box Top",
+        )
+        self.arg_parser.add_argument(
+            "--boxbottom",
+            action="store",
+            type=int,
+            dest="boxbottom",
+            default=25,
+            help="Box Bottom",
+        )
+        self.arg_parser.add_argument(
+            "--sidetab", action="store", type=str, dest="sidetab", help="Side Tab"
+        )
+        self.arg_parser.add_argument(
+            "--foldlines",
+            action="store",
+            type=str,
+            dest="foldlines",
+            help="Add Cut Lines",
+        )
 
     def parse_arguments(self, args):
         # type: (List[str]) -> None
         """Parse the given arguments and set 'self.options'"""
         self.options = self.arg_parser.parse_args(args)
 
-        if (self.cli and self.options.input_file is None):
+        if self.cli and self.options.input_file is None:
             self.options.input_file = os.path.join(
-                os.path.dirname(__file__), 'blank.svg')
+                os.path.dirname(__file__), "blank.svg"
+            )
 
     def effect(self):
-        global group, nomTab, equalTabs, tabSymmetry, dimpleHeight, dimpleLength, thickness, kerf, halfkerf, dogbone, divx, divy, hairline, linethickness, keydivwalls, keydivfloor
-
         # Get access to main SVG document element and get its dimensions.
         svg = self.document.getroot()
 
         # Get the attributes:
         # inkex.utils.errormsg("Testing")
-        widthDoc = self.svg.unittouu(svg.get('width'))
-        heightDoc = self.svg.unittouu(svg.get('height'))
+        widthDoc = self.svg.unittouu(svg.get("width"))
+        heightDoc = self.svg.unittouu(svg.get("height"))
         group = newGroup(self)
         unit = self.options.unit
         boxtop = self.options.boxtop
@@ -320,7 +385,7 @@ class BoxMaker(inkex.Effect):
         # Set the line thickness
 
         if self.options.hairline:
-            linethickness = self.svg.unittouu('0.002in')
+            linethickness = self.svg.unittouu("0.002in")
         else:
             linethickness = 1
         hh = self.svg.unittouu(str(self.options.height) + unit)
@@ -334,7 +399,8 @@ class BoxMaker(inkex.Effect):
 
         if ((boxtop == 4) or (boxbottom == 4)) and ((dd * 3) > ww):
             inkex.utils.errormsg(
-                "For locking folds, width must be at least 3x the depth")
+                "For locking folds, width must be at least 3x the depth"
+            )
             return
 
         h = f"M {-k},{-k} "
@@ -348,7 +414,7 @@ class BoxMaker(inkex.Effect):
 
         # Add tab along right edge if wanted (else, straight edge)
         if self.options.sidetab == "true":
-            if (boxtop == 1):
+            if boxtop == 1:
                 h += f"l {t5},{t2} l 0,{t2 * 2} "
             else:
                 h += f"l 0,{t2 + k2} l {-t2},0"
@@ -363,7 +429,7 @@ class BoxMaker(inkex.Effect):
                 h += f"l {t5 + k2},{t2} "
             h += f"l 0,{hh + k2 - (6 * t2)} "
 
-            if (boxbottom == 1):
+            if boxbottom == 1:
                 h += f"l 0,{t2 * 2} l {-1 * (t5)},{t2} "
             else:
                 h += f"l {-(t5 + k2)},{t2} "
@@ -387,8 +453,8 @@ class BoxMaker(inkex.Effect):
         # but ONLY if there is a box bottom to draw them on
         t = t2 / 2
         if (boxtop == 2) and (boxbottom != 1):
-            dd3 = ((dd - (2 * t2)) / 3)
-            ww3 = ((ww - (2 * t2)) / 3)
+            dd3 = (dd - (2 * t2)) / 3
+            ww3 = (ww - (2 * t2)) / 3
             wd3 = dd3
             o = ww + t2 + wd3 + k2 + (t2 / 2)
             for i in range(1, 4):
@@ -399,7 +465,7 @@ class BoxMaker(inkex.Effect):
                 h += f"l 0,{(-t * 1.5) + k2} "
                 h += "Z"
                 group.add(getLine(h))
-                if (i == 1):
+                if i == 1:
                     o += dd3 + dd3 + ww3
                     wd3 = ww3
                 else:
@@ -408,8 +474,8 @@ class BoxMaker(inkex.Effect):
                 o += t5 + t
 
         # Draw slots for locking top
-        if (boxtop == 5):
-            wd3 = ((ww - (2 * t2)) / 3)
+        if boxtop == 5:
+            wd3 = (ww - (2 * t2)) / 3
             h = f"M {(ww / 3) + (k / 2)},{-dd - (t2) + k} "
             h += f"l {wd3 + t2 - k},0 "
             # Trailing Horizontal Fold Notch
@@ -429,64 +495,64 @@ class BoxMaker(inkex.Effect):
             # Only needed when there is a top or bottom to fold over
 
             sides = []
-            if (boxtop != 1):
+            if boxtop != 1:
                 sides.append([boxtop, -t])
-            if (boxbottom != 1):
+            if boxbottom != 1:
                 sides.append([boxbottom, t + hh])
 
-            for (box, yy) in sides:
+            for box, yy in sides:
 
                 # First Side
                 h = f"M {t5},{yy} "
                 h += f"l {ww - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(getLine(h, stroke='#0000ff'))
+                group.add(getLine(h, stroke="#0000ff"))
 
-                if (box == 2):
+                if box == 2:
                     yy -= t
 
                 # Second Side
                 h = f"M {ww + t2 + t5},{yy} "
                 h += f"l {dd - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(getLine(h, stroke='#0000ff'))
+                group.add(getLine(h, stroke="#0000ff"))
 
                 # Third Side
                 h = f"M {ww + t2 + t5 + dd + t2},{yy} "
                 h += f"l {ww - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(getLine(h, stroke='#0000ff'))
+                group.add(getLine(h, stroke="#0000ff"))
 
                 # Fourth Side
                 h = f"M {ww + t2 + t5 + dd + t2 + ww + t2},{yy} "
                 h += f"l {dd - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(getLine(h, stroke='#0000ff'))
+                group.add(getLine(h, stroke="#0000ff"))
 
-                if (box == 2):
+                if box == 2:
                     # h=f"M {ww+t2+t5 + dd+t2 + ww+t2},{yy} "
                     # h+=f"l {dd-t2-t2-(t2/2)-t5},0"
                     # group.add(getLine(h,stroke='#0000ff'))
                     h = f"M {t5 + t5},{-1 * (dd + t2 + (t2 / 2))} "
                     h += f"l {ww - (4 * t5)},0 "
-                    group.add(getLine(h, stroke='#0000ff'))
+                    group.add(getLine(h, stroke="#0000ff"))
 
             # Draw Vertical Ones
             # First Side
             x = ww + t + hh - (2 * t5)
             h = f"M {ww + t},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(getLine(h, stroke='#0000ff'))
+            group.add(getLine(h, stroke="#0000ff"))
 
             h = f"M {ww + t + dd + t2},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(getLine(h, stroke='#0000ff'))
+            group.add(getLine(h, stroke="#0000ff"))
 
             h = f"M {ww + t + dd + t2 + ww + t2},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(getLine(h, stroke='#0000ff'))
+            group.add(getLine(h, stroke="#0000ff"))
 
             # Tab only if selected
             if self.options.sidetab == "true":
                 h = f"M {ww + t + dd + t2 + ww + t2 + dd},{t5 + t2} "
                 h += f"l 0,{hh - (t5 + t2 + t5 + t2)}"
-                group.add(getLine(h, stroke='#ff0000'))
+                group.add(getLine(h, stroke="#ff0000"))
 
         # End Fold Lines
 

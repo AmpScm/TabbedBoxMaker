@@ -1,0 +1,132 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tabbedboxmaker"
+version = "1.2.0"
+description = "A free Inkscape extension for generating tab-jointed box patterns for CNC cutting"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+authors = [
+    {name = "Elliot White"},
+    {name = "Paul Hutchison"},
+    {name = "John Slee"},
+    {name = "Jim McBeath"},
+    {name = "Brad Goodman"},
+    {name = "Bert Huijben"}
+]
+maintainers = [
+    {name = "Bert Huijben"},
+]
+keywords = [
+    "inkscape",
+    "cnc", 
+    "laser-cutting",
+    "box-making",
+    "svg",
+    "woodworking",
+    "fabrication"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Manufacturing",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+    "Topic :: Scientific/Engineering :: Computer Aided Design",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "inkex>=1.2.0",
+    "lxml>=4.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=22.0.0",
+    "flake8>=4.0.0",
+    "mypy>=0.991",
+]
+
+[project.urls]
+Homepage = "https://github.com/paulh-rnd/TabbedBoxMaker"
+Repository = "https://github.com/paulh-rnd/TabbedBoxMaker"
+Issues = "https://github.com/paulh-rnd/TabbedBoxMaker/issues"
+Documentation = "https://github.com/paulh-rnd/TabbedBoxMaker/blob/master/README.md"
+
+[project.scripts]
+tabbedboxmaker = "tabbedboxmaker.cli:main_cli"
+boxmaker = "tabbedboxmaker.cli:main_cli"
+schroffmaker = "tabbedboxmaker.cli:main_schroff"
+
+[tool.setuptools.packages.find]
+include = ["tabbedboxmaker*"]
+
+[tool.setuptools.package-data]
+tabbedboxmaker = ["*.svg", "*.inx"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+
+[tool.coverage.run]
+source = ["tabbedboxmaker"]
+omit = [
+    "*/tests/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
