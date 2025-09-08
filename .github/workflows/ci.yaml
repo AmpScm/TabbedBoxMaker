@@ -31,6 +31,10 @@ jobs:
                 pkg-config \
                 python3-dev
 
+    - name: Upgrade PyGObject
+      run: |
+        pip install --upgrade PyGObject
+
     - name: Fix PKG_CONFIG_PATH
       run: |
         echo 'PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig' >> $GITHUB_ENV
