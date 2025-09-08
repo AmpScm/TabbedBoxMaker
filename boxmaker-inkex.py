@@ -67,4 +67,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from boxmaker.cli import main
 
 if __name__ == "__main__":
-  main(cli=True)
+  main(cli=False)

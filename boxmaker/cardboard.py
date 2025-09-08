@@ -420,6 +420,6 @@ class BoxMaker(inkex.Effect):
     return
     
 
-# Create effect instance and apply it.
-effect = BoxMaker()
-effect.run()
+def main(cli = False):
+  effect = BoxMaker()
+  effect.run()

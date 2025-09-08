@@ -41,6 +41,6 @@
     </effects-menu>
   </effect>
   <script>
-    <command location="inx" interpreter="python">boxmaker.py</command>
+    <command location="inx" interpreter="python">boxmaker-inkex.py</command>
   </script>
 </inkscape-extension>
