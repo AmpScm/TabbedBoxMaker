@@ -23,7 +23,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-__version__ = "1.2"  # please report bugs, suggestions etc at https://github.com/paulh-rnd/TabbedBoxMaker ###
+from inkex.utils import filename_arg
+# please report bugs, suggestions etc at
+# https://github.com/paulh-rnd/TabbedBoxMaker ###
+__version__ = "1.2"
 
 import os
 import sys
@@ -246,10 +249,28 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
 
 
 class BoxMaker(inkex.Effect):
-    def __init__(self):
+    def __init__(self, cli=False, schroff=False):
         # Call the base class constructor.
         inkex.Effect.__init__(self)
         # Define options
+
+        self.cli = cli
+        self.schroff = schroff
+        if cli:
+            # We don't need an input file in CLI mode
+            for action in self.arg_parser._actions:
+                if action.dest == 'input_file':
+                    self.arg_parser._actions.remove(action)
+
+            self.arg_parser.add_argument(
+                "--input-file",
+                dest="input_file",
+                metavar="INPUT_FILE",
+                type=filename_arg,
+                help="Filename of the input file",
+                default=None
+            )
+
         self.arg_parser.add_argument('--unit', action='store', type=str,
                                      dest='unit', default='mm', help='Measure Units')
         self.arg_parser.add_argument('--width', action='store', type=float,
@@ -274,6 +295,15 @@ class BoxMaker(inkex.Effect):
                                      dest='sidetab', help='Side Tab')
         self.arg_parser.add_argument('--foldlines', action='store', type=str,
                                      dest='foldlines', help='Add Cut Lines')
+
+    def parse_arguments(self, args):
+        # type: (List[str]) -> None
+        """Parse the given arguments and set 'self.options'"""
+        self.options = self.arg_parser.parse_args(args)
+
+        if (self.cli and self.options.input_file is None):
+            self.options.input_file = os.path.join(
+                os.path.dirname(__file__), 'blank.svg')
 
     def effect(self):
         global group, nomTab, equalTabs, tabSymmetry, dimpleHeight, dimpleLength, thickness, kerf, halfkerf, dogbone, divx, divy, hairline, linethickness, keydivwalls, keydivfloor
@@ -466,5 +496,5 @@ class BoxMaker(inkex.Effect):
 
 
 def main(cli=False):
-    effect = BoxMaker()
+    effect = BoxMaker(cli=cli)
     effect.run()

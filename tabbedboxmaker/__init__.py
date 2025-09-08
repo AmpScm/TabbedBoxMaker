@@ -63,7 +63,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-__version__ = "1.2"  # please report bugs, suggestions etc at https://github.com/paulh-rnd/TabbedBoxMaker ###
+from inkex.utils import filename_arg
+# please report bugs, suggestions etc at
+# https://github.com/paulh-rnd/TabbedBoxMaker ###
+__version__ = "1.2"
 
 import os
 import sys
@@ -218,7 +221,7 @@ def side(group, root, startOffset, endOffset, tabVec, prevTab, length,
     for tabDivision in range(1, int(divisions)):
         # draw holes for divider tabs to key into side walls
         if ((tabDivision % 2) ^ (not isTab)
-                ) and numDividers > 0 and not isDivider:
+            ) and numDividers > 0 and not isDivider:
             w = gapWidth if isTab else tabWidth
             if tabDivision == 1 and tabSymmetry == 0:
                 w -= startOffsetX * thickness
@@ -365,12 +368,30 @@ def side(group, root, startOffset, endOffset, tabVec, prevTab, length,
 
 
 class BoxMaker(inkex.Effect):
-    def __init__(self):
+    def __init__(self, cli=False, schroff=False):
         # Call the base class constructor.
         inkex.Effect.__init__(self)
         # Define options
-        self.arg_parser.add_argument('--schroff', action='store', type=int,
-                                     dest='schroff', default=0, help='Enable Schroff mode')
+
+        self.cli = cli
+        self.schroff = schroff
+        if cli:
+            # We don't need an input file in CLI mode
+            for action in self.arg_parser._actions:
+                if action.dest == 'input_file':
+                    self.arg_parser._actions.remove(action)
+
+            self.arg_parser.add_argument(
+                "--input-file",
+                dest="input_file",
+                metavar="INPUT_FILE",
+                type=filename_arg,
+                help="Filename of the input file",
+                default=None
+            )
+
+        self.arg_parser.add_argument('--schroff', action='store', type=bool,
+                                     dest='schroff', default=schroff, help='Enable Schroff mode')
         self.arg_parser.add_argument('--rail_height', action='store', type=float,
                                      dest='rail_height', default=10.0, help='Height of rail')
         self.arg_parser.add_argument('--rail_mount_depth', action='store', type=float,
@@ -426,9 +447,20 @@ class BoxMaker(inkex.Effect):
         self.arg_parser.add_argument('--optimize', action='store', type=inkex.utils.Boolean,
                                      dest='optimize', default=True, help='Optimize paths')
 
+    def parse_arguments(self, args):
+        # type: (List[str]) -> None
+        """Parse the given arguments and set 'self.options'"""
+        self.options = self.arg_parser.parse_args(args)
+
+        if (self.cli and self.options.input_file is None):
+            self.options.input_file = os.path.join(
+                os.path.dirname(__file__), 'blank.svg')
+
     def effect(self):
         global group, nomTab, equalTabs, tabSymmetry, dimpleHeight, dimpleLength, thickness, kerf, halfkerf, dogbone, divx, divy, hairline, linethickness, keydivwalls, keydivfloor
 
+        if self.cli:
+            self.options.input_file = None
         # Get access to main SVG document element and get its dimensions.
         svg = self.document.getroot()
 
@@ -986,8 +1018,6 @@ class BoxMaker(inkex.Effect):
 
                     # Ok, now we still have a group containing as first element the panel and then optionally some gaps that
                     # should be cut out of the panel
-
-
 
                     # Last step: If the group now just contains one path, remove
                     # the group around this path
