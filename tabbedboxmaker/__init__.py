@@ -26,6 +26,7 @@ import os
 import inkex
 import gettext
 from copy import deepcopy
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
 
 _ = gettext.gettext
 
@@ -78,13 +79,13 @@ class BoxMaker(inkex.Effect):
     thickess: float
     nomTab: float
     equalTabs: bool
-    tabSymmetry: int
+    tabSymmetry: TabSymmetry
     dimpleHeight: float
     dimpleLength: float
     dogbone: bool
-    layout: int
+    layout: Layout
     spacing: float
-    boxtype: int
+    boxtype: BoxType
     divx: float
     divy: float
     keydivwalls: bool
@@ -414,8 +415,8 @@ class BoxMaker(inkex.Effect):
         boxtype = self.options.boxtype
         divx = self.options.div_l
         divy = self.options.div_w
-        self.keydivwalls = 0 if self.options.keydiv == 3 or self.options.keydiv == 1 else 1
-        self.keydivfloor = 0 if self.options.keydiv == 3 or self.options.keydiv == 2 else 1
+        self.keydivwalls = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.WALLS]
+        self.keydivfloor = self.options.keydiv in [DividerKeying.ALL_SIDES , DividerKeying.FLOOR_CEILING]
         initOffsetX = 0
         initOffsetY = 0
 
@@ -1111,8 +1112,8 @@ class BoxMaker(inkex.Effect):
         vectorY: float,
         dirX: int,
         dirY: int,
-        dirxN: int,
-        diryN: int,
+        notDirX: bool,
+        notDirY: bool,
         ddir: int,
         isTab: bool
     ) -> str:
@@ -1126,17 +1127,17 @@ class BoxMaker(inkex.Effect):
             else:
                 dimpleStart = (tabVector + self.dimpleLength) / 2 + self.dimpleHeight
                 tabSgn = -1
-            Vxd = vectorX + dirxN * dimpleStart
-            Vyd = vectorY + diryN * dimpleStart
+            Vxd = vectorX + notDirX * dimpleStart
+            Vyd = vectorY + notDirY * dimpleStart
             ds += "L " + str(Vxd) + "," + str(Vyd) + " "
-            Vxd = Vxd + (tabSgn * dirxN - ddir * dirX) * self.dimpleHeight
-            Vyd = Vyd + (tabSgn * diryN - ddir * dirY) * self.dimpleHeight
+            Vxd = Vxd + (tabSgn * notDirX - ddir * dirX) * self.dimpleHeight
+            Vyd = Vyd + (tabSgn * notDirY - ddir * dirY) * self.dimpleHeight
             ds += "L " + str(Vxd) + "," + str(Vyd) + " "
-            Vxd = Vxd + tabSgn * dirxN * self.dimpleLength
-            Vyd = Vyd + tabSgn * diryN * self.dimpleLength
+            Vxd = Vxd + tabSgn * notDirX * self.dimpleLength
+            Vyd = Vyd + tabSgn * notDirY * self.dimpleLength
             ds += "L " + str(Vxd) + "," + str(Vyd) + " "
-            Vxd = Vxd + (tabSgn * dirxN + ddir * dirX) * self.dimpleHeight
-            Vyd = Vyd + (tabSgn * diryN + ddir * dirY) * self.dimpleHeight
+            Vxd = Vxd + (tabSgn * notDirX + ddir * dirX) * self.dimpleHeight
+            Vyd = Vyd + (tabSgn * notDirY + ddir * dirY) * self.dimpleHeight
             ds += "L " + str(Vxd) + "," + str(Vyd) + " "
         return ds
 
@@ -1199,8 +1200,8 @@ class BoxMaker(inkex.Effect):
         firstVec = 0
         secondVec = tabVec
         dividerEdgeOffsetX = dividerEdgeOffsetY = self.thickness
-        notDirX = 0 if dirX else 1  # used to select operation on x or y
-        notDirY = 0 if dirY else 1
+        notDirX = dirX == 0 # used to select operation on x or y
+        notDirY = dirY == 0
         if self.tabSymmetry == 1:
             dividerEdgeOffsetX = dirX * self.thickness
             # dividerEdgeOffsetY = ;
@@ -1237,8 +1238,8 @@ class BoxMaker(inkex.Effect):
                 w = gapWidth if isTab else tabWidth
                 if tabDivision == 1 and self.tabSymmetry == 0:
                     w -= startOffsetX * self.thickness
-                holeLenX = dirX * w + notDirX * firstVec + first * dirX
-                holeLenY = dirY * w + notDirY * firstVec + first * dirY
+                holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
+                holeLenY = dirY * (w + first) + (firstVec if notDirY else 0)
                 if first:
                     firstholelenX = holeLenX
                     firstholelenY = holeLenY
@@ -1246,18 +1247,16 @@ class BoxMaker(inkex.Effect):
                     Dx = (
                         vectorX
                         + -dirY * dividerSpacing * dividerNumber
-                        + notDirX * halfkerf
-                        + dirX * self.dogbone * halfkerf
-                        - self.dogbone * first * dirX
+                        + (halfkerf if notDirX else 0)
+                        + ((dirX * halfkerf - first * dirX) if self.dogbone else 0)
                     )
                     Dy = (
                         vectorY
                         + dirX * dividerSpacing * dividerNumber
-                        - notDirY * halfkerf
-                        + dirY * self.dogbone * halfkerf
-                        - self.dogbone * first * dirY
+                        - (halfkerf if notDirY else 0) 
+                        + ((dirY * halfkerf - first * dirY) if self.dogbone else 0)
                     )
-                    if tabDivision == 1 and self.tabSymmetry == 0:
+                    if tabDivision == 1 and self.tabSymmetry == TabSymmetry.XY_SYMMETRIC:
                         Dx += startOffsetX * self.thickness
                     h = "M " + str(Dx) + "," + str(Dy) + " "
                     Dx = Dx + holeLenX
