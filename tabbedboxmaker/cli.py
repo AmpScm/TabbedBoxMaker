@@ -24,9 +24,12 @@ from tabbedboxmaker import BoxMaker
 from tabbedboxmaker.enums import BoxType, TabSymmetry, TabType, Layout, TabWidth, DividerKeying
 
 # Create effect instance and apply it.
+
+
 def main(cli=False, schroff=False):
     effect = BoxMaker(cli=cli, schroff=schroff)
     effect.run()
+
 
 def print_enum_help():
     print("\nAvailable enum options:")
@@ -49,6 +52,7 @@ def print_enum_help():
     for e in DividerKeying:
         print(f"  {e.value}: {e.name}")
 
+
 def main_cli():
     """Entry point for command-line boxmaker."""
     import sys
@@ -56,6 +60,7 @@ def main_cli():
         print_enum_help()
         return
     main(cli=True, schroff=False)
+
 
 def main_schroff():
     """Entry point for Schroff box maker CLI."""

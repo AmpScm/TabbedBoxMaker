@@ -4,8 +4,10 @@ import re
 import pytest
 from tabbedboxmaker import BoxMaker
 
+
 def mask_panel_ids(svgin: str) -> str:
     return re.sub(r'"panel\d+"', '"panelTEST"', svgin)
+
 
 class TestTabbedBox:
 

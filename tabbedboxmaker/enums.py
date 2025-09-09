@@ -10,7 +10,7 @@ from enum import IntEnum
 
 class BoxType(IntEnum):
     """Box type enumeration - defines which sides of the box are included."""
-    
+
     FULLY_ENCLOSED = 1  # 6 sides
     ONE_SIDE_OPEN = 2  # One side open (LxW) - 5 sides
     TWO_SIDES_OPEN = 3  # Two sides open (LxW and LxH) - 4 sides
@@ -21,22 +21,23 @@ class BoxType(IntEnum):
 
 class TabSymmetry(IntEnum):
     """Tab symmetry style enumeration."""
-    
+
     XY_SYMMETRIC = 0  # Each piece is symmetric in both X and Y axes
-    ROTATE_SYMMETRIC = 1  # Each piece is symmetric under 180-degree rotation (waffle-block)
+    # Each piece is symmetric under 180-degree rotation (waffle-block)
+    ROTATE_SYMMETRIC = 1
     ANTISYMMETRIC = 2  # Deprecated - antisymmetric style
 
 
 class TabType(IntEnum):
     """Tab type enumeration."""
-    
+
     REGULAR = 0  # Regular tabs for laser cutting
     DOGBONE = 1  # Dogbone tabs for CNC milling
 
 
 class Layout(IntEnum):
     """Layout style enumeration."""
-    
+
     DIAGRAMMATIC = 1  # Diagrammatic layout
     THREE_PIECE = 2  # 3 piece layout
     INLINE_COMPACT = 3  # Inline (compact) layout
@@ -44,14 +45,14 @@ class Layout(IntEnum):
 
 class TabWidth(IntEnum):
     """Tab width calculation method."""
-    
+
     FIXED = 0  # Fixed tab width
     PROPORTIONAL = 1  # Proportional tab width
 
 
 class DividerKeying(IntEnum):
     """Divider keying options."""
-    
+
     ALL_SIDES = 0  # Key dividers into all sides
     FLOOR_CEILING = 1  # Key dividers into floor/ceiling only
     WALLS = 2  # Key dividers into walls only
@@ -64,14 +65,14 @@ DividerStyle = DividerKeying
 
 class LineThickness(IntEnum):
     """Line thickness options."""
-    
+
     DEFAULT = 0  # Default line thickness
     HAIRLINE = 1  # Hairline thickness (0.002" for Epilog lasers)
 
 
 class BoxDimensions(IntEnum):
     """Box dimension interpretation."""
-    
+
     OUTSIDE = 0  # Dimensions are outside measurements
     INSIDE = 1  # Dimensions are inside measurements
 
@@ -132,27 +133,27 @@ BOX_DIMENSIONS_NAMES = {
 def parse_enum_value(enum_class, value, name_mapping=None):
     """
     Parse an enum value from various input types.
-    
+
     Args:
         enum_class: The enum class to convert to
         value: The value to convert (int, str, or enum instance)
         name_mapping: Optional dict mapping string names to enum values
-        
+
     Returns:
         enum_class instance
-        
+
     Raises:
         ValueError: If the value cannot be converted
     """
     if isinstance(value, enum_class):
         return value
-    
+
     if isinstance(value, int):
         try:
             return enum_class(value)
         except ValueError:
             raise ValueError(f"Invalid {enum_class.__name__} value: {value}")
-    
+
     if isinstance(value, str):
         # Try to convert string to int first (for command line args)
         try:
@@ -160,21 +161,21 @@ def parse_enum_value(enum_class, value, name_mapping=None):
             return enum_class(int_value)
         except (ValueError, TypeError):
             pass
-        
-        # Try by name 
+
+        # Try by name
         try:
             return enum_class[value.upper()]
         except KeyError:
             pass
-        
+
         # Try name mapping if provided
         if name_mapping:
             lower_value = value.lower().replace(' ', '_').replace('-', '_')
             if lower_value in name_mapping:
                 return name_mapping[lower_value]
-        
+
         raise ValueError(f"Invalid {enum_class.__name__} name: {value}")
-    
+
     raise ValueError(f"Cannot convert {type(value)} to {enum_class.__name__}")
 
 
@@ -185,7 +186,7 @@ def box_type_converter(value):
 
 
 def tab_symmetry_converter(value):
-    """Convert command line argument to TabSymmetry enum.""" 
+    """Convert command line argument to TabSymmetry enum."""
     return parse_enum_value(TabSymmetry, value, TAB_SYMMETRY_NAMES)
 
 
