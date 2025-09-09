@@ -22,10 +22,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from inkex.utils import filename_arg
 
-import os
+import os, math
 import inkex
 import gettext
 from copy import deepcopy
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas
 
 
@@ -40,7 +41,21 @@ def log(text):
 
 class TabbedBoxMaker(inkex.Effect):
     nextId: dict[str, int]
-    linethickness = 1  # default unless overridden by settings
+    linethickness: float = 1
+    thickess: float
+    nomTab: float
+    equalTabs: bool
+    tabSymmetry: TabSymmetry
+    dimpleHeight: float
+    dimpleLength: float
+    dogbone: bool
+    layout: Layout
+    spacing: float
+    boxtype: BoxType
+    divx: float
+    divy: float
+    keydivwalls: bool
+    keydivfloor: bool
 
 
     def __init__(self, cli=True, schroff=False, inkscape=False):
@@ -89,248 +104,7 @@ class TabbedBoxMaker(inkex.Effect):
         circle = inkex.PathElement.arc((cx, cy), r, id=self.makeId(id))
         circle.style = { "stroke": "#000000", "stroke-width": str(self.linethickness), "fill": "none" }
         return circle
-
-
-    def dimpleStr(self, tabVector, vectorX, vectorY, dirX,
-                dirY, dirxN, diryN, ddir, isTab):
-        ds = ""
-        if not isTab:
-            ddir = -ddir
-        if dimpleHeight > 0 and tabVector != 0:
-            if tabVector > 0:
-                dimpleStart = (tabVector - dimpleLength) / 2 - dimpleHeight
-                tabSgn = 1
-            else:
-                dimpleStart = (tabVector + dimpleLength) / 2 + dimpleHeight
-                tabSgn = -1
-            Vxd = vectorX + dirxN * dimpleStart
-            Vyd = vectorY + diryN * dimpleStart
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
-            Vxd = Vxd + (tabSgn * dirxN - ddir * dirX) * dimpleHeight
-            Vyd = Vyd + (tabSgn * diryN - ddir * dirY) * dimpleHeight
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
-            Vxd = Vxd + tabSgn * dirxN * dimpleLength
-            Vyd = Vyd + tabSgn * diryN * dimpleLength
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
-            Vxd = Vxd + (tabSgn * dirxN + ddir * dirX) * dimpleHeight
-            Vyd = Vyd + (tabSgn * diryN + ddir * dirY) * dimpleHeight
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
-        return ds
-
-
-
-    def side(self, group, root, startOffset, endOffset, tabVec, prevTab, length,
-            direction, isTab, isDivider, numDividers, dividerSpacing):
-        rootX, rootY = root
-        startOffsetX, startOffsetY = startOffset
-        endOffsetX, endOffsetY = endOffset
-        dirX, dirY = direction
-        notTab = 0 if isTab else 1
-
-        if (tabSymmetry == 1):        # waffle-block style rotationally symmetric tabs
-            divisions = int((length - 2 * thickness) / nomTab)
-            if divisions % 2:
-                divisions += 1      # make divs even
-            divisions = float(divisions)
-            tabs = divisions / 2                  # tabs for side
-        else:
-            divisions = int(length / nomTab)
-            if not divisions % 2:
-                divisions -= 1  # make divs odd
-            divisions = float(divisions)
-            tabs = (divisions - 1) / 2              # tabs for side
-
-        if (tabSymmetry == 1):        # waffle-block style rotationally symmetric tabs
-            gapWidth = tabWidth = (length - 2 * thickness) / divisions
-        elif equalTabs:
-            gapWidth = tabWidth = length / divisions
-        else:
-            tabWidth = nomTab
-            gapWidth = (length - tabs * nomTab) / (divisions - tabs)
-
-        if isTab:                 # kerf correction
-            gapWidth -= kerf
-            tabWidth += kerf
-            first = halfkerf
-        else:
-            gapWidth += kerf
-            tabWidth -= kerf
-            first = -halfkerf
-        firstholelenX = 0
-        firstholelenY = 0
-        s = []
-        h = []
-        firstVec = 0
-        secondVec = tabVec
-        dividerEdgeOffsetX = dividerEdgeOffsetY = thickness
-        notDirX = 0 if dirX else 1  # used to select operation on x or y
-        notDirY = 0 if dirY else 1
-        if (tabSymmetry == 1):
-            dividerEdgeOffsetX = dirX * thickness
-            # dividerEdgeOffsetY = ;
-            vectorX = rootX + (0 if dirX and prevTab else startOffsetX * thickness)
-            vectorY = rootY + (0 if dirY and prevTab else startOffsetY * thickness)
-            s = "M " + str(vectorX) + "," + str(vectorY) + " "
-            vectorX = rootX + (startOffsetX if startOffsetX else dirX) * thickness
-            vectorY = rootY + (startOffsetY if startOffsetY else dirY) * thickness
-            if notDirX and tabVec:
-                endOffsetX = 0
-            if notDirY and tabVec:
-                endOffsetY = 0
-        else:
-            (vectorX, vectorY) = (rootX + startOffsetX *
-                                thickness, rootY + startOffsetY * thickness)
-            dividerEdgeOffsetX = dirY * thickness
-            dividerEdgeOffsetY = dirX * thickness
-            s = "M " + str(vectorX) + "," + str(vectorY) + " "
-            if notDirX:
-                vectorY = rootY  # set correct line start for tab generation
-            if notDirY:
-                vectorX = rootX
-
-        # generate line as tab or hole using:
-        #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
-        #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
-
-        nodes = []
-        firstHole = True
-        for tabDivision in range(1, int(divisions)):
-            # draw holes for divider tabs to key into side walls
-            if ((tabDivision % 2) ^ (not isTab)
-                    ) and numDividers > 0 and not isDivider:
-                w = gapWidth if isTab else tabWidth
-                if tabDivision == 1 and tabSymmetry == 0:
-                    w -= startOffsetX * thickness
-                holeLenX = dirX * w + notDirX * firstVec + first * dirX
-                holeLenY = dirY * w + notDirY * firstVec + first * dirY
-                if firstHole:
-                    firstHoleLenX = holeLenX
-                    firstHoleLenY = holeLenY
-                    firstHole = False
-                for dividerNumber in range(1, int(numDividers) + 1):
-                    Dx = vectorX + -dirY * dividerSpacing * dividerNumber + notDirX * \
-                        halfkerf + dirX * dogbone * halfkerf - dogbone * first * dirX
-                    Dy = vectorY + dirX * dividerSpacing * dividerNumber - notDirY * \
-                        halfkerf + dirY * dogbone * halfkerf - dogbone * first * dirY
-                    if tabDivision == 1 and tabSymmetry == 0:
-                        Dx += startOffsetX * thickness
-                    h = "M " + str(Dx) + "," + str(Dy) + " "
-                    Dx = Dx + holeLenX
-                    Dy = Dy + holeLenY
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
-                    Dx = Dx + notDirX * (secondVec - kerf)
-                    Dy = Dy + notDirY * (secondVec + kerf)
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
-                    Dx = Dx - holeLenX
-                    Dy = Dy - holeLenY
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
-                    Dx = Dx - notDirX * (secondVec - kerf)
-                    Dy = Dy - notDirY * (secondVec + kerf)
-                    h += "L " + str(Dx) + "," + str(Dy) + " Z"
-                    nodes.append(self.makeLine(h, id="hole"))
-            if tabDivision % 2:
-                if tabDivision == 1 and numDividers > 0 and isDivider:  # draw slots for dividers to slot into each other
-                    for dividerNumber in range(1, int(numDividers) + 1):
-                        Dx = vectorX + -dirY * dividerSpacing * dividerNumber - \
-                            dividerEdgeOffsetX + notDirX * halfkerf
-                        Dy = vectorY + dirX * dividerSpacing * dividerNumber - \
-                            dividerEdgeOffsetY + notDirY * halfkerf
-                        h = "M " + str(Dx) + "," + str(Dy) + " "
-                        Dx = Dx + dirX * (first + length / 2)
-                        Dy = Dy + dirY * (first + length / 2)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
-                        Dx = Dx + notDirX * (thickness - kerf)
-                        Dy = Dy + notDirY * (thickness - kerf)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
-                        Dx = Dx - dirX * (first + length / 2)
-                        Dy = Dy - dirY * (first + length / 2)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
-                        Dx = Dx - notDirX * (thickness - kerf)
-                        Dy = Dy - notDirY * (thickness - kerf)
-                        h += "L " + str(Dx) + "," + str(Dy) + " Z"
-                        nodes.append(self.makeLine(h, id="slot"))
-                # draw the gap
-                vectorX += dirX * (gapWidth + (isTab & dogbone & 1 ^ 0x1)
-                                * first + dogbone * kerf * isTab) + notDirX * firstVec
-                vectorY += dirY * (gapWidth + (isTab & dogbone & 1 ^ 0x1)
-                                * first + dogbone * kerf * isTab) + notDirY * firstVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
-                if dogbone and isTab:
-                    vectorX -= dirX * halfkerf
-                    vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
-                # draw the starting edge of the tab
-                s += self.dimpleStr(secondVec, vectorX, vectorY, dirX,
-                            dirY, notDirX, notDirY, 1, isTab)
-                vectorX += notDirX * secondVec
-                vectorY += notDirY * secondVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
-                if dogbone and notTab:
-                    vectorX -= dirX * halfkerf
-                    vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " Z"
-
-            else:
-                # draw the tab
-                vectorX += dirX * (tabWidth + dogbone * kerf *
-                                notTab) + notDirX * firstVec
-                vectorY += dirY * (tabWidth + dogbone * kerf *
-                                notTab) + notDirY * firstVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
-                if dogbone and notTab:
-                    vectorX -= dirX * halfkerf
-                    vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
-                # draw the ending edge of the tab
-                s += self.dimpleStr(secondVec, vectorX, vectorY, dirX,
-                            dirY, notDirX, notDirY, -1, isTab)
-                vectorX += notDirX * secondVec
-                vectorY += notDirY * secondVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
-                if dogbone and isTab:
-                    vectorX -= dirX * halfkerf
-                    vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
-            (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
-            first = 0
-
-        # finish the line off
-        s += "L " + str(rootX + endOffsetX * thickness + dirX * length) + \
-            "," + str(rootY + endOffsetY * thickness + dirY * length) + " "
-
-        # draw last for divider joints in side walls
-        if isTab and numDividers > 0 and tabSymmetry == 0 and not isDivider:
-            for dividerNumber in range(1, int(numDividers) + 1):
-                Dx = vectorX + -dirY * dividerSpacing * dividerNumber + notDirX * \
-                    halfkerf + dirX * dogbone * halfkerf - dogbone * first * dirX
-                # Dy=vectorY+dirX*dividerSpacing*dividerNumber-notDirY*halfkerf+dirY*dogbone*halfkerf-dogbone*first*dirY
-                # Dx=vectorX+-dirY*dividerSpacing*dividerNumber-dividerEdgeOffsetX+notDirX*halfkerf
-                Dy = vectorY + dirX * dividerSpacing * dividerNumber - \
-                    dividerEdgeOffsetY + notDirY * halfkerf
-                
-                #Dx += firstHoleLenX + notDirX * (thickness-kerf)
-                Dy += firstHoleLenY + notDirY * (thickness-kerf)
-                h = 'M ' + str(Dx) + ',' + str(Dy) + ' '
-                Dx = Dx + firstHoleLenX
-                Dy = Dy - firstHoleLenY
-                h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
-                Dx = Dx - notDirX * (thickness - kerf)
-                Dy = Dy - notDirY * (thickness - kerf)
-                h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
-                Dx = Dx - firstHoleLenX
-                Dy = Dy + firstHoleLenY
-                h += 'L ' + str(Dx) + ',' + str(Dy) + ' '
-                Dx = Dx + notDirX * (thickness - kerf)
-                Dy = Dy + notDirY * (thickness - kerf)
-                h += 'L ' + str(Dx) + ',' + str(Dy) + ' Z'
-                nodes.append(self.makeLine(h, id='hole'))
-
-        nodes = [self.makeLine(s, id="side")] + nodes
-        for node in nodes:
-            group.add(node)
-        return s
-
-
+    
     def _setup_arguments(self) -> None:
         """Define options"""
 
@@ -363,7 +137,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=float,
             dest="rail_height",
             default=10.0,
-            help="Height of rail",
+            help="Height of rail (float)",
         )
         self.arg_parser.add_argument(
             "--rail_mount_depth",
@@ -371,7 +145,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=float,
             dest="rail_mount_depth",
             default=17.4,
-            help="Depth at which to place hole for rail mount bolt",
+            help="Depth at which to place hole for rail mount bolt (float)",
         )
         self.arg_parser.add_argument(
             "--rail_mount_centre_offset",
@@ -379,7 +153,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=float,
             dest="rail_mount_centre_offset",
             default=0.0,
-            help="How far toward row centreline to offset rail mount bolt (from rail centreline)",
+            help="How far toward row centreline to offset rail mount bolt (from rail centreline) (float)",
         )
         self.arg_parser.add_argument(
             "--rows",
@@ -387,7 +161,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=int,
             dest="rows",
             default=0,
-            help="Number of Schroff rows",
+            help="Number of Schroff rows (int)",
         )
         self.arg_parser.add_argument(
             "--hp",
@@ -395,7 +169,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=int,
             dest="hp",
             default=0,
-            help="Width (TE/HP units) of Schroff rows",
+            help="Width (TE/HP units) of Schroff rows (int)",
         )
         self.arg_parser.add_argument(
             "--row_spacing",
@@ -403,7 +177,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=float,
             dest="row_spacing",
             default=10.0,
-            help="Height of rail",
+            help="Height of rail (float)",
         )
         self.arg_parser.add_argument(
             "--unit",
@@ -427,7 +201,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=float,
             dest="length",
             default=100,
-            help="Length of Box",
+            help="Length of Box (float)",
         )
         self.arg_parser.add_argument(
             "--width",
@@ -435,7 +209,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=float,
             dest="width",
             default=100,
-            help="Width of Box",
+            help="Width of Box (float)",
         )
         self.arg_parser.add_argument(
             "--depth",
@@ -443,7 +217,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=float,
             dest="height",
             default=100,
-            help="Height of Box",
+            help="Height of Box (float)",
         )
         self.arg_parser.add_argument(
             "--tab",
@@ -451,7 +225,7 @@ class TabbedBoxMaker(inkex.Effect):
             type=float,
             dest="tab",
             default=25,
-            help="Nominal Tab Width",
+            help="Nominal Tab Width (float)",
         )
         self.arg_parser.add_argument(
             "--equal",
@@ -575,6 +349,7 @@ class TabbedBoxMaker(inkex.Effect):
         )
 
 
+
     def parse_arguments(self, args: list[str]) -> None:
         """Parse the given arguments and set 'self.options'"""
         super().parse_arguments(args)
@@ -609,13 +384,12 @@ class TabbedBoxMaker(inkex.Effect):
         widthDoc = self.svg.unittouu(svg.get("width"))
         heightDoc = self.svg.unittouu(svg.get("height"))
 
-        # Get script"s option values.
+        # Get script's option values.
         hairline = self.options.hairline
         unit = self.options.unit
         inside = self.options.inside
         schroff = self.options.schroff
-        kerf = self.svg.unittouu(str(self.options.kerf) + unit)
-        halfkerf = kerf / 2
+        self.kerf = self.svg.unittouu(str(self.options.kerf) + unit)
 
         # Set the line thickness
         self.linethickness = round(self.svg.unittouu("0.002in"), 8) if hairline else 1
@@ -653,27 +427,27 @@ class TabbedBoxMaker(inkex.Effect):
             Y = self.svg.unittouu(str(self.options.width + self.options.kerf) + unit)
 
         Z = self.svg.unittouu(str(self.options.height + self.options.kerf) + unit)
-        thickness = self.svg.unittouu(str(self.options.thickness) + unit)
-        nomTab = self.svg.unittouu(str(self.options.tab) + unit)
-        equalTabs = self.options.equal
-        tabSymmetry = self.options.tabsymmetry
-        dimpleHeight = self.svg.unittouu(str(self.options.dimpleheight) + unit)
-        dimpleLength = self.svg.unittouu(str(self.options.dimplelength) + unit)
-        dogbone = 1 if self.options.tabtype == 1 else 0
+        self.thickness = self.svg.unittouu(str(self.options.thickness) + unit)
+        self.nomTab = self.svg.unittouu(str(self.options.tab) + unit)
+        self.equalTabs = self.options.equal
+        self.tabSymmetry = self.options.tabsymmetry
+        self.dimpleHeight = self.svg.unittouu(str(self.options.dimpleheight) + unit)
+        self.dimpleLength = self.svg.unittouu(str(self.options.dimplelength) + unit)
+        self.dogbone = 1 if self.options.tabtype == 1 else 0
         layout = self.options.style
         spacing = self.svg.unittouu(str(self.options.spacing) + unit)
         boxtype = self.options.boxtype
         divx = self.options.div_l
         divy = self.options.div_w
-        keydivwalls = 0 if self.options.keydiv == 3 or self.options.keydiv == 1 else 1
-        keydivfloor = 0 if self.options.keydiv == 3 or self.options.keydiv == 2 else 1
+        self.keydivwalls = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.WALLS]
+        self.keydivfloor = self.options.keydiv in [DividerKeying.ALL_SIDES , DividerKeying.FLOOR_CEILING]
         initOffsetX = 0
         initOffsetY = 0
 
         if inside:  # if inside dimension selected correct values to outside dimension
-            X += thickness * 2
-            Y += thickness * 2
-            Z += thickness * 2
+            X += self.thickness * 2
+            Y += self.thickness * 2
+            Z += self.thickness * 2
 
         # check input values mainly to avoid python errors
         # TODO restrict values to *correct* solutions
@@ -686,30 +460,30 @@ class TabbedBoxMaker(inkex.Effect):
         if max(X, Y, Z) > max(widthDoc, heightDoc) * 10:  # crude test
             inkex.errormsg(_("Error: Dimensions Too Large"))
             error = True
-        if min(X, Y, Z) < 3 * nomTab:
+        if min(X, Y, Z) < 3 * self.nomTab:
             inkex.errormsg(_("Error: Tab size too large"))
             error = True
-        if nomTab < thickness:
+        if self.nomTab < self.thickness:
             inkex.errormsg(_("Error: Tab size too small"))
             error = True
-        if thickness == 0:
-            inkex.errormsg(_("Error: Thickness is zero"))
+        if self.thickness == 0:
+            inkex.errormsg(_("Error: self.thickness is zero"))
             error = True
-        if thickness > min(X, Y, Z) / 3:  # crude test
+        if self.thickness > min(X, Y, Z) / 3:  # crude test
             inkex.errormsg(_("Error: Material too thick"))
             error = True
-        if kerf > min(X, Y, Z) / 3:  # crude test
-            inkex.errormsg(_("Error: Kerf too large"))
+        if self.kerf > min(X, Y, Z) / 3:  # crude test
+            inkex.errormsg(_("Error: self.kerf too large"))
             error = True
         if spacing > max(X, Y, Z) * 10:  # crude test
             inkex.errormsg(_("Error: Spacing too large"))
             error = True
-        if spacing < kerf:
+        if spacing < self.kerf:
             inkex.errormsg(_("Error: Spacing too small"))
             error = True
 
         if error:
-            exit()
+            exit(1)
 
         # For code spacing consistency, we use two-character abbreviations for the six box faces,
         # where each abbreviation is the first and last letter of the face name:
@@ -730,14 +504,14 @@ class TabbedBoxMaker(inkex.Effect):
         # else boxtype==1, full box, has all sides
 
         # Determine where the tabs go based on the tab style
-        if tabSymmetry == 2:  # Antisymmetric (deprecated)
+        if self.tabSymmetry == 2:  # Antisymmetric (deprecated)
             tpTabInfo = 0b0110
             bmTabInfo = 0b1100
             ltTabInfo = 0b1100
             rtTabInfo = 0b0110
             ftTabInfo = 0b1100
             bkTabInfo = 0b1001
-        elif tabSymmetry == 1:  # Rotationally symmetric (Waffle-blocks)
+        elif self.tabSymmetry == 1:  # Rotationally symmetric (Waffle-blocks)
             tpTabInfo = 0b1111
             bmTabInfo = 0b1111
             ltTabInfo = 0b1111
@@ -760,7 +534,7 @@ class TabbedBoxMaker(inkex.Effect):
                 newTabInfo = tabInfo & ~bit  # set bit to 0 to use tab tip line
             return newTabbed, newTabInfo
 
-        # Update the tab bits based on which sides of the box don"t exist
+        # Update the tab bits based on which sides of the box don't exist
         tpTabbed = bmTabbed = ltTabbed = rtTabbed = ftTabbed = bkTabbed = 0b1111
         if not hasTp:
             bkTabbed, bkTabInfo = fixTabBits(bkTabbed, bkTabInfo, 0b0010)
@@ -915,25 +689,28 @@ class TabbedBoxMaker(inkex.Effect):
             btabs = tabbed >> 2 & 1
             ctabs = tabbed >> 1 & 1
             dtabs = tabbed & 1  # extract tabbed flag for each side
-            xspacing = (X - thickness) / (divy + 1)
-            yspacing = (Y - thickness) / (divx + 1)
+            xspacing = (X - self.thickness) / (divy + 1)
+            yspacing = (Y - self.thickness) / (divx + 1)
             xholes = 1 if piece[6] < 3 else 0
             yholes = 1 if piece[6] != 2 else 0
             wall = 1 if piece[6] > 1 else 0
             floor = 1 if piece[6] == 1 else 0
             railholes = 1 if piece[6] == 3 else 0
+            thickness = self.thickness
+            keydivfloor = self.keydivfloor
+            keydivwalls = self.keydivwalls
 
-            group = self.makeGroup()
+            group = self.makeGroup(id="piece")
             groups = [group]
 
             if schroff and railholes:
                 log(
                     "rail holes enabled on piece %d at (%d, %d)"
-                    % (idx, x + thickness, y + thickness)
+                    % (idx, x + self.thickness, y + self.thickness)
                 )
                 log("abcd = (%d,%d,%d,%d)" % (a, b, c, d))
                 log("dxdy = (%d,%d)" % (dx, dy))
-                rhxoffset = rail_mount_depth + thickness
+                rhxoffset = rail_mount_depth + self.thickness
                 if idx == 1:
                     rhx = x + rhxoffset
                 elif idx == 3:
@@ -941,7 +718,7 @@ class TabbedBoxMaker(inkex.Effect):
                 else:
                     rhx = 0
                 log("rhxoffset = %d, rhx= %d" % (rhxoffset, rhx))
-                rystart = y + (rail_height / 2) + thickness
+                rystart = y + (rail_height / 2) + self.thickness
                 if rows == 1:
                     log("just one row this time, rystart = %d" % rystart)
                     rh1y = rystart + rail_mount_centre_offset
@@ -987,10 +764,10 @@ class TabbedBoxMaker(inkex.Effect):
 
             if idx == 0:
                 # remove tabs from dividers if not required
-                if not keydivfloor:
+                if not self.keydivfloor:
                     a = c = 1
                     atabs = ctabs = 0
-                if not keydivwalls:
+                if not self.keydivwalls:
                     b = d = 1
                     btabs = dtabs = 0
 
@@ -999,32 +776,74 @@ class TabbedBoxMaker(inkex.Effect):
                     subGroup = self.makeGroup('xdivider')
                     groups.append(subGroup)
                     x = n * (spacing + X)  # root x co-ord for piece
-                    self.side(subGroup,
-                         (x,
-                          y),
-                         (d,
-                          a),
-                         (-b,
-                          a),
-                         keydivfloor * atabs *
-                         (-thickness if a else thickness),
-                         dtabs,
-                         dx,
-                         (1,
-                          0),
-                         a,
-                         1,
-                         0,
-                         0)          # side a
-                    self.side(subGroup, (x + dx, y), (-b, a), (-b, -c), keydivwalls * btabs * (thickness if b else -
-                         # side b
-                                                                                          thickness), atabs, dy, (0, 1), b, 1, divy * xholes, xspacing)
-                    self.side(subGroup, (x + dx, y + dy), (-b, -c), (d, -c), keydivfloor * ctabs *
-                         # side c
-                         (thickness if c else -thickness), btabs, dx, (-1, 0), c, 1, 0, 0)
-                    self.side(subGroup, (x, y + dy), (d, -c), (d, a), keydivwalls * dtabs *
-                         # side d
-                         (-thickness if d else thickness), ctabs, dy, (0, -1), d, 1, 0, 0)
+                    self.side(
+                        subGroup,
+                        (x, y),
+                        (d, a),
+                        (-b, a),
+                        self.keydivfloor * atabs * (-self.thickness if a else self.thickness),
+                        dtabs,
+                        dx,
+                        (1, 0),
+                        a,
+                        1,
+                        0,
+                        0,
+                    )  # side a
+                    self.side(
+                        subGroup,
+                        (x + dx, y),
+                        (-b, a),
+                        (-b, -c),
+                        self.keydivwalls
+                        * btabs
+                        * (
+                            self.thickness
+                            if b
+                            else -
+                            # side b
+                            self.thickness
+                        ),
+                        atabs,
+                        dy,
+                        (0, 1),
+                        b,
+                        1,
+                        divy * xholes,
+                        xspacing,
+                    )
+                    self.side(
+                        subGroup,
+                        (x + dx, y + dy),
+                        (-b, -c),
+                        (d, -c),
+                        self.keydivfloor * ctabs *
+                        # side c
+                        (self.thickness if c else -self.thickness),
+                        btabs,
+                        dx,
+                        (-1, 0),
+                        c,
+                        1,
+                        0,
+                        0,
+                    )
+                    self.side(
+                        subGroup,
+                        (x, y + dy),
+                        (d, -c),
+                        (d, a),
+                        self.keydivwalls * dtabs *
+                        # side d
+                        (-self.thickness if d else self.thickness),
+                        ctabs,
+                        dy,
+                        (0, -1),
+                        d,
+                        1,
+                        0,
+                        0,
+                    )
             elif idx == 1:
                 y = 5 * spacing + 1 * Y + 3 * Z  # root y co-ord for piece
                 for n in range(0, divy):  # generate Y dividers
@@ -1045,6 +864,7 @@ class TabbedBoxMaker(inkex.Effect):
 
             if self.options.optimize:
                 # Step 1: Combine paths to form the outer boundary
+                skip_elements = []
                 for group in groups:
                     for path_element in [
                         child
@@ -1052,46 +872,47 @@ class TabbedBoxMaker(inkex.Effect):
                         if isinstance(child, inkex.PathElement)
                     ]:
                         path = inkex.Path(path_element.path)
+                        path_first = path[0]
+                        path_last = path[-1]
 
                         if path[-1].letter in "zZ":
                             continue  # Path is already closed
 
-                        path_first = path[0]
-                        path_last = path[-1]
+                        skip_elements.append(path_element)
 
                         for other_element in [
                             child
                             for child in group.descendants()
                             if isinstance(child, inkex.PathElement)
                         ]:
-                            if other_element == path_element:
+                            if other_element in skip_elements:
                                 continue
 
                             other_path = inkex.Path(other_element.path)
 
                             if other_path[-1].letter in "zZ":
-                                continue
+                                continue  # Path is already closed
 
                             other_first = other_path[0]
                             other_last = other_path[-1]
 
-                            if (
-                                other_first.x == path_last.x
-                                and other_first.y == path_last.y
-                            ):
-                                other_element.path = str(path + other_path[1:])
-                                group.remove(path_element)
-                                break
-                            elif (
-                                other_last.x == path_first.x
-                                and other_last.y == path_last.y
-                            ):
-                                other_element.path = str(other_path + path[1:])
-                                group.remove(path_element)
-                                break
+                            new_path = None
+                            if (other_first.x == path_last.x and other_first.y == path_last.y ):
+                                new_path = str(path + other_path[1:])
+                            elif ( other_last.x == path_first.x and other_last.y == path_last.y):
+                                new_path = str(other_path + path[1:])
 
-                        # Try to combine next path
-                        last_path_element = path_element
+                            if new_path is not None:
+                                new_id = min(path_element.get_id(), other_element.get_id())
+                                path_element.path = inkex.Path(new_path)
+                                group.remove(other_element)
+                                path_element.set_id(new_id)
+                                skip_elements.append(other_element)
+
+                                # Update step for next iteration
+                                path = inkex.Path(path_element.path)
+                                path_first = path[0]
+                                path_last = path[-1]
 
                     # Step 2: Close the first (outline) path, if not already
                     # closed
@@ -1103,7 +924,8 @@ class TabbedBoxMaker(inkex.Effect):
                     path = inkex.Path(last_path_element.path)
                     if (
                         path[-1].letter not in "zZ"
-                    ):  # Check if the last command is not "Z"
+                    ):  # Check if the last command is not 
+                        path = path.reverse() # Make outside path anticlockwise
                         path.close()  # Append a close path command
                         # Update the element"s path
                         last_path_element.path = str(path)
@@ -1135,11 +957,12 @@ class TabbedBoxMaker(inkex.Effect):
 
                                     # Determine the direction
                                     direction = (
-                                        "h" if dy == 0 else "v" if dx == 0 else None
+                                        0 if dx == 0 else math.copysign(1, dx),
+                                        0 if dy == 0 else math.copysign(1, dy),
                                     )
 
                                     # Skip redundant points on straight lines
-                                    if direction == current_dir:
+                                    if (dx == 0 or dy == 0) and direction == current_dir:
                                         # Replace the last point in
                                         # simplified_path
                                         simplified_path[-1] = segment
@@ -1164,9 +987,319 @@ class TabbedBoxMaker(inkex.Effect):
                     # the group around this path
                     if len(group) == 1:
                         parent = group.getparent()
+                        group_id = group.get_id()
+                        item = group[0]
+                        parent.replace(group, item)
+                        item.set_id(group_id)
 
-                        parent.append(group[0])
-                        parent.remove(group)
+    def dimpleStr(
+        self,
+        tabVector: float,
+        vectorX: float,
+        vectorY: float,
+        dirX: int,
+        dirY: int,
+        notDirX: bool,
+        notDirY: bool,
+        ddir: int,
+        isTab: bool
+    ) -> str:
+        ds = ""
+        if not isTab:
+            ddir = -ddir
+        if self.dimpleHeight > 0 and tabVector != 0:
+            if tabVector > 0:
+                dimpleStart = (tabVector - self.dimpleLength) / 2 - self.dimpleHeight
+                tabSgn = 1
+            else:
+                dimpleStart = (tabVector + self.dimpleLength) / 2 + self.dimpleHeight
+                tabSgn = -1
+            Vxd = vectorX + notDirX * dimpleStart
+            Vyd = vectorY + notDirY * dimpleStart
+            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            Vxd = Vxd + (tabSgn * notDirX - ddir * dirX) * self.dimpleHeight
+            Vyd = Vyd + (tabSgn * notDirY - ddir * dirY) * self.dimpleHeight
+            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            Vxd = Vxd + tabSgn * notDirX * self.dimpleLength
+            Vyd = Vyd + tabSgn * notDirY * self.dimpleLength
+            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            Vxd = Vxd + (tabSgn * notDirX + ddir * dirX) * self.dimpleHeight
+            Vyd = Vyd + (tabSgn * notDirY + ddir * dirY) * self.dimpleHeight
+            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+        return ds
+
+    def side(
+        self,
+        group: inkex.Group,
+        root: tuple[float, float],
+        startOffset: tuple[float, float],
+        endOffset: tuple[float, float],
+        tabVec: float,
+        prevTab: int,
+        length: float,
+        direction: tuple[int, int],
+        isTab: bool,
+        isDivider: bool,
+        numDividers: int,
+        dividerSpacing: float,
+    ) -> str:
+        rootX, rootY = root
+        startOffsetX, startOffsetY = startOffset
+        endOffsetX, endOffsetY = endOffset
+        dirX, dirY = direction
+        notTab = not isTab
+
+        halfkerf = self.kerf / 2
+
+        sidePath = self.makeLine("", "side")
+        group.add(sidePath)
+
+        if self.tabSymmetry == 1:  # waffle-block style rotationally symmetric tabs
+            divisions = int((length - 2 * self.thickness) / self.nomTab)
+            if divisions % 2:
+                divisions += 1  # make divs even
+            divisions = float(divisions)
+            tabs = divisions / 2  # tabs for side
+        else:
+            divisions = int(length / self.nomTab)
+            if not divisions % 2:
+                divisions -= 1  # make divs odd
+            divisions = float(divisions)
+            tabs = (divisions - 1) / 2  # tabs for side
+
+        if self.tabSymmetry == 1:  # waffle-block style rotationally symmetric tabs
+            gapWidth = tabWidth = (length - 2 * self.thickness) / divisions
+        elif self.equalTabs:
+            gapWidth = tabWidth = length / divisions
+        else:
+            tabWidth = self.nomTab
+            gapWidth = (length - tabs * self.nomTab) / (divisions - tabs)
+
+        if isTab:  # self.kerf correction
+            gapWidth -= self.kerf
+            tabWidth += self.kerf
+            first = halfkerf
+        else:
+            gapWidth += self.kerf
+            tabWidth -= self.kerf
+            first = -halfkerf
+        firstholelenX = 0
+        firstholelenY = 0
+        s = []
+        h = []
+        firstVec = 0
+        secondVec = tabVec
+        dividerEdgeOffsetX = dividerEdgeOffsetY = self.thickness
+        notDirX = dirX == 0  # used to select operation on x or y
+        notDirY = dirY == 0
+        if self.tabSymmetry == 1:
+            dividerEdgeOffsetX = dirX * self.thickness
+            # dividerEdgeOffsetY = ;
+            vectorX = rootX + (0 if dirX and prevTab else startOffsetX * self.thickness)
+            vectorY = rootY + (0 if dirY and prevTab else startOffsetY * self.thickness)
+            s = "M " + str(vectorX) + "," + str(vectorY) + " "
+            vectorX = rootX + (startOffsetX if startOffsetX else dirX) * self.thickness
+            vectorY = rootY + (startOffsetY if startOffsetY else dirY) * self.thickness
+            if notDirX and tabVec:
+                endOffsetX = 0
+            if notDirY and tabVec:
+                endOffsetY = 0
+        else:
+            (vectorX, vectorY) = (
+                rootX + startOffsetX * self.thickness,
+                rootY + startOffsetY * self.thickness,
+            )
+            dividerEdgeOffsetX = dirY * self.thickness
+            dividerEdgeOffsetY = dirX * self.thickness
+            s = "M " + str(vectorX) + "," + str(vectorY) + " "
+            if notDirX:
+                vectorY = rootY  # set correct line start for tab generation
+            if notDirY:
+                vectorX = rootX
+
+        # generate line as tab or hole using:
+        #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; self.thickness:self.thickness
+        #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
+        nodes = []
+        firstHole = True
+        for tabDivision in range(1, int(divisions)):
+            # draw holes for divider tabs to key into side walls
+            if (((tabDivision % 2) > 0) != (not isTab)) and numDividers > 0 and not isDivider:
+                w = gapWidth if isTab else tabWidth
+                if tabDivision == 1 and self.tabSymmetry == 0:
+                    w -= startOffsetX * self.thickness
+                holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
+                holeLenY = dirY * (w + first) + (firstVec if notDirY else 0)
+                if firstHole:
+                    firstHoleLenX = holeLenX
+                    firstHoleLenY = holeLenY
+                for dividerNumber in range(1, int(numDividers) + 1):
+                    Dx = (
+                        vectorX
+                        + -dirY * dividerSpacing * dividerNumber
+                        + (halfkerf if notDirX else 0)
+                        + ((dirX * halfkerf - first * dirX) if self.dogbone else 0)
+                    )
+                    Dy = (
+                        vectorY
+                        + dirX * dividerSpacing * dividerNumber
+                        - (halfkerf if notDirY else 0)
+                        + ((dirY * halfkerf - first * dirY) if self.dogbone else 0)
+                    )
+                    if tabDivision == 1 and self.tabSymmetry == TabSymmetry.XY_SYMMETRIC:
+                        Dx += startOffsetX * self.thickness
+                    h = "M " + str(Dx) + "," + str(Dy) + " "
+                    Dx = Dx + holeLenX
+                    Dy = Dy + holeLenY
+                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    Dx = Dx + notDirX * (secondVec - self.kerf)
+                    Dy = Dy + notDirY * (secondVec + self.kerf)
+                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    Dx = Dx - holeLenX
+                    Dy = Dy - holeLenY
+                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    Dx = Dx - notDirX * (secondVec - self.kerf)
+                    Dy = Dy - notDirY * (secondVec + self.kerf)
+                    h += "L " + str(Dx) + "," + str(Dy) + " Z"
+                    nodes.append(self.makeLine(h, "hole"))
+            if tabDivision % 2:
+                if (
+                    tabDivision == 1 and numDividers > 0 and isDivider
+                ):  # draw slots for dividers to slot into each other
+                    for dividerNumber in range(1, int(numDividers) + 1):
+                        Dx = (
+                            vectorX
+                            + -dirY * dividerSpacing * dividerNumber
+                            - dividerEdgeOffsetX
+                            + notDirX * halfkerf
+                        )
+                        Dy = (
+                            vectorY
+                            + dirX * dividerSpacing * dividerNumber
+                            - dividerEdgeOffsetY
+                            + notDirY * halfkerf
+                        )
+                        h = "M " + str(Dx) + "," + str(Dy) + " "
+                        Dx = Dx + dirX * (first + length / 2)
+                        Dy = Dy + dirY * (first + length / 2)
+                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        Dx = Dx + notDirX * (self.thickness - self.kerf)
+                        Dy = Dy + notDirY * (self.thickness - self.kerf)
+                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        Dx = Dx - dirX * (first + length / 2)
+                        Dy = Dy - dirY * (first + length / 2)
+                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        Dx = Dx - notDirX * (self.thickness - self.kerf)
+                        Dy = Dy - notDirY * (self.thickness - self.kerf)
+                        h += "L " + str(Dx) + "," + str(Dy) + " Z"
+                        nodes.append(self.makeLine(h, "slot"))
+                # draw the gap
+                vectorX += (
+                    dirX
+                    * (
+                        gapWidth
+                        + (first if not (isTab and self.dogbone) else 0)
+                        + self.dogbone * self.kerf * isTab
+                    )
+                    + notDirX * firstVec
+                )
+                vectorY += (
+                    dirY
+                    * (
+                        gapWidth
+                        + (first if not (isTab and self.dogbone) else 0)
+                        + (self.kerf if self.dogbone and isTab else 0)
+                    )
+                    + notDirY * firstVec
+                )
+                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                if self.dogbone and isTab:
+                    vectorX -= dirX * halfkerf
+                    vectorY -= dirY * halfkerf
+                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                # draw the starting edge of the tab
+                s += self.dimpleStr(
+                    secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, 1, isTab
+                )
+                vectorX += notDirX * secondVec
+                vectorY += notDirY * secondVec
+                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                if self.dogbone and notTab:
+                    vectorX -= dirX * halfkerf
+                    vectorY -= dirY * halfkerf
+                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+
+            else:
+                # draw the tab
+                vectorX += dirX * (tabWidth + self.dogbone *
+                                   self.kerf * notTab) + notDirX * firstVec
+                vectorY += dirY * (tabWidth + self.dogbone *
+                                   self.kerf * notTab) + notDirY * firstVec
+                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                if self.dogbone and notTab:
+                    vectorX -= dirX * halfkerf
+                    vectorY -= dirY * halfkerf
+                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                # draw the ending edge of the tab
+                s += self.dimpleStr(
+                    secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, -1, isTab
+                )
+                vectorX += notDirX * secondVec
+                vectorY += notDirY * secondVec
+                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                if self.dogbone and isTab:
+                    vectorX -= dirX * halfkerf
+                    vectorY -= dirY * halfkerf
+                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+            (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
+            first = 0
+
+        # finish the line off
+        s += (
+            "L "
+            + str(rootX + endOffsetX * self.thickness + dirX * length)
+            + ","
+            + str(rootY + endOffsetY * self.thickness + dirY * length)
+            + " "
+        )
+
+        sidePath.path = inkex.Path(s)
+
+        # draw last for divider joints in side walls
+        if isTab and numDividers > 0 and self.tabSymmetry == 0 and not isDivider:
+            for dividerNumber in range(1, int(numDividers) + 1):
+                Dx = (
+                    vectorX
+                    + -dirY * dividerSpacing * dividerNumber
+                    + notDirX * halfkerf
+                    + dirX * self.dogbone * halfkerf
+                    - self.dogbone * first * dirX
+                )
+                Dy = (
+                    vectorY
+                    + dirX * dividerSpacing * dividerNumber
+                    - dividerEdgeOffsetY
+                    + notDirY * halfkerf
+                )
+                Dy += firstHoleLenY + notDirY * (thickness-self.kerf)
+                h = "M " + str(Dx) + "," + str(Dy) + " "
+                Dx = Dx + firstHoleLenX
+                Dy = Dy - firstHoleLenY
+                h += "L " + str(Dx) + "," + str(Dy) + " "
+                Dx = Dx + notDirX * (self.thickness - self.kerf)
+                Dy = Dy + notDirY * (self.thickness - self.kerf)
+                h += "L " + str(Dx) + "," + str(Dy) + " "
+                Dx = Dx - firstHoleLenX
+                Dy = Dy + firstHoleLenY
+                h += "L " + str(Dx) + "," + str(Dy) + " "
+                Dx = Dx - notDirX * (self.thickness - self.kerf)
+                Dy = Dy - notDirY * (self.thickness - self.kerf)
+                h += "L " + str(Dx) + "," + str(Dy) + " Z"
+                nodes.append(self.makeLine(h, "hole"))
+                
+        for node in nodes:
+            group.add(node)
+        return s
 
 if __name__ == "__main__":
   # Create effect instance and apply it.

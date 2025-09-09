@@ -1,42 +1,42 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="182mm" height="361mm" viewBox="0 0 182 361" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="185mm" height="361mm" viewBox="0 0 185 361" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
   <sodipodi:namedview id="namedview7" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:document-units="mm" showgrid="false" inkscape:zoom="0.64052329" inkscape:cx="397.33138" inkscape:cy="561.25984" inkscape:window-width="2086" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer1"/>
   <defs id="defs2"/>
   <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
-    <metadata text="createArgs=['--unit=mm', '--inside=1', '--length=80', '--width=100', '--depth=40', '--equal=0', '--tab=6', '--tabtype=0', '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0', '--hairline=0', '--thickness=3', '--kerf=0', '--style=1', '--div_l=1', '--div_w=1', '--keydiv=0', '--spacing=2', '--boxtype=5']"/>
+    <metadata text="createArgs=['--unit=mm', '--inside=1', '--length=80', '--width=100', '--depth=40', '--equal=0', '--tab=6', '--tabtype=0', '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0', '--hairline=1', '--thickness=3', '--kerf=0', '--style=1', '--div_l=1', '--div_w=1', '--keydiv=0', '--spacing=2', '--boxtype=5']"/>
     <g id="piece_001">
-      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:1" d="M 91.5 165 L 91.5 171 L 94.5 171 L 94.5 165 L 91.5 165 Z"/>
-      <path id="hole_002" style="fill:none;stroke:#000000;stroke-width:1" d="M 91.5 178 L 91.5 184 L 94.5 184 L 94.5 178 L 91.5 178 Z"/>
-      <path id="hole_003" style="fill:none;stroke:#000000;stroke-width:1" d="M 91.5 191 L 91.5 197 L 94.5 197 L 94.5 191 L 91.5 191 Z"/>
-      <path id="side_004" style="fill:none;stroke:#000000;stroke-width:1" d="M 50 161 L 57.1429 161 L 136 161 L 136 165 L 133 165 L 133 171 L 136 171 L 136 178 L 133 178 L 133 184 L 136 184 L 136 191 L 133 191 L 133 197 L 136 197 L 136 201 L 50 201 L 50 197 L 53 197 L 53 191 L 50 191 L 50 184 L 53 184 L 53 178 L 50 178 L 50 171 L 53 171 L 53 165 L 50 165 L 50 161"/>
+      <path id="side_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 161 L 50 165 L 53 165 L 53 171 L 50 171 L 50 178 L 53 178 L 53 184 L 50 184 L 50 191 L 53 191 L 53 197 L 50 197 L 50 201 L 136 201 L 136 197 L 133 197 L 133 191 L 136 191 L 136 184 L 133 184 L 133 178 L 136 178 L 136 171 L 133 171 L 133 165 L 136 165 L 136 161 L 50 161 Z"/>
+      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 165 L 91.5 171 L 94.5 171 L 94.5 165 L 91.5 165 Z"/>
+      <path id="hole_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 178 L 91.5 184 L 94.5 184 L 94.5 178 L 91.5 178 Z"/>
+      <path id="hole_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 191 L 91.5 197 L 94.5 197 L 94.5 191 L 91.5 191 Z"/>
     </g>
     <g id="xdivider_001">
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:1" d="M 41.5 206 L 41.5 229 L 44.5 229 L 44.5 206 L 41.5 206 Z"/>
-      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:1" d="M 0 209 L 7.14286 209 L 86 209 L 86 213 L 83 213 L 83 219 L 86 219 L 86 226 L 83 226 L 83 232 L 86 232 L 86 239 L 83 239 L 83 245 L 86 245 L 86 249 L 0 249 L 0 245 L 3 245 L 3 239 L 0 239 L 0 232 L 3 232 L 3 226 L 0 226 L 0 219 L 3 219 L 3 213 L 0 213 L 0 209"/>
+      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 0 209 L 0 213 L 3 213 L 3 219 L 0 219 L 0 226 L 3 226 L 3 232 L 0 232 L 0 239 L 3 239 L 3 245 L 0 245 L 0 249 L 86 249 L 86 245 L 83 245 L 83 239 L 86 239 L 86 232 L 83 232 L 83 226 L 86 226 L 86 219 L 83 219 L 83 213 L 86 213 L 86 209 L 0 209 Z"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 41.5 206 L 41.5 229 L 44.5 229 L 44.5 206 L 41.5 206 Z"/>
     </g>
     <g id="piece_002">
-      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:1" d="M 5 104.5 L 9 104.5 L 9 101.5 L 5 101.5 L 5 104.5 Z"/>
-      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:1" d="M 15 104.5 L 22 104.5 L 22 101.5 L 15 101.5 L 15 104.5 Z"/>
-      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:1" d="M 28 104.5 L 35 104.5 L 35 101.5 L 28 101.5 L 28 104.5 Z"/>
-      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:1" d="M 41 104.5 L 45 104.5 L 45 101.5 L 41 101.5 L 41 104.5 Z"/>
-      <path id="side_012" style="fill:none;stroke:#000000;stroke-width:1" d="M 5 53 L 9 53 L 9 50 L 15 50 L 15 53 L 22 53 L 22 50 L 28 50 L 28 53 L 35 53 L 35 50 L 41 50 L 41 53 L 45 53 L 45 153 L 41 153 L 41 156 L 35 156 L 35 153 L 28 153 L 28 156 L 22 156 L 22 153 L 15 153 L 15 156 L 9 156 L 9 153 L 5 153 L 5 53"/>
+      <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 5 53 L 5 56.4444 L 5 153 L 9 153 L 9 156 L 15 156 L 15 153 L 22 153 L 22 156 L 28 156 L 28 153 L 35 153 L 35 156 L 41 156 L 41 153 L 45 153 L 45 53 L 41 53 L 41 50 L 35 50 L 35 53 L 28 53 L 28 50 L 22 50 L 22 53 L 15 53 L 15 50 L 9 50 L 9 53 L 5 53 Z"/>
+      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 5 104.5 L 9 104.5 L 9 101.5 L 5 101.5 L 5 104.5 Z"/>
+      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 15 104.5 L 22 104.5 L 22 101.5 L 15 101.5 L 15 104.5 Z"/>
+      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 28 104.5 L 35 104.5 L 35 101.5 L 28 101.5 L 28 104.5 Z"/>
+      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 41 104.5 L 48 104.5 L 48 107.5 L 41 107.5 L 41 104.5 Z"/>
     </g>
     <g id="ydivider_001">
-      <path id="slot_002" style="fill:none;stroke:#000000;stroke-width:1" d="M 0 305.5 L 23 305.5 L 23 308.5 L 0 308.5 L 0 305.5 Z"/>
-      <path id="side_016" style="fill:none;stroke:#000000;stroke-width:1" d="M 3 257 L 7 257 L 7 254 L 13 254 L 13 257 L 20 257 L 20 254 L 26 254 L 26 257 L 33 257 L 33 254 L 39 254 L 39 257 L 43 257 L 43 357 L 39 357 L 39 360 L 33 360 L 33 357 L 26 357 L 26 360 L 20 360 L 20 357 L 13 357 L 13 360 L 7 360 L 7 357 L 3 357 L 3 257"/>
+      <path id="side_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 3 257 L 3 260.444 L 3 357 L 7 357 L 7 360 L 13 360 L 13 357 L 20 357 L 20 360 L 26 360 L 26 357 L 33 357 L 33 360 L 39 360 L 39 357 L 43 357 L 43 257 L 39 257 L 39 254 L 33 254 L 33 257 L 26 257 L 26 254 L 20 254 L 20 257 L 13 257 L 13 254 L 7 254 L 7 257 L 3 257 Z"/>
+      <path id="slot_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 0 305.5 L 23 305.5 L 23 308.5 L 0 308.5 L 0 305.5 Z"/>
     </g>
     <g id="piece_003">
-      <path id="hole_008" style="fill:none;stroke:#000000;stroke-width:1" d="M 141 104.5 L 145 104.5 L 145 101.5 L 141 101.5 L 141 104.5 Z"/>
-      <path id="hole_009" style="fill:none;stroke:#000000;stroke-width:1" d="M 151 104.5 L 158 104.5 L 158 101.5 L 151 101.5 L 151 104.5 Z"/>
-      <path id="hole_010" style="fill:none;stroke:#000000;stroke-width:1" d="M 164 104.5 L 171 104.5 L 171 101.5 L 164 101.5 L 164 104.5 Z"/>
-      <path id="hole_011" style="fill:none;stroke:#000000;stroke-width:1" d="M 177 104.5 L 181 104.5 L 181 101.5 L 177 101.5 L 177 104.5 Z"/>
-      <path id="side_020" style="fill:none;stroke:#000000;stroke-width:1" d="M 141 53 L 145 53 L 145 50 L 151 50 L 151 53 L 158 53 L 158 50 L 164 50 L 164 53 L 171 53 L 171 50 L 177 50 L 177 53 L 181 53 L 181 153 L 177 153 L 177 156 L 171 156 L 171 153 L 164 153 L 164 156 L 158 156 L 158 153 L 151 153 L 151 156 L 145 156 L 145 153 L 141 153 L 141 53"/>
+      <path id="side_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 141 53 L 141 56.4444 L 141 153 L 145 153 L 145 156 L 151 156 L 151 153 L 158 153 L 158 156 L 164 156 L 164 153 L 171 153 L 171 156 L 177 156 L 177 153 L 181 153 L 181 53 L 177 53 L 177 50 L 171 50 L 171 53 L 164 53 L 164 50 L 158 50 L 158 53 L 151 53 L 151 50 L 145 50 L 145 53 L 141 53 Z"/>
+      <path id="hole_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 141 104.5 L 145 104.5 L 145 101.5 L 141 101.5 L 141 104.5 Z"/>
+      <path id="hole_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 151 104.5 L 158 104.5 L 158 101.5 L 151 101.5 L 151 104.5 Z"/>
+      <path id="hole_010" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 164 104.5 L 171 104.5 L 171 101.5 L 164 101.5 L 164 104.5 Z"/>
+      <path id="hole_011" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 177 104.5 L 184 104.5 L 184 107.5 L 177 107.5 L 177 104.5 Z"/>
     </g>
     <g id="piece_004">
-      <path id="hole_012" style="fill:none;stroke:#000000;stroke-width:1" d="M 91.5 9 L 91.5 15 L 94.5 15 L 94.5 9 L 91.5 9 Z"/>
-      <path id="hole_013" style="fill:none;stroke:#000000;stroke-width:1" d="M 91.5 22 L 91.5 28 L 94.5 28 L 94.5 22 L 91.5 22 Z"/>
-      <path id="hole_014" style="fill:none;stroke:#000000;stroke-width:1" d="M 91.5 35 L 91.5 41 L 94.5 41 L 94.5 35 L 91.5 35 Z"/>
-      <path id="side_024" style="fill:none;stroke:#000000;stroke-width:1" d="M 50 5 L 57.1429 5 L 136 5 L 136 9 L 133 9 L 133 15 L 136 15 L 136 22 L 133 22 L 133 28 L 136 28 L 136 35 L 133 35 L 133 41 L 136 41 L 136 45 L 50 45 L 50 41 L 53 41 L 53 35 L 50 35 L 50 28 L 53 28 L 53 22 L 50 22 L 50 15 L 53 15 L 53 9 L 50 9 L 50 5"/>
+      <path id="side_021" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 5 L 50 9 L 53 9 L 53 15 L 50 15 L 50 22 L 53 22 L 53 28 L 50 28 L 50 35 L 53 35 L 53 41 L 50 41 L 50 45 L 136 45 L 136 41 L 133 41 L 133 35 L 136 35 L 136 28 L 133 28 L 133 22 L 136 22 L 136 15 L 133 15 L 133 9 L 136 9 L 136 5 L 50 5 Z"/>
+      <path id="hole_012" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 9 L 91.5 15 L 94.5 15 L 94.5 9 L 91.5 9 Z"/>
+      <path id="hole_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 22 L 91.5 28 L 94.5 28 L 94.5 22 L 91.5 22 Z"/>
+      <path id="hole_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 35 L 91.5 41 L 94.5 41 L 94.5 35 L 91.5 35 Z"/>
     </g>
   </g>
 </svg>

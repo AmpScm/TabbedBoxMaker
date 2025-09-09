@@ -3,7 +3,7 @@
 Generates Inkscape SVG file containing box components needed to
 CNC (laser/mill) cut a box with tabbed joints taking kerf and clearance into account
 
-Original Tabbed Box Maker Copyright (C) 2011 elliot white
+Original Tabbed Box Maker Copyright (C) 2011 Elliot White
 
 See changelog in tabbedboxmaker/__about__.py
 

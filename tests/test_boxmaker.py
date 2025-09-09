@@ -637,7 +637,7 @@ gen_args = [
     ('tabtype', [0, 1]), # regular, dogbone
     ('tabsymmetry', [0, 1, 2]), # mirror, rotate, antisymmetric
     (['dimpleheight', 'dimplelength'], [[0, 0], [0.1, 0.2]]),
-    ('hairline', [0, 1]),
+    ('hairline', [1, 0]),
     ('thickness', [3, 6]),
     ('kerf', [0, 0.1, 0.5]),
     ('style', [1, 2, 3]), # diagrammatic, three-piece, inline
