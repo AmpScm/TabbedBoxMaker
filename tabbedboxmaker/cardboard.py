@@ -27,16 +27,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from inkex.utils import filename_arg
 
 import os
-import sys
 import inkex
-import simplestyle
 import gettext
-import math
-from copy import deepcopy
 
 _ = gettext.gettext
-
-linethickness = 1  # default unless overridden by settings
 
 
 def log(text):
@@ -52,28 +46,12 @@ def newGroup(canvas):
     return group
 
 
-def getLine(XYstring, stroke="#000000"):
+def getLine(XYstring, stroke="#000000", linethickness : float = 1):
     line = inkex.PathElement()
-    line.style = {"stroke": stroke, "stroke-width": str(linethickness), "fill": "none"}
+    line.style = {"stroke": stroke, "stroke-width": str(round(linethickness, 8)), "fill": "none"}
     line.path = XYstring
     # inkex.etree.SubElement(parent, inkex.addNS('path','svg'), drw)
     return line
-
-
-# jslee - shamelessly adapted from sample code on below Inkscape wiki page 2015-07-28
-# http://wiki.inkscape.org/wiki/index.php/Generating_objects_from_extensions
-
-
-def getCircle(r, c):
-    (cx, cy) = c
-    log("putting circle at (%d,%d)" % (cx, cy))
-    circle = inkex.PathElement.arc((cx, cy), r)
-    circle.style = {
-        "stroke": "#000000",
-        "stroke-width": str(linethickness),
-        "fill": "none",
-    }
-    return circle
 
 
 # Draws each top or bottom edge
@@ -371,13 +349,8 @@ class BoxMaker(inkex.Effect):
             )
 
     def effect(self):
-        # Get access to main SVG document element and get its dimensions.
-        svg = self.document.getroot()
-
         # Get the attributes:
         # inkex.utils.errormsg("Testing")
-        widthDoc = self.svg.unittouu(svg.get("width"))
-        heightDoc = self.svg.unittouu(svg.get("height"))
         group = newGroup(self)
         unit = self.options.unit
         boxtop = self.options.boxtop
@@ -385,9 +358,9 @@ class BoxMaker(inkex.Effect):
         # Set the line thickness
 
         if self.options.hairline:
-            linethickness = self.svg.unittouu("0.002in")
+            self.linethickness = self.svg.unittouu("0.002in")
         else:
-            linethickness = 1
+            self.linethickness = 1
         hh = self.svg.unittouu(str(self.options.height) + unit)
         ww = self.svg.unittouu(str(self.options.width) + unit)
         dd = self.svg.unittouu(str(self.options.depth) + unit)
@@ -446,8 +419,8 @@ class BoxMaker(inkex.Effect):
         h += boxedge(hh, ww, dd, k2, t5, t2, boxbottom, False, 2)
         h += boxedge(hh, ww, dd, k2, t5, t2, boxbottom, False, 1)
 
-        h += f"Z"
-        group.add(getLine(h))
+        h += "Z"
+        group.add(getLine(h, linethickness=self.linethickness))
 
         # If we had top foldover tabs, add the slots for them
         # but ONLY if there is a box bottom to draw them on
@@ -464,7 +437,7 @@ class BoxMaker(inkex.Effect):
                 h += f"l {-wd3 + k2 - t2},0 "
                 h += f"l 0,{(-t * 1.5) + k2} "
                 h += "Z"
-                group.add(getLine(h))
+                group.add(getLine(h, linethickness=self.linethickness))
                 if i == 1:
                     o += dd3 + dd3 + ww3
                     wd3 = ww3
@@ -486,7 +459,7 @@ class BoxMaker(inkex.Effect):
             # Trailing Horizontal Fold Notch
             h += f"a {(t * 1.0) - k2} {(t * 1.0) - k2} 180 0 1 0,{(-t * 2.5) + k2} "
             h += "Z"
-            group.add(getLine(h))
+            group.add(getLine(h, linethickness=self.linethickness))
 
         # If we wanted fold lines - add them
         if self.options.foldlines == "true":
@@ -505,7 +478,7 @@ class BoxMaker(inkex.Effect):
                 # First Side
                 h = f"M {t5},{yy} "
                 h += f"l {ww - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(getLine(h, stroke="#0000ff"))
+                group.add(getLine(h, stroke="#0000ff", linethickness=self.linethickness))
 
                 if box == 2:
                     yy -= t
@@ -513,17 +486,17 @@ class BoxMaker(inkex.Effect):
                 # Second Side
                 h = f"M {ww + t2 + t5},{yy} "
                 h += f"l {dd - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(getLine(h, stroke="#0000ff"))
+                group.add(getLine(h, stroke="#0000ff", linethickness=self.linethickness))
 
                 # Third Side
                 h = f"M {ww + t2 + t5 + dd + t2},{yy} "
                 h += f"l {ww - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(getLine(h, stroke="#0000ff"))
+                group.add(getLine(h, stroke="#0000ff", linethickness=self.linethickness))
 
                 # Fourth Side
                 h = f"M {ww + t2 + t5 + dd + t2 + ww + t2},{yy} "
                 h += f"l {dd - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(getLine(h, stroke="#0000ff"))
+                group.add(getLine(h, stroke="#0000ff", linethickness=self.linethickness))
 
                 if box == 2:
                     # h=f"M {ww+t2+t5 + dd+t2 + ww+t2},{yy} "
@@ -531,28 +504,27 @@ class BoxMaker(inkex.Effect):
                     # group.add(getLine(h,stroke='#0000ff'))
                     h = f"M {t5 + t5},{-1 * (dd + t2 + (t2 / 2))} "
                     h += f"l {ww - (4 * t5)},0 "
-                    group.add(getLine(h, stroke="#0000ff"))
+                    group.add(getLine(h, stroke="#0000ff", linethickness=self.linethickness))
 
             # Draw Vertical Ones
             # First Side
-            x = ww + t + hh - (2 * t5)
             h = f"M {ww + t},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(getLine(h, stroke="#0000ff"))
+            group.add(getLine(h, stroke="#0000ff", linethickness=self.linethickness))
 
             h = f"M {ww + t + dd + t2},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(getLine(h, stroke="#0000ff"))
+            group.add(getLine(h, stroke="#0000ff", linethickness=self.linethickness))
 
             h = f"M {ww + t + dd + t2 + ww + t2},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(getLine(h, stroke="#0000ff"))
+            group.add(getLine(h, stroke="#0000ff", linethickness=self.linethickness))
 
             # Tab only if selected
             if self.options.sidetab == "true":
                 h = f"M {ww + t + dd + t2 + ww + t2 + dd},{t5 + t2} "
                 h += f"l 0,{hh - (t5 + t2 + t5 + t2)}"
-                group.add(getLine(h, stroke="#ff0000"))
+                group.add(getLine(h, stroke="#ff0000", linethickness=self.linethickness))
 
         # End Fold Lines
 

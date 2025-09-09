@@ -37,43 +37,6 @@ def log(text: str) -> None:
         f.write(text + "\n")
 
 
-def newGroup(canvas: inkex.Effect) -> inkex.Group:
-    # Create a new group and add element created from line string
-    panelId = canvas.svg.get_unique_id("panel")
-    group = canvas.svg.get_current_layer().add(inkex.Group(id=panelId))
-    return group
-
-
-def newLinePath(XYstring: str,
-                linethickness: float) -> inkex.PathElement:
-    line = inkex.PathElement()
-    line.style = {
-        "stroke": "#000000",
-        "stroke-width": str(linethickness),
-        "fill": "none",
-    }
-    line.path = XYstring
-    # inkex.etree.SubElement(parent, inkex.addNS('path','svg'), drw)
-    return line
-
-
-# jslee - shamelessly adapted from sample code on below Inkscape wiki page 2015-07-28
-# http://wiki.inkscape.org/wiki/index.php/Generating_objects_from_extensions
-
-def newCirclePath(r: float,
-                  c: tuple[float, float],
-                  linethickness: float) -> inkex.PathElement:
-    (cx, cy) = c
-    log("putting circle at (%d,%d)" % (cx, cy))
-    circle = inkex.PathElement.arc((cx, cy), r)
-    circle.style = {
-        "stroke": "#000000",
-        "stroke-width": str(linethickness),
-        "fill": "none",
-    }
-    return circle
-
-
 class BoxMaker(inkex.Effect):
     linethickness: float = 1
     thickess: float
@@ -673,7 +636,7 @@ class BoxMaker(inkex.Effect):
             floor = 1 if piece[6] == 1 else 0
             railholes = 1 if piece[6] == 3 else 0
 
-            group = newGroup(self)
+            group = self.newGroup(id="piece%d" % idx)
             groups = [group]
 
             if schroff and railholes:
@@ -697,10 +660,10 @@ class BoxMaker(inkex.Effect):
                     rh1y = rystart + rail_mount_centre_offset
                     rh2y = rh1y + (row_centre_spacing - rail_mount_centre_offset)
                     group.add(
-                        newCirclePath(
+                        self.newCirclePath(
                             rail_mount_radius, (rhx, rh1y), self.linethickness))
                     group.add(
-                        newCirclePath(
+                        self.newCirclePath(
                             rail_mount_radius, (rhx, rh2y), self.linethickness))
                 else:
                     for n in range(0, rows):
@@ -711,10 +674,10 @@ class BoxMaker(inkex.Effect):
                         rh1y = rystart + rail_mount_centre_offset
                         rh2y = rh1y + row_centre_spacing - rail_mount_centre_offset
                         group.add(
-                            newCirclePath(
+                            self.newCirclePath(
                                 rail_mount_radius, (rhx, rh1y), self.linethickness))
                         group.add(
-                            newCirclePath(
+                            self.newCirclePath(
                                 rail_mount_radius, (rhx, rh2y), self.linethickness))
                         rystart += row_centre_spacing + row_spacing + rail_height
 
@@ -837,7 +800,7 @@ class BoxMaker(inkex.Effect):
 
                 y = 4 * spacing + 1 * Y + 2 * Z  # root y co-ord for piece
                 for n in range(0, divx):  # generate X dividers
-                    subGroup = newGroup(self)
+                    subGroup = self.newGroup(id="xdivider%d" % n)
                     groups.append(subGroup)
                     x = n * (spacing + X)  # root x co-ord for piece
                     self.side(
@@ -912,7 +875,7 @@ class BoxMaker(inkex.Effect):
             elif idx == 1:
                 y = 5 * spacing + 1 * Y + 3 * Z  # root y co-ord for piece
                 for n in range(0, divy):  # generate Y dividers
-                    subGroup = newGroup(self)
+                    subGroup = self.newGroup(id="ydivider%d" % n)
                     groups.append(subGroup)
                     x = n * (spacing + Z)  # root x co-ord for piece
                     self.side(
@@ -1141,6 +1104,46 @@ class BoxMaker(inkex.Effect):
             ds += "L " + str(Vxd) + "," + str(Vyd) + " "
         return ds
 
+    def newGroup(self,
+                 id: str | None = None) -> inkex.Group:
+        # Create a new group and add element created from line string
+        panelId = self.svg.get_unique_id((id + '_') if id is not None else "panel")
+        group = self.svg.get_current_layer().add(inkex.Group(id=panelId))
+        return group
+
+    def newLinePath(self,
+                    XYstring: str,
+                    linethickness: float,
+                    id : str | None = None) -> inkex.PathElement:
+        line = inkex.PathElement()
+        line.style = {
+            "stroke": "#000000",
+            "stroke-width": str(round(linethickness, 8)),
+            "fill": "none",
+        }
+        line.path = XYstring
+
+        pathId = self.svg.get_unique_id((id + '_') if id is not None else "path")
+        line.set_id(pathId)
+        # inkex.etree.SubElement(parent, inkex.addNS('path','svg'), drw)
+        return line
+
+    # jslee - shamelessly adapted from sample code on below Inkscape wiki page 2015-07-28
+    # http://wiki.inkscape.org/wiki/index.php/Generating_objects_from_extensions
+    def newCirclePath(self,
+                      r: float,
+                      c: tuple[float, float],
+                      linethickness: float) -> inkex.PathElement:
+        (cx, cy) = c
+        log("putting circle at (%d,%d)" % (cx, cy))
+        circle = inkex.PathElement.arc((cx, cy), r)
+        circle.style = {
+            "stroke": "#000000",
+            "stroke-width": str(linethickness),
+            "fill": "none",
+        }
+        return circle
+
     def side(
         self,
         group: inkex.Group,
@@ -1200,7 +1203,7 @@ class BoxMaker(inkex.Effect):
         firstVec = 0
         secondVec = tabVec
         dividerEdgeOffsetX = dividerEdgeOffsetY = self.thickness
-        notDirX = dirX == 0 # used to select operation on x or y
+        notDirX = dirX == 0  # used to select operation on x or y
         notDirY = dirY == 0
         if self.tabSymmetry == 1:
             dividerEdgeOffsetX = dirX * self.thickness
@@ -1231,10 +1234,10 @@ class BoxMaker(inkex.Effect):
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; self.thickness:self.thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
 
+        holes = []
         for tabDivision in range(1, int(divisions)):
             # draw holes for divider tabs to key into side walls
-            if (((tabDivision % 2) > 0) != (not isTab)
-                ) and numDividers > 0 and not isDivider:
+            if (((tabDivision % 2) > 0) != (not isTab)) and numDividers > 0 and not isDivider:
                 w = gapWidth if isTab else tabWidth
                 if tabDivision == 1 and self.tabSymmetry == 0:
                     w -= startOffsetX * self.thickness
@@ -1253,7 +1256,7 @@ class BoxMaker(inkex.Effect):
                     Dy = (
                         vectorY
                         + dirX * dividerSpacing * dividerNumber
-                        - (halfkerf if notDirY else 0) 
+                        - (halfkerf if notDirY else 0)
                         + ((dirY * halfkerf - first * dirY) if self.dogbone else 0)
                     )
                     if tabDivision == 1 and self.tabSymmetry == TabSymmetry.XY_SYMMETRIC:
@@ -1271,7 +1274,7 @@ class BoxMaker(inkex.Effect):
                     Dx = Dx - notDirX * (secondVec - self.kerf)
                     Dy = Dy - notDirY * (secondVec + self.kerf)
                     h += "L " + str(Dx) + "," + str(Dy) + " "
-                    group.add(newLinePath(h, self.linethickness))
+                    holes.append(self.newLinePath(h, self.linethickness, id="hole%d-%d" % (tabDivision, dividerNumber)))
             if tabDivision % 2:
                 if (
                     tabDivision == 1 and numDividers > 0 and isDivider
@@ -1302,7 +1305,7 @@ class BoxMaker(inkex.Effect):
                         Dx = Dx - notDirX * (self.thickness - self.kerf)
                         Dy = Dy - notDirY * (self.thickness - self.kerf)
                         h += "L " + str(Dx) + "," + str(Dy) + " "
-                        group.add(newLinePath(h, self.linethickness))
+                        group.add(self.newLinePath(h, self.linethickness, id="slot%d-%d" % (tabDivision, dividerNumber)))
                 # draw the gap
                 vectorX += (
                     dirX
@@ -1402,6 +1405,8 @@ class BoxMaker(inkex.Effect):
                 Dx = Dx - notDirX * (self.thickness - self.kerf)
                 Dy = Dy - notDirY * (self.thickness - self.kerf)
                 h += "L " + str(Dx) + "," + str(Dy) + " "
-                group.add(newLinePath(h, self.linethickness))
-        group.add(newLinePath(s, self.linethickness))
+                group.add(self.newLinePath(h, self.linethickness, id="slot%d-%d" % (tabDivision, dividerNumber)))
+        group.add(self.newLinePath(s, self.linethickness, id="side"))
+        for hole in holes:
+            group.add(hole)
         return s

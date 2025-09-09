@@ -1,12 +1,20 @@
 import io
 import os
 import re
-import pytest
 from tabbedboxmaker import BoxMaker
+import xml.dom.minidom
 
 
 def mask_panel_ids(svgin: str) -> str:
-    return re.sub(r'"panel\d+"', '"panelTEST"', svgin)
+    return re.sub(r'"(panel|side|piece|hole|slot|[xy]divider)\d*(-\d)*(_\d+)+"', '"\1TEST"', svgin)
+
+
+def pretty_xml(xml_str: str) -> str:
+    """Return a consistently pretty-printed XML string."""
+    dom = xml.dom.minidom.parseString(xml_str)
+    pretty = dom.toprettyxml(indent="  ")
+    # Remove extra blank lines that toprettyxml() inserts
+    return "\n".join([line for line in pretty.split("\n") if line.strip()])
 
 
 class TestTabbedBox:
@@ -518,6 +526,7 @@ class TestTabbedBox:
             tbm.save_raw(tbm.effect())
 
             output = outfh.getvalue().decode("utf-8")
+            output = pretty_xml(output)
 
             with open(actual_file, "w", encoding="utf-8") as f:
                 f.write(output)
