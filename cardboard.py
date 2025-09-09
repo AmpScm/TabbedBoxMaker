@@ -3,7 +3,7 @@
 Generates Inkscape SVG file containing box components needed to
 CNC (laser/mill) cut a card board box
 
-Original Tabbed Box Maker Copyright (C) 2011 elliot white
+Original Tabbed Box Maker Copyright (C) 2011 Elliot White
 Cardboard Box Maker Copyright (C) 2024 Brad Goodman
 
 See changelog in tabbedboxmaker/__about__.py
