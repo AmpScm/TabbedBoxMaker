@@ -3,7 +3,7 @@
 Generates Inkscape SVG file containing box components needed to
 CNC (laser/mill) cut a box with tabbed joints taking kerf and clearance into account
 
-Original Tabbed Box Maker Copyright (C) 2011 elliot white
+Original Tabbed Box Maker Copyright (C) 2011 Elliot White
 
 See changelog in tabbedboxmaker/__about__.py
 
@@ -21,14 +21,40 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from tabbedboxmaker import BoxMaker
+from tabbedboxmaker.enums import BoxType, TabSymmetry, TabType, Layout, TabWidth, DividerKeying
 
 # Create effect instance and apply it.
 def main(cli=False, schroff=False):
     effect = BoxMaker(cli=cli, schroff=schroff)
     effect.run()
 
+def print_enum_help():
+    print("\nAvailable enum options:")
+    print("BoxType:")
+    for e in BoxType:
+        print(f"  {e.value}: {e.name}")
+    print("TabSymmetry:")
+    for e in TabSymmetry:
+        print(f"  {e.value}: {e.name}")
+    print("TabType:")
+    for e in TabType:
+        print(f"  {e.value}: {e.name}")
+    print("Layout:")
+    for e in Layout:
+        print(f"  {e.value}: {e.name}")
+    print("TabWidth:")
+    for e in TabWidth:
+        print(f"  {e.value}: {e.name}")
+    print("DividerKeying:")
+    for e in DividerKeying:
+        print(f"  {e.value}: {e.name}")
+
 def main_cli():
     """Entry point for command-line boxmaker."""
+    import sys
+    if '--enums' in sys.argv:
+        print_enum_help()
+        return
     main(cli=True, schroff=False)
 
 def main_schroff():

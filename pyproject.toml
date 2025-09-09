@@ -60,10 +60,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/paulh-rnd/TabbedBoxMaker"
-Repository = "https://github.com/paulh-rnd/TabbedBoxMaker"
-Issues = "https://github.com/paulh-rnd/TabbedBoxMaker/issues"
-Documentation = "https://github.com/paulh-rnd/TabbedBoxMaker/blob/master/README.md"
+Homepage = "https://github.com/ampscm/TabbedBoxMaker"
+Repository = "https://github.com/ampscm/TabbedBoxMaker"
+Issues = "https://github.com/ampscm/TabbedBoxMaker/issues"
+Documentation = "https://github.com/ampscm/TabbedBoxMaker/blob/master/README.md"
 
 [project.scripts]
 tabbedboxmaker = "tabbedboxmaker.cli:main_cli"
