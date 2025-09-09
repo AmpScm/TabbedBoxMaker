@@ -23,17 +23,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from inkex.utils import filename_arg
 
 import os
-import sys
 import inkex
-import simplestyle
 import gettext
-import math
 from copy import deepcopy
 
 _ = gettext.gettext
-
-linethickness = 1  # default unless overridden by settings
-
 
 def log(text: str) -> None:
     if "SCHROFF_LOG" in os.environ:
@@ -48,7 +42,8 @@ def newGroup(canvas: inkex.Effect) -> inkex.Group:
     return group
 
 
-def getLine(XYstring: str) -> inkex.PathElement:
+def getLine(XYstring: str,
+            linethickness: float) -> inkex.PathElement:
     line = inkex.PathElement()
     line.style = {
         "stroke": "#000000",
@@ -63,7 +58,7 @@ def getLine(XYstring: str) -> inkex.PathElement:
 # jslee - shamelessly adapted from sample code on below Inkscape wiki page 2015-07-28
 # http://wiki.inkscape.org/wiki/index.php/Generating_objects_from_extensions
 
-def getCircle(r: float, c: tuple[float, float]) -> inkex.PathElement:
+def getCircle(r: float, c: tuple[float, float], linethickness: float) -> inkex.PathElement:
     (cx, cy) = c
     log("putting circle at (%d,%d)" % (cx, cy))
     circle = inkex.PathElement.arc((cx, cy), r)
@@ -247,7 +242,7 @@ class BoxMaker(inkex.Effect):
             type=int,
             dest="hairline",
             default=0,
-            help="Line Thickness",
+            help="Line thickness",
         )
         self.arg_parser.add_argument(
             "--thickness",
@@ -332,10 +327,6 @@ class BoxMaker(inkex.Effect):
             )
 
     def effect(self) -> None:
-        global nomTab
-        global thickness, kerf, halfkerf
-        global divx, divy, hairline, linethickness
-
         if self.cli:
             self.options.input_file = None
         # Get access to main SVG document element and get its dimensions.
@@ -350,14 +341,13 @@ class BoxMaker(inkex.Effect):
         unit = self.options.unit
         inside = self.options.inside
         schroff = self.options.schroff
-        kerf = self.svg.unittouu(str(self.options.kerf) + unit)
-        halfkerf = kerf / 2
+        self.kerf = self.svg.unittouu(str(self.options.kerf) + unit)
 
-        # Set the line thickness
+        # Set the line self.thickness
         if hairline:
-            linethickness = self.svg.unittouu("0.002in")
+            self.linethickness = self.svg.unittouu("0.002in")
         else:
-            linethickness = 1
+            self.linethickness = 1
 
         if schroff:
             rows = self.options.rows
@@ -392,8 +382,8 @@ class BoxMaker(inkex.Effect):
             Y = self.svg.unittouu(str(self.options.width + self.options.kerf) + unit)
 
         Z = self.svg.unittouu(str(self.options.height + self.options.kerf) + unit)
-        thickness = self.svg.unittouu(str(self.options.thickness) + unit)
-        nomTab = self.svg.unittouu(str(self.options.tab) + unit)
+        self.thickness = self.svg.unittouu(str(self.options.thickness) + unit)
+        self.nomTab = self.svg.unittouu(str(self.options.tab) + unit)
         self.equalTabs = self.options.equal
         self.tabSymmetry = self.options.tabsymmetry
         self.dimpleHeight = self.svg.unittouu(str(self.options.dimpleheight) + unit)
@@ -410,9 +400,9 @@ class BoxMaker(inkex.Effect):
         initOffsetY = 0
 
         if inside:  # if inside dimension selected correct values to outside dimension
-            X += thickness * 2
-            Y += thickness * 2
-            Z += thickness * 2
+            X += self.thickness * 2
+            Y += self.thickness * 2
+            Z += self.thickness * 2
 
         # check input values mainly to avoid python errors
         # TODO restrict values to *correct* solutions
@@ -425,25 +415,25 @@ class BoxMaker(inkex.Effect):
         if max(X, Y, Z) > max(widthDoc, heightDoc) * 10:  # crude test
             inkex.errormsg(_("Error: Dimensions Too Large"))
             error = True
-        if min(X, Y, Z) < 3 * nomTab:
+        if min(X, Y, Z) < 3 * self.nomTab:
             inkex.errormsg(_("Error: Tab size too large"))
             error = True
-        if nomTab < thickness:
+        if self.nomTab < self.thickness:
             inkex.errormsg(_("Error: Tab size too small"))
             error = True
-        if thickness == 0:
-            inkex.errormsg(_("Error: Thickness is zero"))
+        if self.thickness == 0:
+            inkex.errormsg(_("Error: self.thickness is zero"))
             error = True
-        if thickness > min(X, Y, Z) / 3:  # crude test
+        if self.thickness > min(X, Y, Z) / 3:  # crude test
             inkex.errormsg(_("Error: Material too thick"))
             error = True
-        if kerf > min(X, Y, Z) / 3:  # crude test
-            inkex.errormsg(_("Error: Kerf too large"))
+        if self.kerf > min(X, Y, Z) / 3:  # crude test
+            inkex.errormsg(_("Error: self.kerf too large"))
             error = True
         if spacing > max(X, Y, Z) * 10:  # crude test
             inkex.errormsg(_("Error: Spacing too large"))
             error = True
-        if spacing < kerf:
+        if spacing < self.kerf:
             inkex.errormsg(_("Error: Spacing too small"))
             error = True
 
@@ -654,8 +644,8 @@ class BoxMaker(inkex.Effect):
             btabs = tabbed >> 2 & 1
             ctabs = tabbed >> 1 & 1
             dtabs = tabbed & 1  # extract tabbed flag for each side
-            xspacing = (X - thickness) / (divy + 1)
-            yspacing = (Y - thickness) / (divx + 1)
+            xspacing = (X - self.thickness) / (divy + 1)
+            yspacing = (Y - self.thickness) / (divx + 1)
             xholes = 1 if piece[6] < 3 else 0
             yholes = 1 if piece[6] != 2 else 0
             wall = 1 if piece[6] > 1 else 0
@@ -668,11 +658,11 @@ class BoxMaker(inkex.Effect):
             if schroff and railholes:
                 log(
                     "rail holes enabled on piece %d at (%d, %d)"
-                    % (idx, x + thickness, y + thickness)
+                    % (idx, x + self.thickness, y + self.thickness)
                 )
                 log("abcd = (%d,%d,%d,%d)" % (a, b, c, d))
                 log("dxdy = (%d,%d)" % (dx, dy))
-                rhxoffset = rail_mount_depth + thickness
+                rhxoffset = rail_mount_depth + self.thickness
                 if idx == 1:
                     rhx = x + rhxoffset
                 elif idx == 3:
@@ -680,13 +670,13 @@ class BoxMaker(inkex.Effect):
                 else:
                     rhx = 0
                 log("rhxoffset = %d, rhx= %d" % (rhxoffset, rhx))
-                rystart = y + (rail_height / 2) + thickness
+                rystart = y + (rail_height / 2) + self.thickness
                 if rows == 1:
                     log("just one row this time, rystart = %d" % rystart)
                     rh1y = rystart + rail_mount_centre_offset
                     rh2y = rh1y + (row_centre_spacing - rail_mount_centre_offset)
-                    group.add(getCircle(rail_mount_radius, (rhx, rh1y)))
-                    group.add(getCircle(rail_mount_radius, (rhx, rh2y)))
+                    group.add(getCircle(rail_mount_radius, (rhx, rh1y), self.linethickness))
+                    group.add(getCircle(rail_mount_radius, (rhx, rh2y), self.linethickness))
                 else:
                     for n in range(0, rows):
                         log("drawing row %d, rystart = %d" % (n + 1, rystart))
@@ -695,8 +685,8 @@ class BoxMaker(inkex.Effect):
                         # Schroff row
                         rh1y = rystart + rail_mount_centre_offset
                         rh2y = rh1y + row_centre_spacing - rail_mount_centre_offset
-                        group.add(getCircle(rail_mount_radius, (rhx, rh1y)))
-                        group.add(getCircle(rail_mount_radius, (rhx, rh2y)))
+                        group.add(getCircle(rail_mount_radius, (rhx, rh1y), self.linethickness))
+                        group.add(getCircle(rail_mount_radius, (rhx, rh2y), self.linethickness))
                         rystart += row_centre_spacing + row_spacing + rail_height
 
             # generate and draw the sides of each piece
@@ -705,7 +695,7 @@ class BoxMaker(inkex.Effect):
                 (x, y),
                 (d, a),
                 (-b, a),
-                atabs * (-thickness if a else thickness),
+                atabs * (-self.thickness if a else self.thickness),
                 dtabs,
                 dx,
                 (1, 0),
@@ -720,7 +710,7 @@ class BoxMaker(inkex.Effect):
                 (x + dx, y),
                 (-b, a),
                 (-b, -c),
-                btabs * (thickness if b else -thickness),
+                btabs * (self.thickness if b else -self.thickness),
                 atabs,
                 dy,
                 (0, 1),
@@ -738,7 +728,7 @@ class BoxMaker(inkex.Effect):
                     (d, -c),
                     ctabs *
                     # side c
-                    (thickness if c else -thickness),
+                    (self.thickness if c else -self.thickness),
                     btabs,
                     dx,
                     (-1, 0),
@@ -753,7 +743,7 @@ class BoxMaker(inkex.Effect):
                     (x + dx, y + dy),
                     (-b, -c),
                     (d, -c),
-                    ctabs * (thickness if c else -thickness),
+                    ctabs * (self.thickness if c else -self.thickness),
                     btabs,
                     dx,
                     # side c
@@ -775,7 +765,7 @@ class BoxMaker(inkex.Effect):
                     (d, a),
                     dtabs *
                     # side d
-                    (-thickness if d else thickness),
+                    (-self.thickness if d else self.thickness),
                     ctabs,
                     dy,
                     (0, -1),
@@ -790,7 +780,7 @@ class BoxMaker(inkex.Effect):
                     (x, y + dy),
                     (d, -c),
                     (d, a),
-                    dtabs * (-thickness if d else thickness),
+                    dtabs * (-self.thickness if d else self.thickness),
                     ctabs,
                     dy,
                     (0, -1),
@@ -824,7 +814,7 @@ class BoxMaker(inkex.Effect):
                         (x, y),
                         (d, a),
                         (-b, a),
-                        self.keydivfloor * atabs * (-thickness if a else thickness),
+                        self.keydivfloor * atabs * (-self.thickness if a else self.thickness),
                         dtabs,
                         dx,
                         (1, 0),
@@ -841,11 +831,11 @@ class BoxMaker(inkex.Effect):
                         self.keydivwalls
                         * btabs
                         * (
-                            thickness
+                            self.thickness
                             if b
                             else -
                             # side b
-                            thickness
+                            self.thickness
                         ),
                         atabs,
                         dy,
@@ -862,7 +852,7 @@ class BoxMaker(inkex.Effect):
                         (d, -c),
                         self.keydivfloor * ctabs *
                         # side c
-                        (thickness if c else -thickness),
+                        (self.thickness if c else -self.thickness),
                         btabs,
                         dx,
                         (-1, 0),
@@ -878,7 +868,7 @@ class BoxMaker(inkex.Effect):
                         (d, a),
                         self.keydivwalls * dtabs *
                         # side d
-                        (-thickness if d else thickness),
+                        (-self.thickness if d else self.thickness),
                         ctabs,
                         dy,
                         (0, -1),
@@ -899,7 +889,7 @@ class BoxMaker(inkex.Effect):
                         (d, a),
                         (-b, a),
                         # side a
-                        self.keydivwalls * atabs * (-thickness if a else thickness),
+                        self.keydivwalls * atabs * (-self.thickness if a else self.thickness),
                         dtabs,
                         dx,
                         (1, 0),
@@ -915,7 +905,7 @@ class BoxMaker(inkex.Effect):
                         (-b, -c),
                         self.keydivfloor
                         * btabs  # side b
-                        * (thickness if b else -thickness),
+                        * (self.thickness if b else -self.thickness),
                         atabs,
                         dy,
                         (0, 1),
@@ -931,7 +921,7 @@ class BoxMaker(inkex.Effect):
                         (d, -c),
                         self.keydivwalls * ctabs *
                         # side c
-                        (thickness if c else -thickness),
+                        (self.thickness if c else -self.thickness),
                         btabs,
                         dx,
                         (-1, 0),
@@ -947,7 +937,7 @@ class BoxMaker(inkex.Effect):
                         (d, a),
                         self.keydivfloor * dtabs *
                         # side d
-                        (-thickness if d else thickness),
+                        (-self.thickness if d else self.thickness),
                         ctabs,
                         dy,
                         (0, -1),
@@ -1139,34 +1129,37 @@ class BoxMaker(inkex.Effect):
             dirX, dirY = direction
             notTab = not isTab
 
+            halfkerf = self.kerf / 2
+
+
             if self.tabSymmetry == 1:  # waffle-block style rotationally symmetric tabs
-                divisions = int((length - 2 * thickness) / nomTab)
+                divisions = int((length - 2 * self.thickness) / self.nomTab)
                 if divisions % 2:
                     divisions += 1  # make divs even
                 divisions = float(divisions)
                 tabs = divisions / 2  # tabs for side
             else:
-                divisions = int(length / nomTab)
+                divisions = int(length / self.nomTab)
                 if not divisions % 2:
                     divisions -= 1  # make divs odd
                 divisions = float(divisions)
                 tabs = (divisions - 1) / 2  # tabs for side
 
             if self.tabSymmetry == 1:  # waffle-block style rotationally symmetric tabs
-                gapWidth = tabWidth = (length - 2 * thickness) / divisions
+                gapWidth = tabWidth = (length - 2 * self.thickness) / divisions
             elif self.equalTabs:
                 gapWidth = tabWidth = length / divisions
             else:
-                tabWidth = nomTab
-                gapWidth = (length - tabs * nomTab) / (divisions - tabs)
+                tabWidth = self.nomTab
+                gapWidth = (length - tabs * self.nomTab) / (divisions - tabs)
 
-            if isTab:  # kerf correction
-                gapWidth -= kerf
-                tabWidth += kerf
+            if isTab:  # self.kerf correction
+                gapWidth -= self.kerf
+                tabWidth += self.kerf
                 first = halfkerf
             else:
-                gapWidth += kerf
-                tabWidth -= kerf
+                gapWidth += self.kerf
+                tabWidth -= self.kerf
                 first = -halfkerf
             firstholelenX = 0
             firstholelenY = 0
@@ -1174,28 +1167,28 @@ class BoxMaker(inkex.Effect):
             h = []
             firstVec = 0
             secondVec = tabVec
-            dividerEdgeOffsetX = dividerEdgeOffsetY = thickness
+            dividerEdgeOffsetX = dividerEdgeOffsetY = self.thickness
             notDirX = 0 if dirX else 1  # used to select operation on x or y
             notDirY = 0 if dirY else 1
             if self.tabSymmetry == 1:
-                dividerEdgeOffsetX = dirX * thickness
+                dividerEdgeOffsetX = dirX * self.thickness
                 # dividerEdgeOffsetY = ;
-                vectorX = rootX + (0 if dirX and prevTab else startOffsetX * thickness)
-                vectorY = rootY + (0 if dirY and prevTab else startOffsetY * thickness)
+                vectorX = rootX + (0 if dirX and prevTab else startOffsetX * self.thickness)
+                vectorY = rootY + (0 if dirY and prevTab else startOffsetY * self.thickness)
                 s = "M " + str(vectorX) + "," + str(vectorY) + " "
-                vectorX = rootX + (startOffsetX if startOffsetX else dirX) * thickness
-                vectorY = rootY + (startOffsetY if startOffsetY else dirY) * thickness
+                vectorX = rootX + (startOffsetX if startOffsetX else dirX) * self.thickness
+                vectorY = rootY + (startOffsetY if startOffsetY else dirY) * self.thickness
                 if notDirX and tabVec:
                     endOffsetX = 0
                 if notDirY and tabVec:
                     endOffsetY = 0
             else:
                 (vectorX, vectorY) = (
-                    rootX + startOffsetX * thickness,
-                    rootY + startOffsetY * thickness,
+                    rootX + startOffsetX * self.thickness,
+                    rootY + startOffsetY * self.thickness,
                 )
-                dividerEdgeOffsetX = dirY * thickness
-                dividerEdgeOffsetY = dirX * thickness
+                dividerEdgeOffsetX = dirY * self.thickness
+                dividerEdgeOffsetY = dirX * self.thickness
                 s = "M " + str(vectorX) + "," + str(vectorY) + " "
                 if notDirX:
                     vectorY = rootY  # set correct line start for tab generation
@@ -1203,7 +1196,7 @@ class BoxMaker(inkex.Effect):
                     vectorX = rootX
 
             # generate line as tab or hole using:
-            #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
+            #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; self.thickness:self.thickness
             #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
 
             for tabDivision in range(1, int(divisions)):
@@ -1211,7 +1204,7 @@ class BoxMaker(inkex.Effect):
                 if (((tabDivision % 2) > 0) != (not isTab)) and numDividers > 0 and not isDivider:
                     w = gapWidth if isTab else tabWidth
                     if tabDivision == 1 and self.tabSymmetry == 0:
-                        w -= startOffsetX * thickness
+                        w -= startOffsetX * self.thickness
                     holeLenX = dirX * w + notDirX * firstVec + first * dirX
                     holeLenY = dirY * w + notDirY * firstVec + first * dirY
                     if first:
@@ -1233,21 +1226,21 @@ class BoxMaker(inkex.Effect):
                             - self.dogbone * first * dirY
                         )
                         if tabDivision == 1 and self.tabSymmetry == 0:
-                            Dx += startOffsetX * thickness
+                            Dx += startOffsetX * self.thickness
                         h = "M " + str(Dx) + "," + str(Dy) + " "
                         Dx = Dx + holeLenX
                         Dy = Dy + holeLenY
                         h += "L " + str(Dx) + "," + str(Dy) + " "
-                        Dx = Dx + notDirX * (secondVec - kerf)
-                        Dy = Dy + notDirY * (secondVec + kerf)
+                        Dx = Dx + notDirX * (secondVec - self.kerf)
+                        Dy = Dy + notDirY * (secondVec + self.kerf)
                         h += "L " + str(Dx) + "," + str(Dy) + " "
                         Dx = Dx - holeLenX
                         Dy = Dy - holeLenY
                         h += "L " + str(Dx) + "," + str(Dy) + " "
-                        Dx = Dx - notDirX * (secondVec - kerf)
-                        Dy = Dy - notDirY * (secondVec + kerf)
+                        Dx = Dx - notDirX * (secondVec - self.kerf)
+                        Dy = Dy - notDirY * (secondVec + self.kerf)
                         h += "L " + str(Dx) + "," + str(Dy) + " "
-                        group.add(getLine(h))
+                        group.add(getLine(h, self.linethickness))
                 if tabDivision % 2:
                     if (
                         tabDivision == 1 and numDividers > 0 and isDivider
@@ -1269,23 +1262,23 @@ class BoxMaker(inkex.Effect):
                             Dx = Dx + dirX * (first + length / 2)
                             Dy = Dy + dirY * (first + length / 2)
                             h += "L " + str(Dx) + "," + str(Dy) + " "
-                            Dx = Dx + notDirX * (thickness - kerf)
-                            Dy = Dy + notDirY * (thickness - kerf)
+                            Dx = Dx + notDirX * (self.thickness - self.kerf)
+                            Dy = Dy + notDirY * (self.thickness - self.kerf)
                             h += "L " + str(Dx) + "," + str(Dy) + " "
                             Dx = Dx - dirX * (first + length / 2)
                             Dy = Dy - dirY * (first + length / 2)
                             h += "L " + str(Dx) + "," + str(Dy) + " "
-                            Dx = Dx - notDirX * (thickness - kerf)
-                            Dy = Dy - notDirY * (thickness - kerf)
+                            Dx = Dx - notDirX * (self.thickness - self.kerf)
+                            Dy = Dy - notDirY * (self.thickness - self.kerf)
                             h += "L " + str(Dx) + "," + str(Dy) + " "
-                            group.add(getLine(h))
+                            group.add(getLine(h, self.linethickness))
                     # draw the gap
                     vectorX += (
                         dirX
                         * (
                             gapWidth
                             + (first if not(isTab and self.dogbone) else 0)
-                            + self.dogbone * kerf * isTab
+                            + self.dogbone * self.kerf * isTab
                         )
                         + notDirX * firstVec
                     )
@@ -1294,7 +1287,7 @@ class BoxMaker(inkex.Effect):
                         * (
                             gapWidth
                             + (first if not(isTab and self.dogbone) else 0)
-                            + (kerf if self.dogbone and isTab else 0)
+                            + (self.kerf if self.dogbone and isTab else 0)
                         )
                         + notDirY * firstVec
                     )
@@ -1317,8 +1310,8 @@ class BoxMaker(inkex.Effect):
 
                 else:
                     # draw the tab
-                    vectorX += dirX * (tabWidth + self.dogbone * kerf * notTab) + notDirX * firstVec
-                    vectorY += dirY * (tabWidth + self.dogbone * kerf * notTab) + notDirY * firstVec
+                    vectorX += dirX * (tabWidth + self.dogbone * self.kerf * notTab) + notDirX * firstVec
+                    vectorY += dirY * (tabWidth + self.dogbone * self.kerf * notTab) + notDirY * firstVec
                     s += "L " + str(vectorX) + "," + str(vectorY) + " "
                     if self.dogbone and notTab:
                         vectorX -= dirX * halfkerf
@@ -1341,9 +1334,9 @@ class BoxMaker(inkex.Effect):
             # finish the line off
             s += (
                 "L "
-                + str(rootX + endOffsetX * thickness + dirX * length)
+                + str(rootX + endOffsetX * self.thickness + dirX * length)
                 + ","
-                + str(rootY + endOffsetY * thickness + dirY * length)
+                + str(rootY + endOffsetY * self.thickness + dirY * length)
                 + " "
             )
 
@@ -1367,15 +1360,15 @@ class BoxMaker(inkex.Effect):
                     Dx = Dx + firstholelenX
                     Dy = Dy + firstholelenY
                     h += "L " + str(Dx) + "," + str(Dy) + " "
-                    Dx = Dx + notDirX * (thickness - kerf)
-                    Dy = Dy + notDirY * (thickness - kerf)
+                    Dx = Dx + notDirX * (self.thickness - self.kerf)
+                    Dy = Dy + notDirY * (self.thickness - self.kerf)
                     h += "L " + str(Dx) + "," + str(Dy) + " "
                     Dx = Dx - firstholelenX
                     Dy = Dy - firstholelenY
                     h += "L " + str(Dx) + "," + str(Dy) + " "
-                    Dx = Dx - notDirX * (thickness - kerf)
-                    Dy = Dy - notDirY * (thickness - kerf)
+                    Dx = Dx - notDirX * (self.thickness - self.kerf)
+                    Dy = Dy - notDirY * (self.thickness - self.kerf)
                     h += "L " + str(Dx) + "," + str(Dy) + " "
-                    group.add(getLine(h))
-            group.add(getLine(s))
+                    group.add(getLine(h, self.linethickness))
+            group.add(getLine(s, self.linethickness))
             return s
