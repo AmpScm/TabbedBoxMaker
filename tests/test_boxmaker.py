@@ -4,53 +4,8 @@ import re
 import pytest
 from tabbedboxmaker import BoxMaker
 
-blank_svg = b"""<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   width="210mm"
-   height="297mm"
-   viewBox="0 0 210 297"
-   version="1.1"
-   id="svg5"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
-   sodipodi:docname="blank.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview7"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:document-units="mm"
-     showgrid="false"
-     inkscape:zoom="0.64052329"
-     inkscape:cx="397.33138"
-     inkscape:cy="561.25984"
-     inkscape:window-width="2086"
-     inkscape:window-height="1376"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
-  <defs
-     id="defs2" />
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1" />
-</svg>
-"""
-
-
 def mask_panel_ids(svgin: str) -> str:
     return re.sub(r'"panel\d+"', '"panelTEST"', svgin)
-
 
 class TestTabbedBox:
 
@@ -545,7 +500,6 @@ class TestTabbedBox:
 
         for case in cases:
             print(case["label"])
-            infh = io.BytesIO(blank_svg)
             outfh = io.BytesIO()
             expected_file = os.path.join(expected_output_dir, case["label"] + ".svg")
             expected = ""
@@ -553,10 +507,9 @@ class TestTabbedBox:
             with open(expected_file, "r") as f:
                 expected = mask_panel_ids(f.read())
 
-            tbm = BoxMaker()
+            tbm = BoxMaker(cli=True)
 
             tbm.parse_arguments(case["args"])
-            tbm.options.input_file = infh
             tbm.options.output = outfh
 
             tbm.load_raw()

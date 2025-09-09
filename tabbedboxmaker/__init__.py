@@ -35,20 +35,20 @@ _ = gettext.gettext
 linethickness = 1  # default unless overridden by settings
 
 
-def log(text):
+def log(text: str) -> None:
     if "SCHROFF_LOG" in os.environ:
         f = open(os.environ.get("SCHROFF_LOG"), "a")
         f.write(text + "\n")
 
 
-def newGroup(canvas):
+def newGroup(canvas: inkex.Effect) -> inkex.Group:
     # Create a new group and add element created from line string
     panelId = canvas.svg.get_unique_id("panel")
     group = canvas.svg.get_current_layer().add(inkex.Group(id=panelId))
     return group
 
 
-def getLine(XYstring):
+def getLine(XYstring: str) -> inkex.PathElement:
     line = inkex.PathElement()
     line.style = {
         "stroke": "#000000",
@@ -63,8 +63,7 @@ def getLine(XYstring):
 # jslee - shamelessly adapted from sample code on below Inkscape wiki page 2015-07-28
 # http://wiki.inkscape.org/wiki/index.php/Generating_objects_from_extensions
 
-
-def getCircle(r, c):
+def getCircle(r: float, c: tuple[float, float]) -> inkex.PathElement:
     (cx, cy) = c
     log("putting circle at (%d,%d)" % (cx, cy))
     circle = inkex.PathElement.arc((cx, cy), r)
@@ -76,7 +75,17 @@ def getCircle(r, c):
     return circle
 
 
-def dimpleStr(tabVector, vectorX, vectorY, dirX, dirY, dirxN, diryN, ddir, isTab):
+def dimpleStr(
+    tabVector: float,
+    vectorX: float,
+    vectorY: float,
+    dirX: int,
+    dirY: int,
+    dirxN: int,
+    diryN: int,
+    ddir: int,
+    isTab: bool
+) -> str:
     ds = ""
     if not isTab:
         ddir = -ddir
@@ -103,24 +112,24 @@ def dimpleStr(tabVector, vectorX, vectorY, dirX, dirY, dirxN, diryN, ddir, isTab
 
 
 def side(
-    group,
-    root,
-    startOffset,
-    endOffset,
-    tabVec,
-    prevTab,
-    length,
-    direction,
-    isTab,
-    isDivider,
-    numDividers,
-    dividerSpacing,
-):
+    group: inkex.Group,
+    root: tuple[float, float],
+    startOffset: tuple[float, float],
+    endOffset: tuple[float, float],
+    tabVec: float,
+    prevTab: int,
+    length: float,
+    direction: tuple[int, int],
+    isTab: bool,
+    isDivider: bool,
+    numDividers: int,
+    dividerSpacing: float,
+) -> str:
     rootX, rootY = root
     startOffsetX, startOffsetY = startOffset
     endOffsetX, endOffsetY = endOffset
     dirX, dirY = direction
-    notTab = 0 if isTab else 1
+    notTab = not isTab
 
     if tabSymmetry == 1:  # waffle-block style rotationally symmetric tabs
         divisions = int((length - 2 * thickness) / nomTab)
@@ -191,7 +200,7 @@ def side(
 
     for tabDivision in range(1, int(divisions)):
         # draw holes for divider tabs to key into side walls
-        if ((tabDivision % 2) ^ (not isTab)) and numDividers > 0 and not isDivider:
+        if (((tabDivision % 2) > 0) != (not isTab)) and numDividers > 0 and not isDivider:
             w = gapWidth if isTab else tabWidth
             if tabDivision == 1 and tabSymmetry == 0:
                 w -= startOffsetX * thickness
@@ -267,7 +276,7 @@ def side(
                 dirX
                 * (
                     gapWidth
-                    + (isTab & dogbone & 1 ^ 0x1) * first
+                    + (first if not(isTab and dogbone) else 0)
                     + dogbone * kerf * isTab
                 )
                 + notDirX * firstVec
@@ -276,8 +285,8 @@ def side(
                 dirY
                 * (
                     gapWidth
-                    + (isTab & dogbone & 1 ^ 0x1) * first
-                    + dogbone * kerf * isTab
+                    + (first if not(isTab and dogbone) else 0)
+                    + (kerf if dogbone and isTab else 0)
                 )
                 + notDirY * firstVec
             )
@@ -340,8 +349,6 @@ def side(
                 + dirX * dogbone * halfkerf
                 - dogbone * first * dirX
             )
-            # Dy=vectorY+dirX*dividerSpacing*dividerNumber-notDirY*halfkerf+dirY*dogbone*halfkerf-dogbone*first*dirY
-            # Dx=vectorX+-dirY*dividerSpacing*dividerNumber-dividerEdgeOffsetX+notDirX*halfkerf
             Dy = (
                 vectorY
                 + dirX * dividerSpacing * dividerNumber
@@ -362,31 +369,12 @@ def side(
             Dy = Dy - notDirY * (thickness - kerf)
             h += "L " + str(Dx) + "," + str(Dy) + " "
             group.add(getLine(h))
-        # for dividerNumber in range(1,int(numDividers)+1):
-        #   Dx=vectorX+-dirY*dividerSpacing*dividerNumber+notDirX*halfkerf+dirX*dogbone*halfkerf
-        #   Dy=vectorY+dirX*dividerSpacing*dividerNumber-notDirY*halfkerf+dirY*dogbone*halfkerf
-        #   # Dx=vectorX+dirX*dogbone*halfkerf
-        #   # Dy=vectorY+dirX*dividerSpacing*dividerNumber-dirX*halfkerf+dirY*dogbone*halfkerf
-        #   h='M '+str(Dx)+','+str(Dy)+' '
-        #   Dx=rootX+endOffsetX*thickness+dirX*length
-        #   Dy+=dirY*tabWidth+notDirY*firstVec+first*dirY
-        #   h+='L '+str(Dx)+','+str(Dy)+' '
-        #   Dx+=notDirX*(secondVec-kerf)
-        #   Dy+=notDirY*(secondVec+kerf)
-        #   h+='L '+str(Dx)+','+str(Dy)+' '
-        #   Dx-=vectorX
-        #   Dy-=(dirY*tabWidth+notDirY*firstVec+first*dirY)
-        #   h+='L '+str(Dx)+','+str(Dy)+' '
-        #   Dx-=notDirX*(secondVec-kerf)
-        #   Dy-=notDirY*(secondVec+kerf)
-        #   h+='L '+str(Dx)+','+str(Dy)+' '
-        #   group.add(getLine(h))
     group.add(getLine(s))
     return s
 
 
 class BoxMaker(inkex.Effect):
-    def __init__(self, cli=False, schroff=False):
+    def __init__(self, cli: bool = False, schroff: bool = False):
         # Call the base class constructor.
         inkex.Effect.__init__(self)
         # Define options
@@ -422,7 +410,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="rail_height",
             default=10.0,
-            help="Height of rail",
+            help="Height of rail (float)",
         )
         self.arg_parser.add_argument(
             "--rail_mount_depth",
@@ -430,7 +418,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="rail_mount_depth",
             default=17.4,
-            help="Depth at which to place hole for rail mount bolt",
+            help="Depth at which to place hole for rail mount bolt (float)",
         )
         self.arg_parser.add_argument(
             "--rail_mount_centre_offset",
@@ -438,7 +426,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="rail_mount_centre_offset",
             default=0.0,
-            help="How far toward row centreline to offset rail mount bolt (from rail centreline)",
+            help="How far toward row centreline to offset rail mount bolt (from rail centreline) (float)",
         )
         self.arg_parser.add_argument(
             "--rows",
@@ -446,7 +434,7 @@ class BoxMaker(inkex.Effect):
             type=int,
             dest="rows",
             default=0,
-            help="Number of Schroff rows",
+            help="Number of Schroff rows (int)",
         )
         self.arg_parser.add_argument(
             "--hp",
@@ -454,7 +442,7 @@ class BoxMaker(inkex.Effect):
             type=int,
             dest="hp",
             default=0,
-            help="Width (TE/HP units) of Schroff rows",
+            help="Width (TE/HP units) of Schroff rows (int)",
         )
         self.arg_parser.add_argument(
             "--row_spacing",
@@ -462,7 +450,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="row_spacing",
             default=10.0,
-            help="Height of rail",
+            help="Height of rail (float)",
         )
         self.arg_parser.add_argument(
             "--unit",
@@ -486,7 +474,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="length",
             default=100,
-            help="Length of Box",
+            help="Length of Box (float)",
         )
         self.arg_parser.add_argument(
             "--width",
@@ -494,7 +482,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="width",
             default=100,
-            help="Width of Box",
+            help="Width of Box (float)",
         )
         self.arg_parser.add_argument(
             "--depth",
@@ -502,7 +490,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="height",
             default=100,
-            help="Height of Box",
+            help="Height of Box (float)",
         )
         self.arg_parser.add_argument(
             "--tab",
@@ -510,7 +498,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="tab",
             default=25,
-            help="Nominal Tab Width",
+            help="Nominal Tab Width (float)",
         )
         self.arg_parser.add_argument(
             "--equal",
@@ -633,8 +621,7 @@ class BoxMaker(inkex.Effect):
             help="Optimize paths",
         )
 
-    def parse_arguments(self, args):
-        # type: (List[str]) -> None
+    def parse_arguments(self, args: list[str]) -> None:
         """Parse the given arguments and set 'self.options'"""
         self.options = self.arg_parser.parse_args(args)
 
@@ -643,7 +630,7 @@ class BoxMaker(inkex.Effect):
                 os.path.dirname(__file__), "blank.svg"
             )
 
-    def effect(self):
+    def effect(self) -> None:
         global group, nomTab, equalTabs, tabSymmetry, dimpleHeight, dimpleLength, thickness, kerf, halfkerf, dogbone, divx, divy, hairline, linethickness, keydivwalls, keydivfloor
 
         if self.cli:
