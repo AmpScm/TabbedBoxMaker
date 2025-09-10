@@ -171,13 +171,9 @@ schroffmaker --hp=42 --rows=2 --depth=160 --thickness=3 --output=schroff.svg
    ```
 
 #### Running Tests
-
 ```bash
-# Run modern pytest tests
-pytest tests/ -v
-
-# Run legacy test suite (for compatibility)
-python run_tests.py
+# Run tests
+python -m pytest tests/ -v
 
 # Run all tests
 make test-all
