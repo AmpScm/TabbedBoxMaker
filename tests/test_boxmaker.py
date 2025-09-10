@@ -572,6 +572,7 @@ def run_one(name, args, make_relative=False, optimize=False) -> tuple[str, str]:
     tbm.options.output = outfh
     tbm.options.input_file = infh
     tbm.options.optimize = optimize
+    tbm.version = None
 
     tbm.load_raw()
     tbm.save_raw(tbm.effect())

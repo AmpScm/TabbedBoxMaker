@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tabbedboxmaker"
-version = "1.2.0"
+version = "1.4.0"
 description = "A free Inkscape extension for generating tab-jointed box patterns for CNC cutting"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -48,6 +48,7 @@ requires-python = ">=3.8"
 dependencies = [
     "inkex>=1.2.0",
     "lxml>=4.6.0",
+    "shapely>=2.0",
 ]
 
 [project.optional-dependencies]
