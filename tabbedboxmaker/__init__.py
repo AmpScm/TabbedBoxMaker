@@ -1065,9 +1065,10 @@ class BoxMaker(inkex.Effect):
                     # the group around this path
                     if len(group) == 1:
                         parent = group.getparent()
-
-                        parent.append(group[0])
+                        item = group[0]
                         parent.remove(group)
+                        item.set_id(group.get_id())
+                        parent.append(item)
 
     def dimpleStr(
         self,
@@ -1129,15 +1130,13 @@ class BoxMaker(inkex.Effect):
                     XYstring: str,
                     linethickness: float,
                     idPrefix : str | None = 'line') -> inkex.PathElement:
-        line = inkex.PathElement()
+        line = inkex.PathElement(id=self.makeId(idPrefix))
         line.style = {
             "stroke": "#000000",
             "stroke-width": str(round(linethickness, 8)),
             "fill": "none",
         }
         line.path = XYstring
-
-        line.set_id(self.makeId(idPrefix))
         # inkex.etree.SubElement(parent, inkex.addNS('path','svg'), drw)
         return line
 
@@ -1150,14 +1149,12 @@ class BoxMaker(inkex.Effect):
                       idPrefix: str | None = 'circle') -> inkex.PathElement:
         (cx, cy) = c
         log("putting circle at (%d,%d)" % (cx, cy))
-        circle = inkex.PathElement.arc((cx, cy), r)
+        circle = inkex.PathElement.arc((cx, cy), r, id=self.makeId(idPrefix))
         circle.style = {
             "stroke": "#000000",
             "stroke-width": str(linethickness),
             "fill": "none",
         }
-
-        circle.set_id(self.makeId(idPrefix))
         return circle
 
     def side(
