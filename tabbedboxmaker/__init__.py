@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from inkex.utils import filename_arg
 
-import os
+import os, math
 import inkex
 import gettext
 from copy import deepcopy
@@ -53,12 +53,14 @@ class BoxMaker(inkex.Effect):
     divy: float
     keydivwalls: bool
     keydivfloor: bool
-    nextId: int = 1
+    nextId: dict[str, int]
 
     def __init__(self, cli: bool = False, schroff: bool = False):
         # Call the base class constructor.
         inkex.Effect.__init__(self)
         # Define options
+
+        self.nextId = {}
 
         self.cli = cli
         self.schroff = schroff
@@ -637,7 +639,7 @@ class BoxMaker(inkex.Effect):
             floor = 1 if piece[6] == 1 else 0
             railholes = 1 if piece[6] == 3 else 0
 
-            group = self.newGroup(idPrefix="piece%d" % idx)
+            group = self.newGroup(idPrefix="piece")
             groups = [group]
 
             if schroff and railholes:
@@ -801,7 +803,7 @@ class BoxMaker(inkex.Effect):
 
                 y = 4 * spacing + 1 * Y + 2 * Z  # root y co-ord for piece
                 for n in range(0, divx):  # generate X dividers
-                    subGroup = self.newGroup(idPrefix="xdivider%d" % n)
+                    subGroup = self.newGroup(idPrefix="xdivider")
                     groups.append(subGroup)
                     x = n * (spacing + X)  # root x co-ord for piece
                     self.side(
@@ -876,7 +878,7 @@ class BoxMaker(inkex.Effect):
             elif idx == 1:
                 y = 5 * spacing + 1 * Y + 3 * Z  # root y co-ord for piece
                 for n in range(0, divy):  # generate Y dividers
-                    subGroup = self.newGroup(idPrefix="ydivider%d" % n)
+                    subGroup = self.newGroup(idPrefix="ydivider")
                     groups.append(subGroup)
                     x = n * (spacing + Z)  # root x co-ord for piece
                     self.side(
@@ -954,12 +956,12 @@ class BoxMaker(inkex.Effect):
                         if isinstance(child, inkex.PathElement)
                     ]:
                         path = inkex.Path(path_element.path)
+                        path_first = path[0]
+                        path_last = path[-1]
 
                         if path[-1].letter in "zZ":
                             continue  # Path is already closed
 
-                        path_first = path[0]
-                        path_last = path[-1]
                         skip_elements.append(path_element)
 
                         for other_element in [
@@ -973,7 +975,7 @@ class BoxMaker(inkex.Effect):
                             other_path = inkex.Path(other_element.path)
 
                             if other_path[-1].letter in "zZ":
-                                continue
+                                continue  # Path is already closed
 
                             other_first = other_path[0]
                             other_last = other_path[-1]
@@ -986,11 +988,15 @@ class BoxMaker(inkex.Effect):
 
                             if new_path is not None:
                                 new_id = min(path_element.get_id(), other_element.get_id())
-                                path_element.path = new_path
+                                path_element.path = inkex.Path(new_path)
                                 group.remove(other_element)
                                 path_element.set_id(new_id)
                                 skip_elements.append(other_element)
-                                break
+
+                                # Update step for next iteration
+                                path = inkex.Path(path_element.path)
+                                path_first = path[0]
+                                path_last = path[-1]
 
                     # Step 2: Close the first (outline) path, if not already
                     # closed
@@ -1034,11 +1040,12 @@ class BoxMaker(inkex.Effect):
 
                                     # Determine the direction
                                     direction = (
-                                        "h" if dy == 0 else "v" if dx == 0 else None
+                                        0 if dx == 0 else math.copysign(1, dx),
+                                        0 if dy == 0 else math.copysign(1, dy),
                                     )
 
                                     # Skip redundant points on straight lines
-                                    if direction == current_dir:
+                                    if (dx == 0 or dy == 0) and direction == current_dir:
                                         # Replace the last point in
                                         # simplified_path
                                         simplified_path[-1] = segment
@@ -1106,15 +1113,17 @@ class BoxMaker(inkex.Effect):
     
 
     def makeId(self, 
-               idPrefix: str | None) -> str:
-        if self.cli:
-            self.nextId += 1
-            if idPrefix is None:
-                return f"#{self.nextId-1:04d}"
-            else:
-                return f"{idPrefix}_{self.nextId-1:04d}"
+               prefix: str | None) -> str:
+        
+        prefix = prefix if prefix is not None else 'id'
+
+        if prefix not in self.nextId:
+            id = self.nextId[prefix] = 1
         else:
-            return f"{idPrefix if idPrefix is not None else 'id'}_{self.svg.get_unique_id()}"
+            id = self.nextId[prefix] + 1
+            self.nextId[prefix] += 1
+
+        return f"{prefix}_{id:03d}"
 
 
     def newGroup(self,
