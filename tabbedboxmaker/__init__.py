@@ -53,6 +53,7 @@ class BoxMaker(inkex.Effect):
     divy: float
     keydivwalls: bool
     keydivfloor: bool
+    nextId: int = 1
 
     def __init__(self, cli: bool = False, schroff: bool = False):
         # Call the base class constructor.
@@ -636,7 +637,7 @@ class BoxMaker(inkex.Effect):
             floor = 1 if piece[6] == 1 else 0
             railholes = 1 if piece[6] == 3 else 0
 
-            group = self.newGroup(id="piece%d" % idx)
+            group = self.newGroup(idPrefix="piece%d" % idx)
             groups = [group]
 
             if schroff and railholes:
@@ -800,7 +801,7 @@ class BoxMaker(inkex.Effect):
 
                 y = 4 * spacing + 1 * Y + 2 * Z  # root y co-ord for piece
                 for n in range(0, divx):  # generate X dividers
-                    subGroup = self.newGroup(id="xdivider%d" % n)
+                    subGroup = self.newGroup(idPrefix="xdivider%d" % n)
                     groups.append(subGroup)
                     x = n * (spacing + X)  # root x co-ord for piece
                     self.side(
@@ -875,7 +876,7 @@ class BoxMaker(inkex.Effect):
             elif idx == 1:
                 y = 5 * spacing + 1 * Y + 3 * Z  # root y co-ord for piece
                 for n in range(0, divy):  # generate Y dividers
-                    subGroup = self.newGroup(id="ydivider%d" % n)
+                    subGroup = self.newGroup(idPrefix="ydivider%d" % n)
                     groups.append(subGroup)
                     x = n * (spacing + Z)  # root x co-ord for piece
                     self.side(
@@ -1103,18 +1104,31 @@ class BoxMaker(inkex.Effect):
             Vyd = Vyd + (tabSgn * notDirY + ddir * dirY) * self.dimpleHeight
             ds += "L " + str(Vxd) + "," + str(Vyd) + " "
         return ds
+    
+
+    def makeId(self, 
+               idPrefix: str | None) -> str:
+        if self.cli:
+            self.nextId += 1
+            if idPrefix is None:
+                return f"#{self.nextId-1}"
+            else:
+                return f"{idPrefix}_{self.nextId-1}"
+        else:
+            return f"{idPrefix if idPrefix is not None else 'id'}_{self.svg.get_unique_id()}"
+
 
     def newGroup(self,
-                 id: str | None = None) -> inkex.Group:
+                 idPrefix: str | None = 'group') -> inkex.Group:
         # Create a new group and add element created from line string
-        panelId = self.svg.get_unique_id((id + '_') if id is not None else "panel")
+        panelId = self.makeId(idPrefix)
         group = self.svg.get_current_layer().add(inkex.Group(id=panelId))
         return group
 
     def newLinePath(self,
                     XYstring: str,
                     linethickness: float,
-                    id : str | None = None) -> inkex.PathElement:
+                    idPrefix : str | None = 'line') -> inkex.PathElement:
         line = inkex.PathElement()
         line.style = {
             "stroke": "#000000",
@@ -1123,8 +1137,7 @@ class BoxMaker(inkex.Effect):
         }
         line.path = XYstring
 
-        pathId = self.svg.get_unique_id((id + '_') if id is not None else "path")
-        line.set_id(pathId)
+        line.set_id(self.makeId(idPrefix))
         # inkex.etree.SubElement(parent, inkex.addNS('path','svg'), drw)
         return line
 
@@ -1133,7 +1146,8 @@ class BoxMaker(inkex.Effect):
     def newCirclePath(self,
                       r: float,
                       c: tuple[float, float],
-                      linethickness: float) -> inkex.PathElement:
+                      linethickness: float,
+                      idPrefix: str | None = 'circle') -> inkex.PathElement:
         (cx, cy) = c
         log("putting circle at (%d,%d)" % (cx, cy))
         circle = inkex.PathElement.arc((cx, cy), r)
@@ -1142,6 +1156,8 @@ class BoxMaker(inkex.Effect):
             "stroke-width": str(linethickness),
             "fill": "none",
         }
+
+        circle.set_id(self.makeId(idPrefix))
         return circle
 
     def side(
@@ -1274,7 +1290,7 @@ class BoxMaker(inkex.Effect):
                     Dx = Dx - notDirX * (secondVec - self.kerf)
                     Dy = Dy - notDirY * (secondVec + self.kerf)
                     h += "L " + str(Dx) + "," + str(Dy) + " "
-                    holes.append(self.newLinePath(h, self.linethickness, id="hole%d-%d" % (tabDivision, dividerNumber)))
+                    holes.append(self.newLinePath(h, self.linethickness, idPrefix="hole%d-%d" % (tabDivision, dividerNumber)))
             if tabDivision % 2:
                 if (
                     tabDivision == 1 and numDividers > 0 and isDivider
@@ -1305,7 +1321,7 @@ class BoxMaker(inkex.Effect):
                         Dx = Dx - notDirX * (self.thickness - self.kerf)
                         Dy = Dy - notDirY * (self.thickness - self.kerf)
                         h += "L " + str(Dx) + "," + str(Dy) + " "
-                        group.add(self.newLinePath(h, self.linethickness, id="slot%d-%d" % (tabDivision, dividerNumber)))
+                        group.add(self.newLinePath(h, self.linethickness, idPrefix="slot%d-%d" % (tabDivision, dividerNumber)))
                 # draw the gap
                 vectorX += (
                     dirX
@@ -1405,8 +1421,8 @@ class BoxMaker(inkex.Effect):
                 Dx = Dx - notDirX * (self.thickness - self.kerf)
                 Dy = Dy - notDirY * (self.thickness - self.kerf)
                 h += "L " + str(Dx) + "," + str(Dy) + " "
-                group.add(self.newLinePath(h, self.linethickness, id="slot%d-%d" % (tabDivision, dividerNumber)))
-        group.add(self.newLinePath(s, self.linethickness, id="side"))
+                group.add(self.newLinePath(h, self.linethickness, idPrefix="slot%d-%d" % (tabDivision, dividerNumber)))
+        group.add(self.newLinePath(s, self.linethickness, idPrefix="side"))
         for hole in holes:
             group.add(hole)
         return s

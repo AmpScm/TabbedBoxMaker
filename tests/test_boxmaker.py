@@ -1,20 +1,25 @@
-import io
-import os
-import re
+import io, os, re, xml.dom.minidom
 from tabbedboxmaker import BoxMaker
-import xml.dom.minidom
 
-
-def mask_panel_ids(svgin: str) -> str:
-    return re.sub(r'"(panel|side|piece|hole|slot|[xy]divider)\d*(-\d)*(_\d+)+"', '"\1TEST"', svgin)
-
+def mask_id_attributes(svgin: str) -> str:
+    return re.sub(r'id="[-a-z0-9A-Z_]+"', 'id="TEST"', svgin)
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
     dom = xml.dom.minidom.parseString(xml_str)
     pretty = dom.toprettyxml(indent="  ")
-    # Remove extra blank lines that toprettyxml() inserts
-    return "\n".join([line for line in pretty.split("\n") if line.strip()])
+
+    # Check if original string had an XML declaration
+    has_declaration = xml_str.strip().startswith("<?xml")
+
+    # Remove extra blank lines
+    lines = [line for line in pretty.split("\n") if line.strip()]
+
+    # Remove XML declaration if it wasn't in the original
+    if not has_declaration and lines[0].startswith("<?xml"):
+        lines = lines[1:]
+
+    return "\n".join(lines)
 
 
 class TestTabbedBox:
@@ -505,21 +510,24 @@ class TestTabbedBox:
         expected_output_dir = os.path.join(os.path.dirname(__file__), "expected")
         actual_output_dir = os.path.join(os.path.dirname(__file__), "actual")
 
-        if not os.path.exists(actual_output_dir):
-            os.makedirs(actual_output_dir)
+        os.makedirs(actual_output_dir, exist_ok=True)
+        os.makedirs(os.path.join(actual_output_dir, 'o'), exist_ok=True)
 
         for case in cases:
-            print(case["label"])
+            name = case["label"]
+            args = case["args"]
+            print(name)
+
             outfh = io.BytesIO()
-            expected_file = os.path.join(expected_output_dir, case["label"] + ".svg")
+            expected_file = os.path.join(expected_output_dir, name + ".svg")
             expected = ""
-            actual_file = os.path.join(actual_output_dir, case["label"] + ".svg")
+            actual_file = os.path.join(actual_output_dir, name + ".svg")
             with open(expected_file, "r") as f:
-                expected = mask_panel_ids(f.read())
+                expected = f.read()
 
             tbm = BoxMaker(cli=True)
 
-            tbm.parse_arguments(case["args"])
+            tbm.parse_arguments(args)
             tbm.options.output = outfh
 
             tbm.load_raw()
@@ -531,9 +539,37 @@ class TestTabbedBox:
             with open(actual_file, "w", encoding="utf-8") as f:
                 f.write(output)
 
-            output = mask_panel_ids(output)
+            output = output
 
             # Compare outputs
             assert (
                 expected == output
-            ), f"Test case {case['label']} failed - output doesn't match expected"
+            ), f"Test case {name} failed - output doesn't match expected"
+
+
+            # Now do it again with optimization enabled
+            outfh = io.BytesIO()
+            expected_file = os.path.join(expected_output_dir, 'o', name + ".svg")
+            expected = ""
+            actual_file = os.path.join(actual_output_dir, 'o', name + ".svg")
+            with open(expected_file, "r") as f:
+                expected = f.read()
+
+            tbm = BoxMaker(cli=True)
+
+            tbm.parse_arguments(args + ['--optimize=True'])
+            tbm.options.output = outfh
+
+            tbm.load_raw()
+            tbm.save_raw(tbm.effect())
+
+            output = outfh.getvalue().decode("utf-8")
+            output = pretty_xml(output)
+
+            with open(actual_file, "w", encoding="utf-8") as f:
+                f.write(output)
+
+            # Compare outputs
+            assert (
+                expected == output
+            ), f"Test case {name} failed - optimized output doesn't match expected"
