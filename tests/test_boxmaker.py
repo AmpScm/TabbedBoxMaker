@@ -543,7 +543,7 @@ class TestTabbedBox:
 
             # Compare outputs
             assert (
-                expected == output
+                output == expected
             ), f"Test case {name} failed - output doesn't match expected"
 
 
@@ -571,5 +571,5 @@ class TestTabbedBox:
 
             # Compare outputs
             assert (
-                expected == output
+                output == expected
             ), f"Test case {name} failed - optimized output doesn't match expected"

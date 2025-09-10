@@ -976,23 +976,18 @@ class BoxMaker(inkex.Effect):
                             other_first = other_path[0]
                             other_last = other_path[-1]
 
-                            if (
-                                other_first.x == path_last.x
-                                and other_first.y == path_last.y
-                            ):
-                                other_element.path = str(path + other_path[1:])
-                                group.remove(path_element)
-                                break
-                            elif (
-                                other_last.x == path_first.x
-                                and other_last.y == path_last.y
-                            ):
-                                other_element.path = str(other_path + path[1:])
-                                group.remove(path_element)
-                                break
+                            new_path = None
+                            if (other_first.x == path_last.x and other_first.y == path_last.y ):
+                                new_path = str(path + other_path[1:])
+                            elif ( other_last.x == path_first.x and other_last.y == path_last.y):                                
+                                new_path = str(other_path + path[1:])
 
-                        # Try to combine next path
-                        last_path_element = path_element
+                            if new_path is not None:
+                                new_id = min(path_element.get_id(), other_element.get_id())
+                                other_element.path = new_path
+                                group.remove(path_element)
+                                other_element.set_id(new_id)
+                                break
 
                     # Step 2: Close the first (outline) path, if not already
                     # closed
@@ -1065,10 +1060,10 @@ class BoxMaker(inkex.Effect):
                     # the group around this path
                     if len(group) == 1:
                         parent = group.getparent()
+                        group_id = group.get_id()
                         item = group[0]
-                        parent.remove(group)
-                        item.set_id(group.get_id())
-                        parent.append(item)
+                        parent.replace(group, item)
+                        item.set_id(group_id)
 
     def dimpleStr(
         self,
@@ -1112,9 +1107,9 @@ class BoxMaker(inkex.Effect):
         if self.cli:
             self.nextId += 1
             if idPrefix is None:
-                return f"#{self.nextId-1}"
+                return f"#{self.nextId-1:04d}"
             else:
-                return f"{idPrefix}_{self.nextId-1}"
+                return f"{idPrefix}_{self.nextId-1:04d}"
         else:
             return f"{idPrefix if idPrefix is not None else 'id'}_{self.svg.get_unique_id()}"
 
