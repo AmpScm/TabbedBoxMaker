@@ -123,6 +123,7 @@ dmypy.json
 tests/actual/
 actual/
 *.orig
+*.r.svg
 
 # IDE
 .vscode/
