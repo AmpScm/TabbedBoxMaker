@@ -946,6 +946,7 @@ class BoxMaker(inkex.Effect):
 
             if self.options.optimize:
                 # Step 1: Combine paths to form the outer boundary
+                skip_elements = []
                 for group in groups:
                     for path_element in [
                         child
@@ -959,13 +960,14 @@ class BoxMaker(inkex.Effect):
 
                         path_first = path[0]
                         path_last = path[-1]
+                        skip_elements.append(path_element)
 
                         for other_element in [
                             child
                             for child in group.descendants()
                             if isinstance(child, inkex.PathElement)
                         ]:
-                            if other_element == path_element:
+                            if other_element in skip_elements:
                                 continue
 
                             other_path = inkex.Path(other_element.path)
@@ -984,9 +986,10 @@ class BoxMaker(inkex.Effect):
 
                             if new_path is not None:
                                 new_id = min(path_element.get_id(), other_element.get_id())
-                                other_element.path = new_path
-                                group.remove(path_element)
-                                other_element.set_id(new_id)
+                                path_element.path = new_path
+                                group.remove(other_element)
+                                path_element.set_id(new_id)
+                                skip_elements.append(other_element)
                                 break
 
                     # Step 2: Close the first (outline) path, if not already
@@ -1174,6 +1177,9 @@ class BoxMaker(inkex.Effect):
         notTab = not isTab
 
         halfkerf = self.kerf / 2
+
+        sidePath = self.newLinePath('', self.linethickness, idPrefix="side")
+        group.add(sidePath)
 
         if self.tabSymmetry == 1:  # waffle-block style rotationally symmetric tabs
             divisions = int((length - 2 * self.thickness) / self.nomTab)
@@ -1385,6 +1391,7 @@ class BoxMaker(inkex.Effect):
         )
 
         # draw last for divider joints in side walls
+        slots = []
         if isTab and numDividers > 0 and self.tabSymmetry == 0 and not isDivider:
             for dividerNumber in range(1, int(numDividers) + 1):
                 Dx = (
@@ -1413,8 +1420,10 @@ class BoxMaker(inkex.Effect):
                 Dx = Dx - notDirX * (self.thickness - self.kerf)
                 Dy = Dy - notDirY * (self.thickness - self.kerf)
                 h += "L " + str(Dx) + "," + str(Dy) + " "
-                group.add(self.newLinePath(h, self.linethickness, idPrefix="slot%d-%d" % (tabDivision, dividerNumber)))
-        group.add(self.newLinePath(s, self.linethickness, idPrefix="side"))
-        for hole in holes:
+                slots.append(self.newLinePath(h, self.linethickness, idPrefix="slot%d-%d" % (tabDivision, dividerNumber)))
+
+        sidePath.path =s
+
+        for hole in holes + slots:
             group.add(hole)
         return s
