@@ -622,24 +622,25 @@ class BoxMaker(inkex.Effect):
             dx = piece[2]
             dy = piece[3]
             tabs = piece[4]
-            a = tabs >> 3 & 1
-            b = tabs >> 2 & 1
-            c = tabs >> 1 & 1
-            d = tabs & 1  # extract tab status for each side
+            aIsMale = 0 < (tabs >> 3 & 1)
+            bIsMale = 0 < (tabs >> 2 & 1)
+            cIsMale = 0 < (tabs >> 1 & 1)
+            dIsMale = 0 < (tabs & 1)  # extract tab status for each side
             tabbed = piece[5]
-            atabs = tabbed >> 3 & 1
-            btabs = tabbed >> 2 & 1
-            ctabs = tabbed >> 1 & 1
-            dtabs = tabbed & 1  # extract tabbed flag for each side
+            aHasTabs = 0 < (tabbed >> 3 & 1)
+            bHasTabs = 0 < (tabbed >> 2 & 1)
+            cHasTabs = 0 < (tabbed >> 1 & 1)
+            dHasTabs = 0 < (tabbed & 1)  # extract tabbed flag for each side
             xspacing = (X - self.thickness) / (divy + 1)
             yspacing = (Y - self.thickness) / (divx + 1)
-            xholes = 1 if piece[6] < 3 else 0
-            yholes = 1 if piece[6] != 2 else 0
-            wall = 1 if piece[6] > 1 else 0
-            floor = 1 if piece[6] == 1 else 0
-            railholes = 1 if piece[6] == 3 else 0
+            xholes = piece[6] < 3
+            yholes = piece[6] != 2
+            wall = piece[6] > 1
+            floor = piece[6] == 1
+            railholes = piece[6] == 3
 
             group = self.newGroup(idPrefix="piece")
+            self.svg.get_current_layer().add(group)
             groups = [group]
 
             if schroff and railholes:
@@ -647,7 +648,7 @@ class BoxMaker(inkex.Effect):
                     "rail holes enabled on piece %d at (%d, %d)"
                     % (idx, x + self.thickness, y + self.thickness)
                 )
-                log("abcd = (%d,%d,%d,%d)" % (a, b, c, d))
+                log("abcd = (%d,%d,%d,%d)" % (aIsMale, bIsMale, cIsMale, dIsMale))
                 log("dxdy = (%d,%d)" % (dx, dy))
                 rhxoffset = rail_mount_depth + self.thickness
                 if idx == 1:
@@ -685,265 +686,201 @@ class BoxMaker(inkex.Effect):
                         rystart += row_centre_spacing + row_spacing + rail_height
 
             # generate and draw the sides of each piece
+            # Side A
             self.side(
                 group,
                 (x, y),
-                (d, a),
-                (-b, a),
-                atabs * (-self.thickness if a else self.thickness),
-                dtabs,
+                (dIsMale, aIsMale),
+                (-bIsMale, aIsMale),
+                aHasTabs,
+                dHasTabs,
                 dx,
                 (1, 0),
-                a,
-                # side a
-                0,
-                (self.keydivfloor | wall) *
-                (self.keydivwalls | floor) * divx * yholes * atabs,
+                aIsMale,
+                False,
+                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and aHasTabs and yholes)
+                * divx,
                 yspacing,
             )
+            # Side B
             self.side(
                 group,
                 (x + dx, y),
-                (-b, a),
-                (-b, -c),
-                btabs * (self.thickness if b else -self.thickness),
-                atabs,
+                (-bIsMale, aIsMale),
+                (-bIsMale, -cIsMale),
+                bHasTabs,
+                aHasTabs,
                 dy,
                 (0, 1),
-                # side b
-                b,
-                0,
-                (self.keydivfloor | wall) *
-                (self.keydivwalls | floor) * divy * xholes * btabs,
+                bIsMale,
+                False,
+                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bHasTabs and xholes)
+                * divy,
                 xspacing,
             )
-            if atabs:
-                self.side(
-                    group,
-                    (x + dx, y + dy),
-                    (-b, -c),
-                    (d, -c),
-                    ctabs *
-                    # side c
-                    (self.thickness if c else -self.thickness),
-                    btabs,
-                    dx,
-                    (-1, 0),
-                    c,
-                    0,
-                    0,
-                    0,
-                )
-            else:
-                self.side(
-                    group,
-                    (x + dx, y + dy),
-                    (-b, -c),
-                    (d, -c),
-                    ctabs * (self.thickness if c else -self.thickness),
-                    btabs,
-                    dx,
-                    # side c
-                    (-1, 0),
-                    c,
-                    0,
-                    (self.keydivfloor | wall)
-                    * (self.keydivwalls | floor)
-                    * divx
-                    * yholes
-                    * ctabs,
-                    yspacing,
-                )
-            if btabs:
-                self.side(
-                    group,
-                    (x, y + dy),
-                    (d, -c),
-                    (d, a),
-                    dtabs *
-                    # side d
-                    (-self.thickness if d else self.thickness),
-                    ctabs,
-                    dy,
-                    (0, -1),
-                    d,
-                    0,
-                    0,
-                    0,
-                )
-            else:
-                self.side(
-                    group,
-                    (x, y + dy),
-                    (d, -c),
-                    (d, a),
-                    dtabs * (-self.thickness if d else self.thickness),
-                    ctabs,
-                    dy,
-                    (0, -1),
-                    # side d
-                    d,
-                    0,
-                    (self.keydivfloor | wall)
-                    * (self.keydivwalls | floor)
-                    * divy
-                    * xholes
-                    * dtabs,
-                    xspacing,
-                )
+            # Side C
+            self.side(
+                group,
+                (x + dx, y + dy),
+                (-bIsMale, -cIsMale),
+                (dIsMale, -cIsMale),
+                cHasTabs,
+                bHasTabs,
+                dx,
+                (-1, 0),
+                cIsMale,
+                False,
+                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aHasTabs and cHasTabs and yholes)
+                * divx,
+                yspacing,
+            )
+            # Side D
+            self.side(
+                group,
+                (x, y + dy),
+                (dIsMale, -cIsMale),
+                (dIsMale, aIsMale),
+                dHasTabs,
+                cHasTabs,
+                dy,
+                (0, -1),
+                dIsMale,
+                False,
+                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bHasTabs and dHasTabs and xholes)
+                * divy,
+                xspacing,
+            )
 
             if idx == 0:
                 # remove tabs from dividers if not required
                 if not self.keydivfloor:
-                    a = c = 1
-                    atabs = ctabs = 0
+                    aIsMale = cIsMale = 1
+                    aHasTabs = cHasTabs = 0
                 if not self.keydivwalls:
-                    b = d = 1
-                    btabs = dtabs = 0
+                    bIsMale = dIsMale = 1
+                    bHasTabs = dHasTabs = 0
 
                 y = 4 * spacing + 1 * Y + 2 * Z  # root y co-ord for piece
                 for n in range(0, divx):  # generate X dividers
                     subGroup = self.newGroup(idPrefix="xdivider")
+                    self.svg.get_current_layer().add(subGroup)
                     groups.append(subGroup)
                     x = n * (spacing + X)  # root x co-ord for piece
+
+                    # Side A
                     self.side(
                         subGroup,
                         (x, y),
-                        (d, a),
-                        (-b, a),
-                        self.keydivfloor * atabs *
-                        (-self.thickness if a else self.thickness),
-                        dtabs,
+                        (dIsMale, aIsMale),
+                        (-bIsMale, aIsMale),
+                        self.keydivfloor and aHasTabs,
+                        dHasTabs,
                         dx,
                         (1, 0),
-                        a,
-                        1,
-                        0,
-                        0,
-                    )  # side a
+                        aIsMale,
+                        True
+                    )
+                    # Side B
                     self.side(
                         subGroup,
                         (x + dx, y),
-                        (-b, a),
-                        (-b, -c),
-                        self.keydivwalls
-                        * btabs
-                        * (
-                            self.thickness
-                            if b
-                            else -
-                            # side b
-                            self.thickness
-                        ),
-                        atabs,
+                        (-bIsMale, aIsMale),
+                        (-bIsMale, -cIsMale),
+                        self.keydivwalls and bHasTabs,
+                        aHasTabs,
                         dy,
                         (0, 1),
-                        b,
-                        1,
+                        bIsMale,
+                        True,
                         divy * xholes,
                         xspacing,
                     )
+                    # Side C
                     self.side(
                         subGroup,
                         (x + dx, y + dy),
-                        (-b, -c),
-                        (d, -c),
-                        self.keydivfloor * ctabs *
-                        # side c
-                        (self.thickness if c else -self.thickness),
-                        btabs,
+                        (-bIsMale, -cIsMale),
+                        (dIsMale, -cIsMale),
+                        self.keydivfloor and cHasTabs,
+                        bHasTabs,
                         dx,
                         (-1, 0),
-                        c,
-                        1,
-                        0,
-                        0,
+                        cIsMale,
+                        True,
                     )
+                    # Side D
                     self.side(
                         subGroup,
                         (x, y + dy),
-                        (d, -c),
-                        (d, a),
-                        self.keydivwalls * dtabs *
-                        # side d
-                        (-self.thickness if d else self.thickness),
-                        ctabs,
+                        (dIsMale, -cIsMale),
+                        (dIsMale, aIsMale),
+                        self.keydivwalls * dHasTabs,
+                        cHasTabs,
                         dy,
                         (0, -1),
-                        d,
-                        1,
-                        0,
-                        0,
+                        dIsMale,
+                        True
                     )
             elif idx == 1:
                 y = 5 * spacing + 1 * Y + 3 * Z  # root y co-ord for piece
                 for n in range(0, divy):  # generate Y dividers
                     subGroup = self.newGroup(idPrefix="ydivider")
+                    self.svg.get_current_layer().add(subGroup)
                     groups.append(subGroup)
                     x = n * (spacing + Z)  # root x co-ord for piece
+                    # Side A
                     self.side(
                         subGroup,
                         (x, y),
-                        (d, a),
-                        (-b, a),
-                        # side a
-                        self.keydivwalls * atabs *
-                        (-self.thickness if a else self.thickness),
-                        dtabs,
+                        (dIsMale, aIsMale),
+                        (-bIsMale, aIsMale),
+                        self.keydivwalls and aHasTabs,
+                        dHasTabs,
                         dx,
                         (1, 0),
-                        a,
-                        1,
+                        aIsMale,
+                        True,
                         divx * yholes,
                         yspacing,
                     )
+                    # Side B
                     self.side(
                         subGroup,
                         (x + dx, y),
-                        (-b, a),
-                        (-b, -c),
-                        self.keydivfloor
-                        * btabs  # side b
-                        * (self.thickness if b else -self.thickness),
-                        atabs,
+                        (-bIsMale, aIsMale),
+                        (-bIsMale, -cIsMale),
+                        self.keydivfloor and bHasTabs,
+                        aHasTabs,
                         dy,
                         (0, 1),
-                        b,
-                        1,
-                        0,
-                        0,
+                        bIsMale,
+                        True
                     )
+                    # Side C
                     self.side(
                         subGroup,
                         (x + dx, y + dy),
-                        (-b, -c),
-                        (d, -c),
-                        self.keydivwalls * ctabs *
-                        # side c
-                        (self.thickness if c else -self.thickness),
-                        btabs,
+                        (-bIsMale, -cIsMale),
+                        (dIsMale, -cIsMale),
+                        self.keydivwalls and cHasTabs,
+                        bHasTabs,
                         dx,
                         (-1, 0),
-                        c,
-                        1,
-                        0,
-                        0,
+                        cIsMale,
+                        True
                     )
+                    # Side D
                     self.side(
                         subGroup,
                         (x, y + dy),
-                        (d, -c),
-                        (d, a),
-                        self.keydivfloor * dtabs *
-                        # side d
-                        (-self.thickness if d else self.thickness),
-                        ctabs,
+                        (dIsMale, -cIsMale),
+                        (dIsMale, aIsMale),
+                        self.keydivfloor and dHasTabs,
+                        cHasTabs,
                         dy,
                         (0, -1),
-                        d,
-                        1,
-                        0,
-                        0,
+                        dIsMale,
+                        True
                     )
 
             if self.options.optimize:
@@ -1130,7 +1067,7 @@ class BoxMaker(inkex.Effect):
                  idPrefix: str | None = 'group') -> inkex.Group:
         # Create a new group and add element created from line string
         panelId = self.makeId(idPrefix)
-        group = self.svg.get_current_layer().add(inkex.Group(id=panelId))
+        group = inkex.Group(id=panelId)
         return group
 
     def newLinePath(self,
@@ -1171,13 +1108,13 @@ class BoxMaker(inkex.Effect):
         startOffset: tuple[float, float],
         endOffset: tuple[float, float],
         tabVec: float,
-        prevTab: int,
+        prevTab: bool,
         length: float,
         direction: tuple[int, int],
         isTab: bool,
-        isDivider: bool,
-        numDividers: int,
-        dividerSpacing: float,
+        isDivider: bool=False,
+        numDividers: int=0,
+        dividerSpacing: float=0,
     ) -> str:
         rootX, rootY = root
         startOffsetX, startOffsetY = startOffset
@@ -1185,10 +1122,14 @@ class BoxMaker(inkex.Effect):
         dirX, dirY = direction
         notTab = not isTab
 
+        if tabVec:
+            # Calculate direction
+            tabVec = self.thickness if (direction == (1,0) or direction == (0,-1)) != isTab else -self.thickness
+
         halfkerf = self.kerf / 2
 
         sidePath = self.newLinePath('', self.linethickness, idPrefix="side")
-        group.add(sidePath)
+        nodes = [sidePath]
 
         if self.tabSymmetry == 1:  # waffle-block style rotationally symmetric tabs
             divisions = int((length - 2 * self.thickness) / self.nomTab)
@@ -1231,33 +1172,32 @@ class BoxMaker(inkex.Effect):
         if self.tabSymmetry == 1:
             dividerEdgeOffsetX = dirX * self.thickness
             # dividerEdgeOffsetY = ;
-            vectorX = rootX + (0 if dirX and prevTab else startOffsetX * self.thickness)
-            vectorY = rootY + (0 if dirY and prevTab else startOffsetY * self.thickness)
+            vectorX = (0 if dirX and prevTab else startOffsetX * self.thickness)
+            vectorY = (0 if dirY and prevTab else startOffsetY * self.thickness)
             s = "M " + str(vectorX) + "," + str(vectorY) + " "
-            vectorX = rootX + (startOffsetX if startOffsetX else dirX) * self.thickness
-            vectorY = rootY + (startOffsetY if startOffsetY else dirY) * self.thickness
+            vectorX = (startOffsetX if startOffsetX else dirX) * self.thickness
+            vectorY = (startOffsetY if startOffsetY else dirY) * self.thickness
             if notDirX and tabVec:
                 endOffsetX = 0
             if notDirY and tabVec:
                 endOffsetY = 0
         else:
             (vectorX, vectorY) = (
-                rootX + startOffsetX * self.thickness,
-                rootY + startOffsetY * self.thickness,
+                startOffsetX * self.thickness,
+                startOffsetY * self.thickness,
             )
             dividerEdgeOffsetX = dirY * self.thickness
             dividerEdgeOffsetY = dirX * self.thickness
             s = "M " + str(vectorX) + "," + str(vectorY) + " "
             if notDirX:
-                vectorY = rootY  # set correct line start for tab generation
+                vectorY = 0  # set correct line start for tab generation
             if notDirY:
-                vectorX = rootX
+                vectorX = 0
 
         # generate line as tab or hole using:
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; self.thickness:self.thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
 
-        holes = []
         for tabDivision in range(1, int(divisions)):
             # draw holes for divider tabs to key into side walls
             if (((tabDivision % 2) > 0) != (not isTab)) and numDividers > 0 and not isDivider:
@@ -1297,7 +1237,7 @@ class BoxMaker(inkex.Effect):
                     Dx = Dx - notDirX * (secondVec - self.kerf)
                     Dy = Dy - notDirY * (secondVec + self.kerf)
                     h += "L " + str(Dx) + "," + str(Dy) + " "
-                    holes.append(self.newLinePath(h, self.linethickness, idPrefix="hole%d-%d" % (tabDivision, dividerNumber)))
+                    nodes.append(self.newLinePath(h, self.linethickness, idPrefix="hole"))
             if tabDivision % 2:
                 if (
                     tabDivision == 1 and numDividers > 0 and isDivider
@@ -1328,7 +1268,7 @@ class BoxMaker(inkex.Effect):
                         Dx = Dx - notDirX * (self.thickness - self.kerf)
                         Dy = Dy - notDirY * (self.thickness - self.kerf)
                         h += "L " + str(Dx) + "," + str(Dy) + " "
-                        group.add(self.newLinePath(h, self.linethickness, idPrefix="slot%d-%d" % (tabDivision, dividerNumber)))
+                        nodes.append(self.newLinePath(h, self.linethickness, idPrefix="slot"))
                 # draw the gap
                 vectorX += (
                     dirX
@@ -1393,14 +1333,13 @@ class BoxMaker(inkex.Effect):
         # finish the line off
         s += (
             "L "
-            + str(rootX + endOffsetX * self.thickness + dirX * length)
+            + str(endOffsetX * self.thickness + dirX * length)
             + ","
-            + str(rootY + endOffsetY * self.thickness + dirY * length)
+            + str(endOffsetY * self.thickness + dirY * length)
             + " "
         )
 
         # draw last for divider joints in side walls
-        slots = []
         if isTab and numDividers > 0 and self.tabSymmetry == 0 and not isDivider:
             for dividerNumber in range(1, int(numDividers) + 1):
                 Dx = (
@@ -1429,10 +1368,11 @@ class BoxMaker(inkex.Effect):
                 Dx = Dx - notDirX * (self.thickness - self.kerf)
                 Dy = Dy - notDirY * (self.thickness - self.kerf)
                 h += "L " + str(Dx) + "," + str(Dy) + " "
-                slots.append(self.newLinePath(h, self.linethickness, idPrefix="slot%d-%d" % (tabDivision, dividerNumber)))
+                nodes.append(self.newLinePath(h, self.linethickness, idPrefix="slot"))
 
         sidePath.path =s
 
-        for hole in holes + slots:
-            group.add(hole)
-        return s
+        for i in nodes:
+            i.path = i.path.translate(rootX, rootY)
+            group.add(i)
+        return nodes
