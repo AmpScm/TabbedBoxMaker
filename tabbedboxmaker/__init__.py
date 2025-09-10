@@ -888,8 +888,7 @@ class BoxMaker(inkex.Effect):
                 skip_elements = []
                 for group in groups:
                     for path_element in [
-                        child
-                        for child in group.descendants()
+                        child for child in group
                         if isinstance(child, inkex.PathElement)
                     ]:
                         path = inkex.Path(path_element.path)
@@ -902,8 +901,7 @@ class BoxMaker(inkex.Effect):
                         skip_elements.append(path_element)
 
                         for other_element in [
-                            child
-                            for child in group.descendants()
+                            child for child in group
                             if isinstance(child, inkex.PathElement)
                         ]:
                             if other_element in skip_elements:
@@ -920,7 +918,7 @@ class BoxMaker(inkex.Effect):
                             new_path = None
                             if (other_first.x == path_last.x and other_first.y == path_last.y ):
                                 new_path = str(path + other_path[1:])
-                            elif ( other_last.x == path_first.x and other_last.y == path_last.y):                                
+                            elif ( other_last.x == path_first.x and other_last.y == path_last.y):
                                 new_path = str(other_path + path[1:])
 
                             if new_path is not None:
@@ -935,24 +933,22 @@ class BoxMaker(inkex.Effect):
                                 path_first = path[0]
                                 path_last = path[-1]
 
-                    # Step 2: Close the first (outline) path, if not already
-                    # closed
-                    last_path_element = [
-                        child
-                        for child in group.descendants()
-                        if isinstance(child, inkex.PathElement)
-                    ][0]
-                    path = inkex.Path(last_path_element.path)
-                    if (
-                        path[-1].letter not in "zZ"
-                    ):  # Check if the last command is not 'Z'
-                        path.close()  # Append a close path command
-                        # Update the element's path
-                        last_path_element.path = str(path)
+                    # Step 2: Close the the paths, if not already closed
+                    for path_element in group.descendants():
+                        if not isinstance(path_element, inkex.PathElement):
+                            continue
+
+                        path = inkex.Path(path_element.path)
+
+                        if path[-1].letter in "zZ":
+                            continue
+
+                        path.close()
+                        path_element.path = str(path)
 
                     # Step 3: Remove unneeded generated nodes (duplicates and
                     # intermediates on h/v lines)
-                    for path_element in group.descendants():
+                    for path_element in group:
                         if not isinstance(path_element, inkex.PathElement):
                             continue
 
@@ -999,6 +995,44 @@ class BoxMaker(inkex.Effect):
                                 direction = None
 
                         path_element.path = str(inkex.Path(simplified_path))
+
+
+                    # Step 4: Include gaps in the panel outline by removing them from the panel path
+                    def add_holes_to_panel(group):
+                        # Get all PathElements in the group
+                        paths = [el for el in group if isinstance(el, inkex.PathElement)]
+                        if not paths:
+                            return
+
+                        panel = paths[0]
+                        panel_bbox = panel.bounding_box()
+                        other_paths = paths[1:]
+
+                        for candidate in other_paths:
+                            c_bb = candidate.bounding_box()
+                            # Check if candidate is fully inside panel
+                            if not panel_bbox & c_bb or c_bb.left == panel_bbox.left or c_bb.right == panel_bbox.right or c_bb.top == panel_bbox.top or c_bb.bottom == panel_bbox.bottom:
+                                continue
+
+                            # Check if candidate does NOT touch any other path (besides panel)
+                            touches_other = False
+                            for other in other_paths:
+                                if other is candidate:
+                                    continue
+                                if c_bb & other.bounding_box():
+                                    touches_other = True
+                                    break
+                            if touches_other:
+                                continue
+                            # Reverse candidate path and add as hole to panel
+                            candidate_path = inkex.Path(candidate.path)
+                            candidate_path.reverse()
+                            # Append to panel path (Inkscape expects holes as subpaths in opposite direction)
+                            panel.path = inkex.Path(panel.path + ' ' + str(candidate_path))
+                            # Optionally remove candidate from group
+                            group.remove(candidate)
+
+                    add_holes_to_panel(group)
 
                     # Ok, now we still have a group containing as first element the panel and then optionally some gaps that
                     # should be cut out of the panel
@@ -1047,11 +1081,11 @@ class BoxMaker(inkex.Effect):
             Vyd = Vyd + (tabSgn * notDirY + ddir * dirY) * self.dimpleHeight
             ds += "L " + str(Vxd) + "," + str(Vyd) + " "
         return ds
-    
 
-    def makeId(self, 
+
+    def makeId(self,
                prefix: str | None) -> str:
-        
+
         prefix = prefix if prefix is not None else 'id'
 
         if prefix not in self.nextId:
@@ -1341,6 +1375,10 @@ class BoxMaker(inkex.Effect):
 
         # draw last for divider joints in side walls
         if isTab and numDividers > 0 and self.tabSymmetry == 0 and not isDivider:
+            # BH: Find out if this is the right correction. Without it the with_dividers_keyed_all.svg test is broken
+            firstholelenX += (holeLenX - self.thickness) if holeLenX else 0
+            firstholelenY += (holeLenY - self.thickness) if holeLenY else 0
+
             for dividerNumber in range(1, int(numDividers) + 1):
                 Dx = (
                     vectorX
@@ -1368,7 +1406,7 @@ class BoxMaker(inkex.Effect):
                 Dx = Dx - notDirX * (self.thickness - self.kerf)
                 Dy = Dy - notDirY * (self.thickness - self.kerf)
                 h += "L " + str(Dx) + "," + str(Dy) + " "
-                nodes.append(self.newLinePath(h, self.linethickness, idPrefix="slot"))
+                nodes.append(self.newLinePath(h, self.linethickness, idPrefix="hole"))
 
         sidePath.path =s
 

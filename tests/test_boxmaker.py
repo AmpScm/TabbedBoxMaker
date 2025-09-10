@@ -50,7 +50,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -76,7 +75,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -102,7 +100,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -128,7 +125,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -154,7 +150,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -180,7 +175,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -206,7 +200,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -232,7 +225,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -258,7 +250,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -284,7 +275,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -310,7 +300,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -336,7 +325,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -362,7 +350,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -388,7 +375,6 @@ class TestTabbedBox:
                     "--div_w=0",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -414,7 +400,6 @@ class TestTabbedBox:
                     "--div_w=1",
                     "--keydiv=0",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -440,7 +425,6 @@ class TestTabbedBox:
                     "--div_w=1",
                     "--keydiv=1",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -466,7 +450,6 @@ class TestTabbedBox:
                     "--div_w=1",
                     "--keydiv=2",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
             {
@@ -492,9 +475,36 @@ class TestTabbedBox:
                     "--div_w=1",
                     "--keydiv=3",
                     "--spacing=1",
-                    "--optimize=False",
                 ],
             },
+            {
+                "label": "with_many_dividers_keyed_all",
+                "args": [
+                    "--unit=mm",
+                    "--inside=1",
+                    "--length=180",
+                    "--width=240",
+                    "--depth=50",
+                    "--equal=0",
+                    "--tab=6",
+                    "--tabtype=0",
+                    "--tabsymmetry=0",
+                    "--dimpleheight=0",
+                    "--dimplelength=0",
+                    "--hairline=1",
+                    "--thickness=3",
+                    "--kerf=0.1",
+                    "--style=1",
+                    "--boxtype=1",
+                    "--div_l=2",
+                    "--div_w=3",
+                    "--keydiv=0",
+                    "--spacing=1",
+                ],
+            },
+
+
+
             # {
             #    'label': 'default_tabs',
             #    'args': [
@@ -527,7 +537,7 @@ class TestTabbedBox:
 
             tbm = BoxMaker(cli=True)
 
-            tbm.parse_arguments(args)
+            tbm.parse_arguments(args + ['--optimize=False'])
             tbm.options.output = outfh
 
             tbm.load_raw()
