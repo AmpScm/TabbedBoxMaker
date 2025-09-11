@@ -915,7 +915,6 @@ class BoxMaker(inkex.Effect):
                         if isinstance(child, inkex.PathElement)
                     ]:
                         path = inkex.Path(path_element.path)
-                        path_first = path[0]
                         path_last = path[-1]
 
                         if path[-1].letter in "zZ":
@@ -936,13 +935,10 @@ class BoxMaker(inkex.Effect):
                                 continue  # Path is already closed
 
                             other_first = other_path[0]
-                            other_last = other_path[-1]
 
                             new_path = None
                             if (other_first.x == path_last.x and other_first.y == path_last.y ):
                                 new_path = str(path + other_path[1:])
-                            elif ( other_last.x == path_first.x and other_last.y == path_last.y):
-                                new_path = str(other_path + path[1:])
 
                             if new_path is not None:
                                 new_id = min(path_element.get_id(), other_element.get_id())
@@ -953,7 +949,6 @@ class BoxMaker(inkex.Effect):
 
                                 # Update step for next iteration
                                 path = inkex.Path(path_element.path)
-                                path_first = path[0]
                                 path_last = path[-1]
 
                     # Step 2: Close the the paths, if not already closed
