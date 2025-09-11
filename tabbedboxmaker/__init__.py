@@ -30,6 +30,7 @@ from shapely.geometry import Polygon, MultiPolygon, LinearRing
 from shapely.ops import unary_union
 
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
+from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
 
 _ = gettext.gettext
@@ -395,7 +396,7 @@ class BoxMaker(inkex.Effect):
         self.dogbone = 1 if self.options.tabtype == 1 else 0
         layout = self.options.style
         spacing = self.svg.unittouu(str(self.options.spacing) + unit)
-        boxtype = self.options.boxtype
+        boxtype : BoxType = self.options.boxtype
         divx = self.options.div_l
         divy = self.options.div_w
         self.keydivwalls = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.WALLS]
@@ -456,15 +457,15 @@ class BoxMaker(inkex.Effect):
 
         # Determine which faces the box has based on the box type
         hasTp = hasBm = hasFt = hasBk = hasLt = hasRt = True
-        if boxtype == 2:
+        if boxtype == BoxType.ONE_SIDE_OPEN:
             hasTp = False
-        elif boxtype == 3:
+        elif boxtype == BoxType.TWO_SIDES_OPEN:
             hasTp = hasFt = False
-        elif boxtype == 4:
+        elif boxtype == BoxType.THREE_SIDES_OPEN:
             hasTp = hasFt = hasRt = False
-        elif boxtype == 5:
+        elif boxtype == BoxType.OPPOSITE_ENDS_OPEN:
             hasTp = hasBm = False
-        elif boxtype == 6:
+        elif boxtype == BoxType.TWO_PANELS_ONLY:
             hasTp = hasFt = hasBk = hasRt = False
         # else boxtype==1, full box, has all sides
 
@@ -491,7 +492,7 @@ class BoxMaker(inkex.Effect):
             ftTabInfo = 0b1010
             bkTabInfo = 0b1010
 
-        def fixTabBits(tabbed, tabInfo, bit):
+        def fixTabBits(tabbed : bool, tabInfo : int, bit : int) -> tuple[bool, int]:
             newTabbed = tabbed & ~bit
             if inside:
                 newTabInfo = tabInfo | bit  # set bit to 1 to use tab base line
@@ -567,14 +568,14 @@ class BoxMaker(inkex.Effect):
         ltFace = 3
         rtFace = 3
 
-        def reduceOffsets(aa, start, dx, dy, dz):
+        def reduceOffsets(aa : dict[int, tuple[int, int, int, int]], start : int, dx : int, dy : int, dz : int):
             for ix in range(start + 1, len(aa)):
                 (s, x, y, z) = aa[ix]
                 aa[ix] = (s - 1, x - dx, y - dy, z - dz)
 
         # note first two pieces in each set are the X-divider template and
         # Y-divider template respectively
-        pieces = []
+        pieces : list[tuple] = []
         if layout == 1:  # Diagramatic Layout
             rr = deepcopy([row0, row1z, row2])
             cc = deepcopy([col0, col1z, col2xz, col3xzz])
@@ -908,20 +909,19 @@ class BoxMaker(inkex.Effect):
 
             # All pieces drawn, now optimize the paths if required
             if self.options.optimize:
-                self.optimize(groups)
+                self.optimizePieces(groups)
 
         # Fix outer canvas size
         self.fixCanvas()
 
-    def optimize(self, groups) -> None:
+    def optimizePieces(self, groups) -> None:
         # Step 1: Combine paths to form the outer boundary
         skip_elements = []
         for group in groups:
-            for path_element in [
-                child for child in group
-                if isinstance(child, inkex.PathElement)
-            ]:
-                path = inkex.Path(path_element.path)
+            paths = [ child for child in group  if isinstance(child, inkex.PathElement) ]
+
+            for path_element in paths:
+                path = path_element.path
                 path_last = path[-1]
 
                 if path[-1].letter in "zZ":
@@ -929,10 +929,7 @@ class BoxMaker(inkex.Effect):
 
                 skip_elements.append(path_element)
 
-                for other_element in [
-                    child for child in group
-                    if isinstance(child, inkex.PathElement)
-                ]:
+                for other_element in paths:
                     if other_element in skip_elements:
                         continue
 
@@ -945,7 +942,7 @@ class BoxMaker(inkex.Effect):
 
                     new_path = None
                     if (other_first.x == path_last.x and other_first.y == path_last.y ):
-                        new_path = str(path + other_path[1:])
+                        new_path = inkex.Path(path + other_path[1:])
 
                     if new_path is not None:
                         new_id = min(path_element.get_id(), other_element.get_id())
@@ -955,27 +952,27 @@ class BoxMaker(inkex.Effect):
                         skip_elements.append(other_element)
 
                         # Update step for next iteration
-                        path = inkex.Path(path_element.path)
+                        path = path_element.path
                         path_last = path[-1]
 
+            # List updated, refresh
+            paths = [ child for child in group  if isinstance(child, inkex.PathElement) ]
+
             # Step 2: Close the the paths, if not already closed
-            for path_element in group.descendants():
+            for path_element in paths:
                 if not isinstance(path_element, inkex.PathElement):
                     continue
-
-                path = inkex.Path(path_element.path)
 
                 if path[-1].letter in "zZ":
                     continue
 
+                path = inkex.Path(path_element.path)
                 path.close()
-                path_element.path = str(path)
+                path_element.path = path
 
             # Step 3: Remove unneeded generated nodes (duplicates and
             # intermediates on h/v lines)
-            for path_element in group:
-                if not isinstance(path_element, inkex.PathElement):
-                    continue
+            for path_element in paths:
 
                 path = inkex.Path(path_element.path)
 
@@ -1023,98 +1020,32 @@ class BoxMaker(inkex.Effect):
 
 
             # Step 4: Include gaps in the panel outline by removing them from the panel path
-            def add_holes_to_panel(group):
-
-                def path_to_polygon(path_obj):
-                    # Accepts inkex.Path object, only absolute Move/Line/Close
-                    from shapely.geometry import Polygon
-                    coords = []
-                    for seg in path_obj:
-                        if seg.letter == 'M':
-                            coords.append((seg.x, seg.y))
-                        elif seg.letter == 'L':
-                            coords.append((seg.x, seg.y))
-                        elif seg.letter in 'Zz':
-                            continue
-                        else:
-                            raise AssertionError(f"Unexpected path segment type: {seg.letter}")
-                    if len(coords) > 2:
-                        return Polygon(coords)
-                    return None
-
-                def polygon_to_path(poly):
-                    # Accepts shapely Polygon, returns inkex.Path string
-                    coords = list(poly.exterior.coords)
-                    s = f"M {fstr(coords[0][0])},{fstr(coords[0][1])} "
-                    for x, y in coords[1:]:
-                        s += f"L {fstr(x)},{fstr(y)} "
-                    s += "Z"
-                    # Add holes in stable order
-                    interiors = list(poly.interiors)
-
-                    for i in interiors:
-                        coords = list(i.coords)
-
-                        if len(coords) > 3:
-                            pMin = min(coords, key=lambda c: (c[0], c[1]))
-
-                            if pMin != coords[0]:
-                                # Rotate the coordinates so that pMin is first
-                                min_index = coords.index(pMin)
-
-                                # Remove the old duplicate point (if it exists)
-                                if coords[-1] == coords[0]:
-                                    coords = coords[:-1]
-
-                                # Rotate the coordinate list to start with pMin
-                                rotated_coords = coords[min_index:] + coords[:min_index]
-                                # Ensure the ring is properly closed with the NEW first point
-                                rotated_coords.append(rotated_coords[0])
-                                # Update the interior ring with rotated coordinates
-
-                                interiors[interiors.index(i)] = LinearRing(rotated_coords)
-
-                    # Sort by first coordinate (X, then Y)
-                    interiors.sort(key=lambda ring: f"{ring.coords[0][0]},{ring.coords[0][1]}")
-                    for interior in interiors:
-                        coords = list(interior.coords)
-                        s += f" M {fstr(coords[0][0])},{fstr(coords[0][1])} "
-                        for x, y in coords[1:]:
-                            s += f"L {fstr(x)},{fstr(y)} "
-                        s += "Z"
-                    return s
-
-                paths = [el for el in group if isinstance(el, inkex.PathElement)]
-                if not paths:
-                    return
+            if len(paths) > 1:
                 panel = paths[0]
                 panel_poly = path_to_polygon(panel.path)
-                if panel_poly is None:
-                    return
-                # Collect all holes as polygons
-                holes = []
-                for candidate in paths[1:]:
-                    poly = path_to_polygon(candidate.path)
-                    if poly is not None:
-                        holes.append(poly)
-                if not holes:
-                    return
-                # Merge overlapping holes
-                holes_union = unary_union(holes)
-                # Subtract holes from panel
-                result = panel_poly
-                if isinstance(holes_union, (Polygon, MultiPolygon)):
-                    result = panel_poly.difference(holes_union)
-                # Replace panel path with result
-                panel.path = polygon_to_path(result)
-                # Remove all hole elements from group
-                for candidate in paths[1:]:
-                    group.remove(candidate)
 
-            add_holes_to_panel(group)
+                if panel_poly is not None and panel_poly.is_valid:
+                    # Collect all holes as polygons
+                    holes = []
+                    for candidate in paths[1:]:
+                        poly = path_to_polygon(candidate.path)
+                        if poly is not None:
+                            holes.append(poly)
 
-            # Ok, now we still have a group containing as first element the panel and then optionally some gaps that
-            # should be cut out of the panel
+
+                    # Merge overlapping holes
+                    holes_union = unary_union(holes)
+                    # Subtract holes from panel
+                    result = panel_poly
+                    if isinstance(holes_union, (Polygon, MultiPolygon)):
+                        result = panel_poly.difference(holes_union)
+
+                    # Replace panel path with result
+                    panel.path = polygon_to_path(result)
+                    # Remove all hole elements from group
+                    for candidate in paths[1:]:
+                        group.remove(candidate)
+
 
             # Last step: If the group now just contains one path, remove
             # the group around this path
