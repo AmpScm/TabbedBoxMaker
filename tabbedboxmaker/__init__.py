@@ -574,7 +574,7 @@ class BoxMaker(inkex.Effect):
 
         # note first two pieces in each set are the X-divider template and
         # Y-divider template respectively
-        pieces = []
+        pieces : list[tuple[tuple[int, int, int, int, list[int], list[int], int]]] = []
         if layout == 1:  # Diagramatic Layout
             rr = deepcopy([row0, row1z, row2])
             cc = deepcopy([col0, col1z, col2xz, col3xzz])

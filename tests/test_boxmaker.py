@@ -537,7 +537,7 @@ def test_tabbed(case):
         return (mask_unstable(output), mask_unstable(expected))
 
 
-    output, expected = run_one(name, args + ['--optimize=0'])
+    output, expected = run_one(name, args + ['--optimize=False'])
     output_o, expected_o = run_one(os.path.join('o', name), args  + ['--optimize=True'])
 
     # Compare outputs
