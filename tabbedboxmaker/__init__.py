@@ -1054,11 +1054,13 @@ class BoxMaker(inkex.Effect):
                                     if pMin != coords[0]:
                                         # Rotate the coordinates so that pMin is first
                                         min_index = coords.index(pMin)
+
+                                        # Remove the old duplicate point (if it exists)
+                                        if coords[-1] == coords[0]:
+                                            coords = coords[:-1]
+
                                         # Rotate the coordinate list to start with pMin
                                         rotated_coords = coords[min_index:] + coords[:min_index]
-                                        # Remove the old duplicate point (if it exists)
-                                        if rotated_coords[-1] == rotated_coords[0]:
-                                            rotated_coords = rotated_coords[:-1]
                                         # Ensure the ring is properly closed with the NEW first point
                                         rotated_coords.append(rotated_coords[0])
                                         # Update the interior ring with rotated coordinates
