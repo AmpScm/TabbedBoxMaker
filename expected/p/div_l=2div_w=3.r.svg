@@ -45,8 +45,8 @@
       <path id="hole_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 15 121.667 l 7 0 l 0 -3 l -7 0 l 0 3 z"/>
       <path id="hole_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 28 87.3333 l 7 0 l 0 -3 l -7 0 l 0 3 z"/>
       <path id="hole_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 28 121.667 l 7 0 l 0 -3 l -7 0 l 0 3 z"/>
-      <path id="hole_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 41 87.3333 l 7 0 l 0 3 l -7 0 l 0 -3 z"/>
-      <path id="hole_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 41 121.667 l 7 0 l 0 3 l -7 0 l 0 -3 z"/>
+      <path id="hole_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 41 87.3333 l 4 0 l 0 -3 l -4 0 l 0 3 z"/>
+      <path id="hole_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 41 121.667 l 4 0 l 0 -3 l -4 0 l 0 3 z"/>
       <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 45 53 l 0 3.4444 l 3 0 l 0 6 l -3 0 l 0 6.4445 l 3 0 l 0 6 l -3 0 l 0 6.4444 l 3 0 l 0 6 l -3 0 l 0 6.4445 l 3 0 l 0 6 l -3 0 l 0 6.4442 l 3 0 l 0 6 l -3 0 l 0 6.445 l 3 0 l 0 6 l -3 0 l 0 6.444 l 3 0 l 0 6 l -3 0 l 0 6.445 l 3 0 l 0 6 l -3 0 l 0 3.444"/>
       <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 45 153 l -4 0 l 0 3 l -6 0 l 0 -3 l -7 0 l 0 3 l -6 0 l 0 -3 l -7 0 l 0 3 l -6 0 l 0 -3 l -4 0"/>
       <path id="side_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 5 153 l 0 -3.444 l -3 0 l 0 -6 l 3 0 l 0 -6.445 l -3 0 l 0 -6 l 3 0 l 0 -6.444 l -3 0 l 0 -6 l 3 0 l 0 -6.445 l -3 0 l 0 -6 l 3 0 l 0 -6.4442 l -3 0 l 0 -6 l 3 0 l 0 -6.4445 l -3 0 l 0 -6 l 3 0 l 0 -6.4444 l -3 0 l 0 -6 l 3 0 l 0 -6.4445 l -3 0 l 0 -6 l 3 0 l 0 -3.4444"/>
@@ -125,8 +125,8 @@
       <path id="hole_057" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 151 121.667 l 7 0 l 0 -3 l -7 0 l 0 3 z"/>
       <path id="hole_058" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 164 87.3333 l 7 0 l 0 -3 l -7 0 l 0 3 z"/>
       <path id="hole_059" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 164 121.667 l 7 0 l 0 -3 l -7 0 l 0 3 z"/>
-      <path id="hole_060" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 177 87.3333 l 7 0 l 0 3 l -7 0 l 0 -3 z"/>
-      <path id="hole_061" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 177 121.667 l 7 0 l 0 3 l -7 0 l 0 -3 z"/>
+      <path id="hole_060" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 177 87.3333 l 4 0 l 0 -3 l -4 0 l 0 3 z"/>
+      <path id="hole_061" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 177 121.667 l 4 0 l 0 -3 l -4 0 l 0 3 z"/>
       <path id="side_034" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 181 53 l 0 3.4444 l 3 0 l 0 6 l -3 0 l 0 6.4445 l 3 0 l 0 6 l -3 0 l 0 6.4444 l 3 0 l 0 6 l -3 0 l 0 6.4445 l 3 0 l 0 6 l -3 0 l 0 6.4442 l 3 0 l 0 6 l -3 0 l 0 6.445 l 3 0 l 0 6 l -3 0 l 0 6.444 l 3 0 l 0 6 l -3 0 l 0 6.445 l 3 0 l 0 6 l -3 0 l 0 3.444"/>
       <path id="side_035" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 181 153 l -4 0 l 0 3 l -6 0 l 0 -3 l -7 0 l 0 3 l -6 0 l 0 -3 l -7 0 l 0 3 l -6 0 l 0 -3 l -4 0"/>
       <path id="side_036" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 141 153 l 0 -3.444 l -3 0 l 0 -6 l 3 0 l 0 -6.445 l -3 0 l 0 -6 l 3 0 l 0 -6.444 l -3 0 l 0 -6 l 3 0 l 0 -6.445 l -3 0 l 0 -6 l 3 0 l 0 -6.4442 l -3 0 l 0 -6 l 3 0 l 0 -6.4445 l -3 0 l 0 -6 l 3 0 l 0 -6.4444 l -3 0 l 0 -6 l 3 0 l 0 -6.4445 l -3 0 l 0 -6 l 3 0 l 0 -3.4444"/>

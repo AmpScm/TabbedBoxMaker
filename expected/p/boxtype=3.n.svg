@@ -1,5 +1,5 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="182mm" height="361mm" viewBox="0 0 182 361" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="183mm" height="361mm" viewBox="-1 0 183 361" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
   <sodipodi:namedview id="namedview7" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:document-units="mm" showgrid="false" inkscape:zoom="0.64052329" inkscape:cx="397.33138" inkscape:cy="561.25984" inkscape:window-width="2086" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer1"/>
   <defs id="defs2"/>
   <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
@@ -27,7 +27,7 @@
       <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45 53.5 L 35 53.5 L 35 56.5 L 45 56.5 L 45 53.5 Z"/>
       <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 35 53.5 L 28 53.5 L 28 56.5 L 35 56.5 L 35 53.5 Z"/>
       <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 22 53.5 L 15 53.5 L 15 56.5 L 22 56.5 L 22 53.5 Z"/>
-      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 9 59.5 L 2 59.5 L 2 62.5 L 9 62.5 L 9 59.5 Z"/>
+      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 9 59.5 L -1 59.5 L -1 56.5 L 9 56.5 L 9 59.5 Z"/>
       <path id="side_012" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 5 105 L 5 101.556 L 5 101.556 L 5 95.5556 L 5 95.5556 L 5 89.1111 L 5 89.1111 L 5 83.1111 L 5 83.1111 L 5 76.6667 L 5 76.6667 L 5 70.6667 L 5 70.6667 L 5 64.2222 L 5 64.2222 L 5 58.2222 L 5 58.2222 L 5 51.7778 L 5 51.7778 L 5 45.7778 L 5 45.7778 L 5 39.3333 L 5 39.3333 L 5 33.3333 L 5 33.3333 L 5 26.8889 L 5 26.8889 L 5 20.8889 L 5 20.8889 L 5 14.4444 L 5 14.4444 L 5 8.4444 L 5 8.4444 L 5 5"/>
     </g>
     <g id="ydivider_001">
@@ -64,7 +64,7 @@
       <path id="hole_022" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 181 53.5 L 171 53.5 L 171 56.5 L 181 56.5 L 181 53.5 Z"/>
       <path id="hole_023" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 171 53.5 L 164 53.5 L 164 56.5 L 171 56.5 L 171 53.5 Z"/>
       <path id="hole_024" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 158 53.5 L 151 53.5 L 151 56.5 L 158 56.5 L 158 53.5 Z"/>
-      <path id="hole_025" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 145 59.5 L 138 59.5 L 138 62.5 L 145 62.5 L 145 59.5 Z"/>
+      <path id="hole_025" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 145 59.5 L 135 59.5 L 135 56.5 L 145 56.5 L 145 59.5 Z"/>
       <path id="side_024" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 141 105 L 141 101.556 L 138 101.556 L 138 95.5556 L 141 95.5556 L 141 89.1111 L 138 89.1111 L 138 83.1111 L 141 83.1111 L 141 76.6667 L 138 76.6667 L 138 70.6667 L 141 70.6667 L 141 64.2222 L 138 64.2222 L 138 58.2222 L 141 58.2222 L 141 51.7778 L 138 51.7778 L 138 45.7778 L 141 45.7778 L 141 39.3333 L 138 39.3333 L 138 33.3333 L 141 33.3333 L 141 26.8889 L 138 26.8889 L 138 20.8889 L 141 20.8889 L 141 14.4444 L 138 14.4444 L 138 8.4444 L 141 8.4444 L 141 5"/>
     </g>
   </g>
