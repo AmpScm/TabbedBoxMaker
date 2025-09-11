@@ -26,7 +26,7 @@ import os, math
 import inkex
 import gettext
 from copy import deepcopy
-from shapely.geometry import Polygon, MultiPolygon
+from shapely.geometry import Polygon, MultiPolygon, LinearRing
 from shapely.ops import unary_union
 
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
@@ -1044,6 +1044,27 @@ class BoxMaker(inkex.Effect):
                             s += "Z"
                             # Add holes in stable order
                             interiors = list(poly.interiors)
+
+                            for i in interiors:
+                                coords = list(i.coords)
+
+                                if len(coords) > 3:
+                                    pMin = min(coords, key=lambda c: (c[0], c[1]))
+
+                                    if pMin != coords[0]:
+                                        # Rotate the coordinates so that pMin is first
+                                        min_index = coords.index(pMin)
+                                        # Rotate the coordinate list to start with pMin
+                                        rotated_coords = coords[min_index:] + coords[:min_index]
+                                        # Remove the old duplicate point (if it exists)
+                                        if rotated_coords[-1] == rotated_coords[0]:
+                                            rotated_coords = rotated_coords[:-1]
+                                        # Ensure the ring is properly closed with the NEW first point
+                                        rotated_coords.append(rotated_coords[0])
+                                        # Update the interior ring with rotated coordinates
+                                        
+                                        interiors[interiors.index(i)] = LinearRing(rotated_coords)
+
                             # Sort by first coordinate (X, then Y)
                             interiors.sort(key=lambda ring: f"{ring.coords[0][0]},{ring.coords[0][1]}")
                             for interior in interiors:
