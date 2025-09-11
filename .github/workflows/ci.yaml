@@ -48,8 +48,4 @@ jobs:
 
     - name: Run tests with pytest
       run: |
-        pytest tests/ -v --tb=short
-
-    - name: Run legacy test runner for compatibility
-      run: |
-        python run_tests.py
+        python -m pytest tests/ -vv --tb=short

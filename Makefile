@@ -19,7 +19,6 @@ test-legacy:  ## Run legacy test runner
 
 test-all:  ## Run all tests (pytest + legacy)
 	pytest tests/ -v
-	python run_tests.py
 
 lint:  ## Run linting checks
 	flake8 tabbedboxmaker tests
