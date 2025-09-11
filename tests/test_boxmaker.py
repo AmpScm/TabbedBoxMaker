@@ -1,8 +1,8 @@
 import io, os, pytest, re, xml.dom.minidom
 from tabbedboxmaker import BoxMaker
 
-def mask_id_attributes(svgin: str) -> str:
-    return re.sub(r'id="[-a-z0-9A-Z_]+"', 'id="TEST"', svgin)
+def mask_unstable(svgin: str) -> str:
+    return re.sub(r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"', svgin)
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
@@ -534,7 +534,7 @@ def test_tabbed(case):
         with open(actual_file, "w", encoding="utf-8") as f:
             f.write(output)
 
-        return (output, expected)
+        return (mask_unstable(output), mask_unstable(expected))
 
 
     output, expected = run_one(name, args + ['--optimize=0'])
