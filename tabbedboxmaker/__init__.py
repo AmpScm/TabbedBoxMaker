@@ -26,6 +26,9 @@ import os, math
 import inkex
 import gettext
 from copy import deepcopy
+from shapely.geometry import Polygon, MultiPolygon, LinearRing
+from shapely.ops import unary_union
+
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
@@ -506,7 +509,6 @@ class TabbedBoxMaker(inkex.Effect):
             layer.add(inkex.etree.Comment(f" {self.options} "))
             layer.add(inkex.etree.Element('metadata', text=f"createArgs={self.cli_args}"))
 
-
         # For code spacing consistency, we use two-character abbreviations for the six box faces,
         # where each abbreviation is the first and last letter of the face name:
         # tp=top, bm=bottom, ft=front, bk=back, lt=left, rt=right
@@ -969,7 +971,6 @@ class TabbedBoxMaker(inkex.Effect):
                         if isinstance(child, inkex.PathElement)
                     ]:
                         path = inkex.Path(path_element.path)
-                        path_first = path[0]
                         path_last = path[-1]
 
                         if path[-1].letter in "zZ":
@@ -990,13 +991,10 @@ class TabbedBoxMaker(inkex.Effect):
                                 continue  # Path is already closed
 
                             other_first = other_path[0]
-                            other_last = other_path[-1]
 
                             new_path = None
                             if (other_first.x == path_last.x and other_first.y == path_last.y ):
                                 new_path = str(path + other_path[1:])
-                            elif ( other_last.x == path_first.x and other_last.y == path_last.y):
-                                new_path = str(other_path + path[1:])
 
                             if new_path is not None:
                                 new_id = min(path_element.get_id(), other_element.get_id())
@@ -1007,7 +1005,6 @@ class TabbedBoxMaker(inkex.Effect):
 
                                 # Update step for next iteration
                                 path = inkex.Path(path_element.path)
-                                path_first = path[0]
                                 path_last = path[-1]
 
                     # Step 2: Close the the paths, if not already closed
@@ -1094,10 +1091,6 @@ class TabbedBoxMaker(inkex.Effect):
 
                     # Step 4: Include gaps in the panel outline by removing them from the panel path
                     def add_holes_to_panel(group):
-                        # Requires: pip install shapely
-                        from shapely.geometry import Polygon, MultiPolygon
-                        from shapely.ops import unary_union
-                        import re
 
                         def path_to_polygon(path_obj):
                             # Accepts inkex.Path object, only absolute Move/Line/Close
@@ -1119,16 +1112,40 @@ class TabbedBoxMaker(inkex.Effect):
                         def polygon_to_path(poly):
                             # Accepts shapely Polygon, returns inkex.Path string
                             coords = list(poly.exterior.coords)
-                            s = f"M {coords[0][0]},{coords[0][1]} "
+                            s = f"M {fstr(coords[0][0])},{fstr(coords[0][1])} "
                             for x, y in coords[1:]:
-                                s += f"L {x},{y} "
+                                s += f"L {fstr(x)},{fstr(y)} "
                             s += "Z"
-                            # Add holes
-                            for interior in poly.interiors:
+                            # Add holes in stable order
+                            interiors = list(poly.interiors)
+
+                            for i in interiors:
+                                coords = list(i.coords)
+
+                                if len(coords) > 3:
+                                    pMin = min(coords, key=lambda c: (c[0], c[1]))
+
+                                    if pMin != coords[0]:
+                                        # Rotate the coordinates so that pMin is first
+                                        min_index = coords.index(pMin)
+                                        # Rotate the coordinate list to start with pMin
+                                        rotated_coords = coords[min_index:] + coords[:min_index]
+                                        # Remove the old duplicate point (if it exists)
+                                        if rotated_coords[-1] == rotated_coords[0]:
+                                            rotated_coords = rotated_coords[:-1]
+                                        # Ensure the ring is properly closed with the NEW first point
+                                        rotated_coords.append(rotated_coords[0])
+                                        # Update the interior ring with rotated coordinates
+                                        
+                                        interiors[interiors.index(i)] = LinearRing(rotated_coords)
+
+                            # Sort by first coordinate (X, then Y)
+                            interiors.sort(key=lambda ring: f"{ring.coords[0][0]},{ring.coords[0][1]}")
+                            for interior in interiors:
                                 coords = list(interior.coords)
-                                s += f" M {coords[0][0]},{coords[0][1]} "
+                                s += f" M {fstr(coords[0][0])},{fstr(coords[0][1])} "
                                 for x, y in coords[1:]:
-                                    s += f"L {x},{y} "
+                                    s += f"L {fstr(x)},{fstr(y)} "
                                 s += "Z"
                             return s
 
@@ -1314,6 +1331,7 @@ class TabbedBoxMaker(inkex.Effect):
                 if firstHole:
                     firstHoleLenX = holeLenX
                     firstHoleLenY = holeLenY
+                    firstHole = False
                 for dividerNumber in range(1, int(numDividers) + 1):
                     Dx = (
                         vectorX
@@ -1468,13 +1486,13 @@ class TabbedBoxMaker(inkex.Effect):
                 Dy = Dy - firstHoleLenY
                 h += "L " + str(Dx) + "," + str(Dy) + " "
                 Dx = Dx + notDirX * (self.thickness - self.kerf)
-                Dy = Dy + notDirY * (self.thickness - self.kerf)
+                Dy = Dy - notDirY * (self.thickness - self.kerf)
                 h += "L " + str(Dx) + "," + str(Dy) + " "
                 Dx = Dx - firstHoleLenX
                 Dy = Dy + firstHoleLenY
                 h += "L " + str(Dx) + "," + str(Dy) + " "
                 Dx = Dx - notDirX * (self.thickness - self.kerf)
-                Dy = Dy - notDirY * (self.thickness - self.kerf)
+                Dy = Dy + notDirY * (self.thickness - self.kerf)
                 h += "L " + str(Dx) + "," + str(Dy) + " Z"
                 nodes.append(self.makeLine(h, "hole"))
 
