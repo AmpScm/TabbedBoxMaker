@@ -22,14 +22,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from inkex.utils import filename_arg
 
-import os, math
+import math
+import os
 import inkex
 import gettext
 
-from inkex.paths.lines import Line, Move, move, ZoneClose, zoneClose
+from inkex.paths.lines import Line, Move, ZoneClose
 
 from copy import deepcopy
-from shapely.geometry import Polygon, MultiPolygon, LinearRing
+from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import unary_union
 
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
@@ -974,13 +975,13 @@ class TabbedBoxMaker(inkex.Effect):
         # Step 1: Combine paths to form the outer boundary
         skip_elements = []
         for group in groups:
-            paths = [ child for child in group  if isinstance(child, inkex.PathElement) ]
+            paths = [ child for child in group if isinstance(child, inkex.PathElement) ]
 
             for path_element in paths:
                 path = path_element.path
                 path_last = path[-1]
 
-                if path[-1].letter in "zZ":
+                if isinstance(path_last, inkex.paths.ZoneClose):
                     continue  # Path is already closed
 
                 skip_elements.append(path_element)
@@ -989,20 +990,16 @@ class TabbedBoxMaker(inkex.Effect):
                     if other_element in skip_elements:
                         continue
 
-                    other_path = inkex.Path(other_element.path)
+                    other_path = other_element.path
 
-                    if other_path[-1].letter in "zZ":
+                    if isinstance(other_path[-1], inkex.paths.ZoneClose):
                         continue  # Path is already closed
 
                     other_first = other_path[0]
 
-                    new_path = None
                     if (other_first.x == path_last.x and other_first.y == path_last.y ):
-                        new_path = inkex.Path(path + other_path[1:])
-
-                    if new_path is not None:
                         new_id = min(path_element.get_id(), other_element.get_id())
-                        path_element.path = inkex.Path(new_path)
+                        path_element.path = path + other_path[1:]
                         group.remove(other_element)
                         path_element.set_id(new_id)
                         skip_elements.append(other_element)
@@ -1025,12 +1022,11 @@ class TabbedBoxMaker(inkex.Effect):
 
             # Step 3: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
             for path_element in paths:
-
-                path = inkex.Path(path_element.path)
+                path = path_element.path
 
                 simplified_path = []
                 prev = None  # Previous point
-                current_dir = None  # Current direction ('h' or 'v')
+                current_dir = None  # Current direction
 
                 for segment in path:
                     if isinstance(segment, inkex.paths.ZoneClose):
@@ -1085,34 +1081,27 @@ class TabbedBoxMaker(inkex.Effect):
                         current_dir = None
                         direction = None
 
-                path_element.path = inkex.Path(simplified_path)
+                path_element.path = simplified_path
 
             # Step 4: Include gaps in the panel outline by removing them from the panel path
             if len(paths) > 1:
                 panel = paths[0]
                 panel_poly = path_to_polygon(panel.path)
 
-                if panel_poly is not None and panel_poly.is_valid:
+                if panel_poly is not None:
                     # Collect all holes as polygons
                     holes = []
                     for candidate in paths[1:]:
                         poly = path_to_polygon(candidate.path)
                         if poly is not None:
+                            group.remove(candidate)
                             holes.append(poly)
 
-
-                    # Merge overlapping holes
-                    holes_union = unary_union(holes)
                     # Subtract holes from panel
-                    result = panel_poly
-                    if isinstance(holes_union, (Polygon, MultiPolygon)):
-                        result = panel_poly.difference(holes_union)
+                    result = panel_poly.difference(unary_union(holes))
 
                     # Replace panel path with result
                     panel.path = polygon_to_path(result)
-                    # Remove all hole elements from group
-                    for candidate in paths[1:]:
-                        group.remove(candidate)
 
 
             # Last step: If the group now just contains one path, remove
@@ -1398,7 +1387,7 @@ class TabbedBoxMaker(inkex.Effect):
             endOffsetY * self.thickness + dirY * length
         ))
 
-        sidePath.path = inkex.Path(s)
+        sidePath.path = s
 
         # draw last for divider joints in side walls
         if isTab and numDividers > 0 and self.tabSymmetry == 0 and not isDivider:
