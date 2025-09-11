@@ -25,6 +25,9 @@ from inkex.utils import filename_arg
 import os, math
 import inkex
 import gettext
+
+from inkex.paths.lines import Line, Move, move, ZoneClose, zoneClose
+
 from copy import deepcopy
 from shapely.geometry import Polygon, MultiPolygon, LinearRing
 from shapely.ops import unary_union
@@ -46,7 +49,7 @@ def fstr(f: float) -> str:
     """Format float to string with minimal decimal places, avoiding scientific notation."""
     if f.is_integer():
         return str(int(f))
-    
+
     r = str(f)
 
     if r.endswith('.0'):
@@ -454,7 +457,7 @@ class TabbedBoxMaker(inkex.Effect):
         self.dogbone = 1 if self.options.tabtype == 1 else 0
         layout = self.options.style
         spacing = self.svg.unittouu(str(self.options.spacing) + unit)
-        boxtype = self.options.boxtype
+        boxtype : BoxType = self.options.boxtype
         divx = self.options.div_l
         divy = self.options.div_w
         self.keydivwalls = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.WALLS]
@@ -515,15 +518,15 @@ class TabbedBoxMaker(inkex.Effect):
 
         # Determine which faces the box has based on the box type
         hasTp = hasBm = hasFt = hasBk = hasLt = hasRt = True
-        if boxtype == 2:
+        if boxtype == BoxType.ONE_SIDE_OPEN:
             hasTp = False
-        elif boxtype == 3:
+        elif boxtype == BoxType.TWO_SIDES_OPEN:
             hasTp = hasFt = False
-        elif boxtype == 4:
+        elif boxtype == BoxType.THREE_SIDES_OPEN:
             hasTp = hasFt = hasRt = False
-        elif boxtype == 5:
+        elif boxtype == BoxType.OPPOSITE_ENDS_OPEN:
             hasTp = hasBm = False
-        elif boxtype == 6:
+        elif boxtype == BoxType.TWO_PANELS_ONLY:
             hasTp = hasFt = hasBk = hasRt = False
         # else boxtype==1, full box, has all sides
 
@@ -550,7 +553,7 @@ class TabbedBoxMaker(inkex.Effect):
             ftTabInfo = 0b1010
             bkTabInfo = 0b1010
 
-        def fixTabBits(tabbed, tabInfo, bit):
+        def fixTabBits(tabbed : bool, tabInfo : int, bit : int) -> tuple[bool, int]:
             newTabbed = tabbed & ~bit
             if inside:
                 newTabInfo = tabInfo | bit  # set bit to 1 to use tab base line
@@ -626,14 +629,14 @@ class TabbedBoxMaker(inkex.Effect):
         ltFace = 3
         rtFace = 3
 
-        def reduceOffsets(aa, start, dx, dy, dz):
+        def reduceOffsets(aa : dict[int, tuple[int, int, int, int]], start : int, dx : int, dy : int, dz : int):
             for ix in range(start + 1, len(aa)):
                 (s, x, y, z) = aa[ix]
                 aa[ix] = (s - 1, x - dx, y - dy, z - dz)
 
         # note first two pieces in each set are the X-divider template and
         # Y-divider template respectively
-        pieces = []
+        pieces : list[tuple] = []
         if layout == 1:  # Diagramatic Layout
             rr = deepcopy([row0, row1z, row2])
             cc = deepcopy([col0, col1z, col2xz, col3xzz])
@@ -962,235 +965,164 @@ class TabbedBoxMaker(inkex.Effect):
                         0,
                     )
 
+            # All pieces drawn, now optimize the paths if required
             if self.options.optimize:
-                # Step 1: Combine paths to form the outer boundary
-                skip_elements = []
-                for group in groups:
-                    for path_element in [
-                        child for child in group
-                        if isinstance(child, inkex.PathElement)
-                    ]:
-                        path = inkex.Path(path_element.path)
+                self.optimizePieces(groups)
+
+
+    def optimizePieces(self, groups) -> None:
+        # Step 1: Combine paths to form the outer boundary
+        skip_elements = []
+        for group in groups:
+            paths = [ child for child in group  if isinstance(child, inkex.PathElement) ]
+
+            for path_element in paths:
+                path = path_element.path
+                path_last = path[-1]
+
+                if path[-1].letter in "zZ":
+                    continue  # Path is already closed
+
+                skip_elements.append(path_element)
+
+                for other_element in paths:
+                    if other_element in skip_elements:
+                        continue
+
+                    other_path = inkex.Path(other_element.path)
+
+                    if other_path[-1].letter in "zZ":
+                        continue  # Path is already closed
+
+                    other_first = other_path[0]
+
+                    new_path = None
+                    if (other_first.x == path_last.x and other_first.y == path_last.y ):
+                        new_path = inkex.Path(path + other_path[1:])
+
+                    if new_path is not None:
+                        new_id = min(path_element.get_id(), other_element.get_id())
+                        path_element.path = inkex.Path(new_path)
+                        group.remove(other_element)
+                        path_element.set_id(new_id)
+                        skip_elements.append(other_element)
+
+                        # Update step for next iteration
+                        path = path_element.path
                         path_last = path[-1]
 
-                        if path[-1].letter in "zZ":
-                            continue  # Path is already closed
+            # List updated, refresh
+            paths = [ child for child in group  if isinstance(child, inkex.PathElement) ]
 
-                        skip_elements.append(path_element)
+            # Step 2: Close the the paths, if not already closed
+            for path_element in paths:
+                if path[-1].letter in "zZ":
+                    continue
 
-                        for other_element in [
-                            child for child in group
-                            if isinstance(child, inkex.PathElement)
-                        ]:
-                            if other_element in skip_elements:
-                                continue
+                path = path_element.path.reverse()
+                path.close()
+                path_element.path = path
 
-                            other_path = inkex.Path(other_element.path)
+            # Step 3: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
+            for path_element in paths:
 
-                            if other_path[-1].letter in "zZ":
-                                continue  # Path is already closed
+                path = inkex.Path(path_element.path)
 
-                            other_first = other_path[0]
+                simplified_path = []
+                prev = None  # Previous point
+                current_dir = None  # Current direction ('h' or 'v')
 
-                            new_path = None
-                            if (other_first.x == path_last.x and other_first.y == path_last.y ):
-                                new_path = str(path + other_path[1:])
+                for segment in path:
+                    if isinstance(segment, inkex.paths.ZoneClose):
+                        simplified_path.append(segment)
+                    elif isinstance(segment, inkex.paths.Line):
+                        if isinstance(prev, inkex.paths.Line):
+                            dx = round(segment.x - prev.x, 8)
+                            dy = round(segment.y - prev.y, 8)
 
-                            if new_path is not None:
-                                new_id = min(path_element.get_id(), other_element.get_id())
-                                path_element.path = inkex.Path(new_path)
-                                group.remove(other_element)
-                                path_element.set_id(new_id)
-                                skip_elements.append(other_element)
+                            if dx == 0 and dy == 0:
+                                continue  # Skip node
 
-                                # Update step for next iteration
-                                path = inkex.Path(path_element.path)
-                                path_last = path[-1]
+                            # Determine the direction
+                            direction = (
+                                0 if dx == 0 else math.copysign(1, dx),
+                                0 if dy == 0 else math.copysign(1, dy),
+                            )
 
-                    # Step 2: Close the the paths, if not already closed
-                    for path_element in group.descendants():
-                        if not isinstance(path_element, inkex.PathElement):
-                            continue
-
-                        path = inkex.Path(path_element.path)
-
-                        if path[-1].letter in "zZ":
-                            continue
-
-                        path = path.reverse() # Make outside path anticlockwise
-                        path.close()
-                        path_element.path = str(path)
-
-                    # Step 3: Remove unneeded generated nodes (duplicates and
-                    # intermediates on h/v lines)
-                    for path_element in group:
-                        if not isinstance(path_element, inkex.PathElement):
-                            continue
-
-                        path = inkex.Path(path_element.path)
-
-                        simplified_path = []
-                        prev = None  # Previous point
-                        current_dir = None  # Current direction ("h" or "v")
-
-                        for segment in path:
-                            if isinstance(segment, inkex.paths.ZoneClose):
-                                simplified_path.append(segment)
-                            elif isinstance(segment, inkex.paths.Line):
-                                if isinstance(prev, inkex.paths.Line):
-                                    dx = round(segment.x - prev.x, 8)
-                                    dy = round(segment.y - prev.y, 8)
-
-                                    if dx == 0 and dy == 0:
-                                        continue  # Skip node
-
-                                    # Determine the direction
-                                    direction = (
-                                        0 if dx == 0 else math.copysign(1, dx),
-                                        0 if dy == 0 else math.copysign(1, dy),
-                                    )
-
-                                    if (dx == 0 or dy == 0) and direction == current_dir:
-                                        # Skip redundant points on straight lines
-                                        # Replace the last point with the current point
-                                        simplified_path[-1] = segment
-                                    else:
-                                        simplified_path.append(segment)
-                                    current_dir = direction
-                                else:
-                                    if prev is not None:
-                                        dx = round(segment.x - prev.x, 8)
-                                        dy = round(segment.y - prev.y, 8)
-
-                                        if dx == 0 and dy == 0:
-                                            continue  # Skip node
-
-                                        # Determine the direction
-                                        direction = (
-                                            0 if dx == 0 else math.copysign(1, dx),
-                                            0 if dy == 0 else math.copysign(1, dy),
-                                        )
-                                        current_dir = direction
-                                    else:
-                                        current_dir = None
-                                    simplified_path.append(segment)
-                                prev = segment
-                            elif isinstance(segment, inkex.paths.Move):
-                                simplified_path.append(segment)
-                                prev = segment
-                                current_dir = None
-                                direction = None
+                            if (dx == 0 or dy == 0) and direction == current_dir:
+                                # Skip redundant points on straight lines
+                                # Replace the last point with the current point
+                                simplified_path[-1] = segment
                             else:
                                 simplified_path.append(segment)
-                                prev = None
+                            current_dir = direction
+                        else:
+                            if prev is not None:
+                                dx = round(segment.x - prev.x, 8)
+                                dy = round(segment.y - prev.y, 8)
+
+                                if dx == 0 and dy == 0:
+                                    continue  # Skip node
+
+                                # Determine the direction
+                                direction = (
+                                    0 if dx == 0 else math.copysign(1, dx),
+                                    0 if dy == 0 else math.copysign(1, dy),
+                                )
+                                current_dir = direction
+                            else:
                                 current_dir = None
-                                direction = None
+                            simplified_path.append(segment)
+                        prev = segment
+                    elif isinstance(segment, inkex.paths.Move):
+                        simplified_path.append(segment)
+                        prev = segment
+                        current_dir = None
+                        direction = None
+                    else:
+                        simplified_path.append(segment)
+                        prev = None
+                        current_dir = None
+                        direction = None
 
-                        path_element.path = str(inkex.Path(simplified_path))
+                path_element.path = inkex.Path(simplified_path)
+
+            # Step 4: Include gaps in the panel outline by removing them from the panel path
+            if len(paths) > 1:
+                panel = paths[0]
+                panel_poly = path_to_polygon(panel.path)
+
+                if panel_poly is not None and panel_poly.is_valid:
+                    # Collect all holes as polygons
+                    holes = []
+                    for candidate in paths[1:]:
+                        poly = path_to_polygon(candidate.path)
+                        if poly is not None:
+                            holes.append(poly)
 
 
-                    # Step 4: Include gaps in the panel outline by removing them from the panel path
-                    def add_holes_to_panel(group):
+                    # Merge overlapping holes
+                    holes_union = unary_union(holes)
+                    # Subtract holes from panel
+                    result = panel_poly
+                    if isinstance(holes_union, (Polygon, MultiPolygon)):
+                        result = panel_poly.difference(holes_union)
 
-                        def path_to_polygon(path_obj):
-                            # Accepts inkex.Path object, only absolute Move/Line/Close
-                            from shapely.geometry import Polygon
-                            coords = []
-                            for seg in path_obj:
-                                if seg.letter == 'M':
-                                    coords.append((seg.x, seg.y))
-                                elif seg.letter == 'L':
-                                    coords.append((seg.x, seg.y))
-                                elif seg.letter in 'Zz':
-                                    continue
-                                else:
-                                    raise AssertionError(f"Unexpected path segment type: {seg.letter}")
-                            if len(coords) > 2:
-                                return Polygon(coords)
-                            return None
+                    # Replace panel path with result
+                    panel.path = polygon_to_path(result)
+                    # Remove all hole elements from group
+                    for candidate in paths[1:]:
+                        group.remove(candidate)
 
-                        def polygon_to_path(poly):
-                            # Accepts shapely Polygon, returns inkex.Path string
-                            coords = list(poly.exterior.coords)
-                            s = f"M {fstr(coords[0][0])},{fstr(coords[0][1])} "
-                            for x, y in coords[1:]:
-                                s += f"L {fstr(x)},{fstr(y)} "
-                            s += "Z"
-                            # Add holes in stable order
-                            interiors = list(poly.interiors)
 
-                            for i in interiors:
-                                coords = list(i.coords)
-
-                                if len(coords) > 3:
-                                    pMin = min(coords, key=lambda c: (c[0], c[1]))
-
-                                    if pMin != coords[0]:
-                                        # Rotate the coordinates so that pMin is first
-                                        min_index = coords.index(pMin)
-
-                                        # Remove the old duplicate point (if it exists)
-                                        if coords[-1] == coords[0]:
-                                            coords = coords[:-1]
-
-                                        # Rotate the coordinate list to start with pMin
-                                        rotated_coords = coords[min_index:] + coords[:min_index]
-                                        # Ensure the ring is properly closed with the NEW first point
-                                        rotated_coords.append(rotated_coords[0])
-                                        # Update the interior ring with rotated coordinates
-                                        
-                                        interiors[interiors.index(i)] = LinearRing(rotated_coords)
-
-                            # Sort by first coordinate (X, then Y)
-                            interiors.sort(key=lambda ring: f"{ring.coords[0][0]},{ring.coords[0][1]}")
-                            for interior in interiors:
-                                coords = list(interior.coords)
-                                s += f" M {fstr(coords[0][0])},{fstr(coords[0][1])} "
-                                for x, y in coords[1:]:
-                                    s += f"L {fstr(x)},{fstr(y)} "
-                                s += "Z"
-                            return s
-
-                        paths = [el for el in group if isinstance(el, inkex.PathElement)]
-                        if not paths:
-                            return
-                        panel = paths[0]
-                        panel_poly = path_to_polygon(panel.path)
-                        if panel_poly is None:
-                            return
-                        # Collect all holes as polygons
-                        holes = []
-                        for candidate in paths[1:]:
-                            poly = path_to_polygon(candidate.path)
-                            if poly is not None:
-                                holes.append(poly)
-                        if not holes:
-                            return
-                        # Merge overlapping holes
-                        holes_union = unary_union(holes)
-                        # Subtract holes from panel
-                        result = panel_poly
-                        if isinstance(holes_union, (Polygon, MultiPolygon)):
-                            result = panel_poly.difference(holes_union)
-                        # Replace panel path with result
-                        panel.path = polygon_to_path(result)
-                        # Remove all hole elements from group
-                        for candidate in paths[1:]:
-                            group.remove(candidate)
-
-                    add_holes_to_panel(group)
-
-                    # Ok, now we still have a group containing as first element the panel and then optionally some gaps that
-                    # should be cut out of the panel
-
-                    # Last step: If the group now just contains one path, remove
-                    # the group around this path
-                    if len(group) == 1:
-                        parent = group.getparent()
-                        group_id = group.get_id()
-                        item = group[0]
-                        parent.replace(group, item)
-                        item.set_id(group_id)
+            # Last step: If the group now just contains one path, remove
+            # the group around this path
+            if len(group) == 1:
+                parent = group.getparent()
+                group_id = group.get_id()
+                item = group[0]
+                parent.replace(group, item)
+                item.set_id(group_id)
 
     def dimpleStr(
         self,
@@ -1203,8 +1135,8 @@ class TabbedBoxMaker(inkex.Effect):
         notDirY: bool,
         ddir: int,
         isTab: bool
-    ) -> str:
-        ds = ""
+    ) -> inkex.Path:
+        ds = []
         if not isTab:
             ddir = -ddir
         if self.dimpleHeight > 0 and tabVector != 0:
@@ -1216,16 +1148,16 @@ class TabbedBoxMaker(inkex.Effect):
                 tabSgn = -1
             Vxd = vectorX + notDirX * dimpleStart
             Vyd = vectorY + notDirY * dimpleStart
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            ds.append(Line(Vxd, Vyd))
             Vxd = Vxd + (tabSgn * notDirX - ddir * dirX) * self.dimpleHeight
             Vyd = Vyd + (tabSgn * notDirY - ddir * dirY) * self.dimpleHeight
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            ds.append(Line(Vxd, Vyd))
             Vxd = Vxd + tabSgn * notDirX * self.dimpleLength
             Vyd = Vyd + tabSgn * notDirY * self.dimpleLength
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            ds.append(Line(Vxd, Vyd))
             Vxd = Vxd + (tabSgn * notDirX + ddir * dirX) * self.dimpleHeight
             Vyd = Vyd + (tabSgn * notDirY + ddir * dirY) * self.dimpleHeight
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            ds.append(Line(Vxd, Vyd))
         return ds
 
     def side(
@@ -1293,12 +1225,13 @@ class TabbedBoxMaker(inkex.Effect):
         dividerEdgeOffsetX = dividerEdgeOffsetY = self.thickness
         notDirX = dirX == 0  # used to select operation on x or y
         notDirY = dirY == 0
+        s = inkex.Path()
         if self.tabSymmetry == 1:
             dividerEdgeOffsetX = dirX * self.thickness
             # dividerEdgeOffsetY = ;
             vectorX = (0 if dirX and prevTab else startOffsetX * self.thickness)
             vectorY = (0 if dirY and prevTab else startOffsetY * self.thickness)
-            s = "M " + str(vectorX) + "," + str(vectorY) + " "
+            s.append(Move(vectorX, vectorY))
             vectorX = (startOffsetX if startOffsetX else dirX) * self.thickness
             vectorY = (startOffsetY if startOffsetY else dirY) * self.thickness
             if notDirX and tabVec:
@@ -1312,7 +1245,7 @@ class TabbedBoxMaker(inkex.Effect):
             )
             dividerEdgeOffsetX = dirY * self.thickness
             dividerEdgeOffsetY = dirX * self.thickness
-            s = "M " + str(vectorX) + "," + str(vectorY) + " "
+            s.append(Move(vectorX, vectorY))
             if notDirX:
                 vectorY = 0  # set correct line start for tab generation
             if notDirY:
@@ -1349,19 +1282,21 @@ class TabbedBoxMaker(inkex.Effect):
                     )
                     if tabDivision == 1 and self.tabSymmetry == TabSymmetry.XY_SYMMETRIC:
                         Dx += startOffsetX * self.thickness
-                    h = "M " + str(Dx) + "," + str(Dy) + " "
+                    h = inkex.Path()
+                    h.append(Move(Dx, Dy))
                     Dx = Dx + holeLenX
                     Dy = Dy + holeLenY
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    h.append(Line(Dx, Dy))
                     Dx = Dx + notDirX * (secondVec - self.kerf)
                     Dy = Dy + notDirY * (secondVec + self.kerf)
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    h.append(Line(Dx, Dy))
                     Dx = Dx - holeLenX
                     Dy = Dy - holeLenY
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    h.append(Line(Dx, Dy))
                     Dx = Dx - notDirX * (secondVec - self.kerf)
                     Dy = Dy - notDirY * (secondVec + self.kerf)
-                    h += "L " + str(Dx) + "," + str(Dy) + " Z"
+                    h.append(Line(Dx, Dy))
+                    h.append(ZoneClose())
                     nodes.append(self.makeLine(h, "hole"))
             if tabDivision % 2:
                 if (
@@ -1380,19 +1315,21 @@ class TabbedBoxMaker(inkex.Effect):
                             - dividerEdgeOffsetY
                             + notDirY * halfkerf
                         )
-                        h = "M " + str(Dx) + "," + str(Dy) + " "
+                        h = []
+                        h.append(Move(Dx, Dy))
                         Dx = Dx + dirX * (first + length / 2)
                         Dy = Dy + dirY * (first + length / 2)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        h.append(Line(Dx, Dy))
                         Dx = Dx + notDirX * (self.thickness - self.kerf)
                         Dy = Dy + notDirY * (self.thickness - self.kerf)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        h.append(Line(Dx, Dy))
                         Dx = Dx - dirX * (first + length / 2)
                         Dy = Dy - dirY * (first + length / 2)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        h.append(Line(Dx, Dy))
                         Dx = Dx - notDirX * (self.thickness - self.kerf)
                         Dy = Dy - notDirY * (self.thickness - self.kerf)
-                        h += "L " + str(Dx) + "," + str(Dy) + " Z"
+                        h.append(Line(Dx, Dy))
+                        h.append(ZoneClose())
                         nodes.append(self.makeLine(h, "slot"))
                 # draw the gap
                 vectorX += (
@@ -1413,22 +1350,22 @@ class TabbedBoxMaker(inkex.Effect):
                     )
                     + notDirY * firstVec
                 )
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                s.append(Line(vectorX, vectorY))
                 if self.dogbone and isTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                    s.append(Line(vectorX, vectorY))
                 # draw the starting edge of the tab
                 s += self.dimpleStr(
                     secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, 1, isTab
                 )
                 vectorX += notDirX * secondVec
                 vectorY += notDirY * secondVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                s.append(Line(vectorX, vectorY))
                 if self.dogbone and notTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                    s.append(Line(vectorX, vectorY))
 
             else:
                 # draw the tab
@@ -1436,33 +1373,30 @@ class TabbedBoxMaker(inkex.Effect):
                                    self.kerf * notTab) + notDirX * firstVec
                 vectorY += dirY * (tabWidth + self.dogbone *
                                    self.kerf * notTab) + notDirY * firstVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                s.append(Line(vectorX, vectorY))
                 if self.dogbone and notTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                    s.append(Line(vectorX, vectorY))
                 # draw the ending edge of the tab
                 s += self.dimpleStr(
                     secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, -1, isTab
                 )
                 vectorX += notDirX * secondVec
                 vectorY += notDirY * secondVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                s.append(Line(vectorX, vectorY))
                 if self.dogbone and isTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                    s.append(Line(vectorX, vectorY))
             (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
             first = 0
 
         # finish the line off
-        s += (
-            "L "
-            + str(endOffsetX * self.thickness + dirX * length)
-            + ","
-            + str(endOffsetY * self.thickness + dirY * length)
-            + " "
-        )
+        s.append(Line(
+            endOffsetX * self.thickness + dirX * length,
+            endOffsetY * self.thickness + dirY * length
+        ))
 
         sidePath.path = inkex.Path(s)
 
@@ -1483,19 +1417,22 @@ class TabbedBoxMaker(inkex.Effect):
                     + notDirY * halfkerf
                 )
                 Dy += firstHoleLenY + notDirY * (self.thickness-self.kerf)
-                h = "M " + str(Dx) + "," + str(Dy) + " "
+
+                h = inkex.Path()
+                h.append(Move(Dx, Dy))
                 Dx = Dx + firstHoleLenX
                 Dy = Dy - firstHoleLenY
-                h += "L " + str(Dx) + "," + str(Dy) + " "
+                h.append(Line(Dx, Dy))
                 Dx = Dx + notDirX * (self.thickness - self.kerf)
                 Dy = Dy - notDirY * (self.thickness - self.kerf)
-                h += "L " + str(Dx) + "," + str(Dy) + " "
+                h.append(Line(Dx, Dy))
                 Dx = Dx - firstHoleLenX
                 Dy = Dy + firstHoleLenY
-                h += "L " + str(Dx) + "," + str(Dy) + " "
+                h.append(Line(Dx, Dy))
                 Dx = Dx - notDirX * (self.thickness - self.kerf)
                 Dy = Dy + notDirY * (self.thickness - self.kerf)
-                h += "L " + str(Dx) + "," + str(Dy) + " Z"
+                h.append(Line(Dx, Dy))
+                h.append(ZoneClose())
                 nodes.append(self.makeLine(h, "hole"))
 
         for i in nodes:
