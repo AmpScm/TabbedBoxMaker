@@ -44,7 +44,7 @@ def fstr(f: float) -> str:
     """Format float to string with minimal decimal places, avoiding scientific notation."""
     if f.is_integer():
         return str(int(f))
-    
+
     r = str(f)
 
     if r.endswith('.0'):
@@ -906,234 +906,247 @@ class BoxMaker(inkex.Effect):
                         True
                     )
 
+            # All pieces drawn, now optimize the paths if required
             if self.options.optimize:
-                # Step 1: Combine paths to form the outer boundary
-                skip_elements = []
-                for group in groups:
-                    for path_element in [
-                        child for child in group
-                        if isinstance(child, inkex.PathElement)
-                    ]:
+                self.optimize(groups)
+
+        # Fix outer canvas size
+        self.fixCanvas()
+
+    def optimize(self, groups) -> None:
+        # Step 1: Combine paths to form the outer boundary
+        skip_elements = []
+        for group in groups:
+            for path_element in [
+                child for child in group
+                if isinstance(child, inkex.PathElement)
+            ]:
+                path = inkex.Path(path_element.path)
+                path_last = path[-1]
+
+                if path[-1].letter in "zZ":
+                    continue  # Path is already closed
+
+                skip_elements.append(path_element)
+
+                for other_element in [
+                    child for child in group
+                    if isinstance(child, inkex.PathElement)
+                ]:
+                    if other_element in skip_elements:
+                        continue
+
+                    other_path = inkex.Path(other_element.path)
+
+                    if other_path[-1].letter in "zZ":
+                        continue  # Path is already closed
+
+                    other_first = other_path[0]
+
+                    new_path = None
+                    if (other_first.x == path_last.x and other_first.y == path_last.y ):
+                        new_path = str(path + other_path[1:])
+
+                    if new_path is not None:
+                        new_id = min(path_element.get_id(), other_element.get_id())
+                        path_element.path = inkex.Path(new_path)
+                        group.remove(other_element)
+                        path_element.set_id(new_id)
+                        skip_elements.append(other_element)
+
+                        # Update step for next iteration
                         path = inkex.Path(path_element.path)
                         path_last = path[-1]
 
-                        if path[-1].letter in "zZ":
-                            continue  # Path is already closed
+            # Step 2: Close the the paths, if not already closed
+            for path_element in group.descendants():
+                if not isinstance(path_element, inkex.PathElement):
+                    continue
 
-                        skip_elements.append(path_element)
+                path = inkex.Path(path_element.path)
 
-                        for other_element in [
-                            child for child in group
-                            if isinstance(child, inkex.PathElement)
-                        ]:
-                            if other_element in skip_elements:
-                                continue
+                if path[-1].letter in "zZ":
+                    continue
 
-                            other_path = inkex.Path(other_element.path)
+                path.close()
+                path_element.path = str(path)
 
-                            if other_path[-1].letter in "zZ":
-                                continue  # Path is already closed
+            # Step 3: Remove unneeded generated nodes (duplicates and
+            # intermediates on h/v lines)
+            for path_element in group:
+                if not isinstance(path_element, inkex.PathElement):
+                    continue
 
-                            other_first = other_path[0]
+                path = inkex.Path(path_element.path)
 
-                            new_path = None
-                            if (other_first.x == path_last.x and other_first.y == path_last.y ):
-                                new_path = str(path + other_path[1:])
+                simplified_path = []
+                prev = None  # Previous point
+                current_dir = None  # Current direction ('h' or 'v')
 
-                            if new_path is not None:
-                                new_id = min(path_element.get_id(), other_element.get_id())
-                                path_element.path = inkex.Path(new_path)
-                                group.remove(other_element)
-                                path_element.set_id(new_id)
-                                skip_elements.append(other_element)
+                for segment in path:
+                    if isinstance(segment, inkex.paths.ZoneClose):
+                        simplified_path.append(segment)
+                        continue
 
-                                # Update step for next iteration
-                                path = inkex.Path(path_element.path)
-                                path_last = path[-1]
+                    if isinstance(segment, inkex.paths.Line):
+                        if prev is not None:
+                            dx = round(segment.x - prev.x, 8)
+                            dy = round(segment.y - prev.y, 8)
 
-                    # Step 2: Close the the paths, if not already closed
-                    for path_element in group.descendants():
-                        if not isinstance(path_element, inkex.PathElement):
-                            continue
+                            if dx == 0 and dy == 0:
+                                continue  # Skip node
 
-                        path = inkex.Path(path_element.path)
+                            # Determine the direction
+                            direction = (
+                                0 if dx == 0 else math.copysign(1, dx),
+                                0 if dy == 0 else math.copysign(1, dy),
+                            )
 
-                        if path[-1].letter in "zZ":
-                            continue
-
-                        path.close()
-                        path_element.path = str(path)
-
-                    # Step 3: Remove unneeded generated nodes (duplicates and
-                    # intermediates on h/v lines)
-                    for path_element in group:
-                        if not isinstance(path_element, inkex.PathElement):
-                            continue
-
-                        path = inkex.Path(path_element.path)
-
-                        simplified_path = []
-                        prev = None  # Previous point
-                        current_dir = None  # Current direction ('h' or 'v')
-
-                        for segment in path:
-                            if isinstance(segment, inkex.paths.ZoneClose):
-                                simplified_path.append(segment)
-                                continue
-
-                            if isinstance(segment, inkex.paths.Line):
-                                if prev is not None:
-                                    dx = round(segment.x - prev.x, 8)
-                                    dy = round(segment.y - prev.y, 8)
-
-                                    if dx == 0 and dy == 0:
-                                        continue  # Skip node
-
-                                    # Determine the direction
-                                    direction = (
-                                        0 if dx == 0 else math.copysign(1, dx),
-                                        0 if dy == 0 else math.copysign(1, dy),
-                                    )
-
-                                    # Skip redundant points on straight lines
-                                    if (dx == 0 or dy == 0) and direction == current_dir:
-                                        # Replace the last point in
-                                        # simplified_path
-                                        simplified_path[-1] = segment
-                                    else:
-                                        simplified_path.append(segment)
-                                        current_dir = direction
-                                else:
-                                    simplified_path.append(segment)
-                                prev = segment
+                            # Skip redundant points on straight lines
+                            if (dx == 0 or dy == 0) and direction == current_dir:
+                                # Replace the last point in
+                                # simplified_path
+                                simplified_path[-1] = segment
                             else:
                                 simplified_path.append(segment)
-                                prev = None
-                                current_dir = None
-                                direction = None
+                                current_dir = direction
+                        else:
+                            simplified_path.append(segment)
+                        prev = segment
+                    else:
+                        simplified_path.append(segment)
+                        prev = None
+                        current_dir = None
+                        direction = None
 
-                        path_element.path = str(inkex.Path(simplified_path))
+                path_element.path = str(inkex.Path(simplified_path))
 
 
-                    # Step 4: Include gaps in the panel outline by removing them from the panel path
-                    def add_holes_to_panel(group):
+            # Step 4: Include gaps in the panel outline by removing them from the panel path
+            def add_holes_to_panel(group):
 
-                        def path_to_polygon(path_obj):
-                            # Accepts inkex.Path object, only absolute Move/Line/Close
-                            from shapely.geometry import Polygon
-                            coords = []
-                            for seg in path_obj:
-                                if seg.letter == 'M':
-                                    coords.append((seg.x, seg.y))
-                                elif seg.letter == 'L':
-                                    coords.append((seg.x, seg.y))
-                                elif seg.letter in 'Zz':
-                                    continue
-                                else:
-                                    raise AssertionError(f"Unexpected path segment type: {seg.letter}")
-                            if len(coords) > 2:
-                                return Polygon(coords)
-                            return None
+                def path_to_polygon(path_obj):
+                    # Accepts inkex.Path object, only absolute Move/Line/Close
+                    from shapely.geometry import Polygon
+                    coords = []
+                    for seg in path_obj:
+                        if seg.letter == 'M':
+                            coords.append((seg.x, seg.y))
+                        elif seg.letter == 'L':
+                            coords.append((seg.x, seg.y))
+                        elif seg.letter in 'Zz':
+                            continue
+                        else:
+                            raise AssertionError(f"Unexpected path segment type: {seg.letter}")
+                    if len(coords) > 2:
+                        return Polygon(coords)
+                    return None
 
-                        def polygon_to_path(poly):
-                            # Accepts shapely Polygon, returns inkex.Path string
-                            coords = list(poly.exterior.coords)
-                            s = f"M {fstr(coords[0][0])},{fstr(coords[0][1])} "
-                            for x, y in coords[1:]:
-                                s += f"L {fstr(x)},{fstr(y)} "
-                            s += "Z"
-                            # Add holes in stable order
-                            interiors = list(poly.interiors)
+                def polygon_to_path(poly):
+                    # Accepts shapely Polygon, returns inkex.Path string
+                    coords = list(poly.exterior.coords)
+                    s = f"M {fstr(coords[0][0])},{fstr(coords[0][1])} "
+                    for x, y in coords[1:]:
+                        s += f"L {fstr(x)},{fstr(y)} "
+                    s += "Z"
+                    # Add holes in stable order
+                    interiors = list(poly.interiors)
 
-                            for i in interiors:
-                                coords = list(i.coords)
+                    for i in interiors:
+                        coords = list(i.coords)
 
-                                if len(coords) > 3:
-                                    pMin = min(coords, key=lambda c: (c[0], c[1]))
+                        if len(coords) > 3:
+                            pMin = min(coords, key=lambda c: (c[0], c[1]))
 
-                                    if pMin != coords[0]:
-                                        # Rotate the coordinates so that pMin is first
-                                        min_index = coords.index(pMin)
+                            if pMin != coords[0]:
+                                # Rotate the coordinates so that pMin is first
+                                min_index = coords.index(pMin)
 
-                                        # Remove the old duplicate point (if it exists)
-                                        if coords[-1] == coords[0]:
-                                            coords = coords[:-1]
+                                # Remove the old duplicate point (if it exists)
+                                if coords[-1] == coords[0]:
+                                    coords = coords[:-1]
 
-                                        # Rotate the coordinate list to start with pMin
-                                        rotated_coords = coords[min_index:] + coords[:min_index]
-                                        # Ensure the ring is properly closed with the NEW first point
-                                        rotated_coords.append(rotated_coords[0])
-                                        # Update the interior ring with rotated coordinates
-                                        
-                                        interiors[interiors.index(i)] = LinearRing(rotated_coords)
+                                # Rotate the coordinate list to start with pMin
+                                rotated_coords = coords[min_index:] + coords[:min_index]
+                                # Ensure the ring is properly closed with the NEW first point
+                                rotated_coords.append(rotated_coords[0])
+                                # Update the interior ring with rotated coordinates
 
-                            # Sort by first coordinate (X, then Y)
-                            interiors.sort(key=lambda ring: f"{ring.coords[0][0]},{ring.coords[0][1]}")
-                            for interior in interiors:
-                                coords = list(interior.coords)
-                                s += f" M {fstr(coords[0][0])},{fstr(coords[0][1])} "
-                                for x, y in coords[1:]:
-                                    s += f"L {fstr(x)},{fstr(y)} "
-                                s += "Z"
-                            return s
+                                interiors[interiors.index(i)] = LinearRing(rotated_coords)
 
-                        paths = [el for el in group if isinstance(el, inkex.PathElement)]
-                        if not paths:
-                            return
-                        panel = paths[0]
-                        panel_poly = path_to_polygon(panel.path)
-                        if panel_poly is None:
-                            return
-                        # Collect all holes as polygons
-                        holes = []
-                        for candidate in paths[1:]:
-                            poly = path_to_polygon(candidate.path)
-                            if poly is not None:
-                                holes.append(poly)
-                        if not holes:
-                            return
-                        # Merge overlapping holes
-                        holes_union = unary_union(holes)
-                        # Subtract holes from panel
-                        result = panel_poly
-                        if isinstance(holes_union, (Polygon, MultiPolygon)):
-                            result = panel_poly.difference(holes_union)
-                        # Replace panel path with result
-                        panel.path = polygon_to_path(result)
-                        # Remove all hole elements from group
-                        for candidate in paths[1:]:
-                            group.remove(candidate)
+                    # Sort by first coordinate (X, then Y)
+                    interiors.sort(key=lambda ring: f"{ring.coords[0][0]},{ring.coords[0][1]}")
+                    for interior in interiors:
+                        coords = list(interior.coords)
+                        s += f" M {fstr(coords[0][0])},{fstr(coords[0][1])} "
+                        for x, y in coords[1:]:
+                            s += f"L {fstr(x)},{fstr(y)} "
+                        s += "Z"
+                    return s
 
-                    add_holes_to_panel(group)
+                paths = [el for el in group if isinstance(el, inkex.PathElement)]
+                if not paths:
+                    return
+                panel = paths[0]
+                panel_poly = path_to_polygon(panel.path)
+                if panel_poly is None:
+                    return
+                # Collect all holes as polygons
+                holes = []
+                for candidate in paths[1:]:
+                    poly = path_to_polygon(candidate.path)
+                    if poly is not None:
+                        holes.append(poly)
+                if not holes:
+                    return
+                # Merge overlapping holes
+                holes_union = unary_union(holes)
+                # Subtract holes from panel
+                result = panel_poly
+                if isinstance(holes_union, (Polygon, MultiPolygon)):
+                    result = panel_poly.difference(holes_union)
+                # Replace panel path with result
+                panel.path = polygon_to_path(result)
+                # Remove all hole elements from group
+                for candidate in paths[1:]:
+                    group.remove(candidate)
 
-                    # Ok, now we still have a group containing as first element the panel and then optionally some gaps that
-                    # should be cut out of the panel
+            add_holes_to_panel(group)
 
-                    # Last step: If the group now just contains one path, remove
-                    # the group around this path
-                    if len(group) == 1:
-                        parent = group.getparent()
-                        group_id = group.get_id()
-                        item = group[0]
-                        parent.replace(group, item)
-                        item.set_id(group_id)
+            # Ok, now we still have a group containing as first element the panel and then optionally some gaps that
+            # should be cut out of the panel
 
-            # Collect all bboxes
-            all_bboxes = []
-            for el in layer.descendants():
-                if isinstance(el, inkex.PathElement):
-                    all_bboxes.append(el.bounding_box())
+            # Last step: If the group now just contains one path, remove
+            # the group around this path
+            if len(group) == 1:
+                parent = group.getparent()
+                group_id = group.get_id()
+                item = group[0]
+                parent.replace(group, item)
+                item.set_id(group_id)
 
-            if all_bboxes:
-                minx = min(min(b.left for b in all_bboxes), 0)
-                miny = min(min(b.top for b in all_bboxes), 0)
-                maxx = max(b.right for b in all_bboxes)
-                maxy = max(b.bottom for b in all_bboxes)
-                width = maxx - minx
-                height = maxy - miny
-                svg.set('width', fstr(width) + unit)
-                svg.set('height', fstr(height) + unit)
-                svg.set('viewBox', f"{fstr(minx)} {fstr(miny)} {fstr(width)} {fstr(height)}")
+    def fixCanvas(self) -> None:
+        """ Adjust the SVG canvas to fit the content """
+
+        unit = self.options.unit
+        svg = self.document.getroot()
+        layer = svg.get_current_layer()
+        # Collect all bboxes
+        all_bboxes = []
+        for el in layer.descendants():
+            if isinstance(el, inkex.PathElement):
+                all_bboxes.append(el.bounding_box())
+
+        if all_bboxes:
+            minx = min(min(b.left for b in all_bboxes), 0)
+            miny = min(min(b.top for b in all_bboxes), 0)
+            maxx = max(b.right for b in all_bboxes)
+            maxy = max(b.bottom for b in all_bboxes)
+            width = maxx - minx
+            height = maxy - miny
+            svg.set('width', fstr(width) + unit)
+            svg.set('height', fstr(height) + unit)
+            svg.set('viewBox', f"{fstr(minx)} {fstr(miny)} {fstr(width)} {fstr(height)}")
 
     def dimpleStr(
         self,
