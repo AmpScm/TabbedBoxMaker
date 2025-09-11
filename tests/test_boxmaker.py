@@ -2,7 +2,7 @@ import io, os, pytest, re, xml.dom.minidom
 from tabbedboxmaker import BoxMaker
 
 def mask_unstable(svgin: str) -> str:
-    return re.sub(r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"', svgin)
+    return re.sub(r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"', svgin).replace('\r\n', '\n')
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
