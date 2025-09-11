@@ -983,8 +983,8 @@ class BoxMaker(inkex.Effect):
 
                             if isinstance(segment, inkex.paths.Line):
                                 if prev is not None:
-                                    dx = segment.x - prev.x
-                                    dy = segment.y - prev.y
+                                    dx = round(segment.x - prev.x, 8)
+                                    dy = round(segment.y - prev.y, 8)
 
                                     if dx == 0 and dy == 0:
                                         continue  # Skip node
