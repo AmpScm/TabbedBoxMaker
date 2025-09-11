@@ -25,6 +25,9 @@ from inkex.utils import filename_arg
 import os, math
 import inkex
 import gettext
+
+from inkex.paths.lines import Line, Move, move, ZoneClose, zoneClose
+
 from copy import deepcopy
 from shapely.geometry import Polygon, MultiPolygon, LinearRing
 from shapely.ops import unary_union
@@ -960,18 +963,14 @@ class BoxMaker(inkex.Effect):
 
             # Step 2: Close the the paths, if not already closed
             for path_element in paths:
-                if not isinstance(path_element, inkex.PathElement):
-                    continue
-
                 if path[-1].letter in "zZ":
                     continue
 
-                path = inkex.Path(path_element.path)
+                path = path_element.path
                 path.close()
                 path_element.path = path
 
-            # Step 3: Remove unneeded generated nodes (duplicates and
-            # intermediates on h/v lines)
+            # Step 3: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
             for path_element in paths:
 
                 path = inkex.Path(path_element.path)
@@ -1016,7 +1015,7 @@ class BoxMaker(inkex.Effect):
                         current_dir = None
                         direction = None
 
-                path_element.path = str(inkex.Path(simplified_path))
+                path_element.path = inkex.Path(simplified_path)
 
 
             # Step 4: Include gaps in the panel outline by removing them from the panel path
@@ -1090,8 +1089,8 @@ class BoxMaker(inkex.Effect):
         notDirY: bool,
         ddir: int,
         isTab: bool
-    ) -> str:
-        ds = ""
+    ) -> inkex.Path:
+        ds = []
         if not isTab:
             ddir = -ddir
         if self.dimpleHeight > 0 and tabVector != 0:
@@ -1103,16 +1102,16 @@ class BoxMaker(inkex.Effect):
                 tabSgn = -1
             Vxd = vectorX + notDirX * dimpleStart
             Vyd = vectorY + notDirY * dimpleStart
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            ds.append(Line(Vxd, Vyd))
             Vxd = Vxd + (tabSgn * notDirX - ddir * dirX) * self.dimpleHeight
             Vyd = Vyd + (tabSgn * notDirY - ddir * dirY) * self.dimpleHeight
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            ds.append(Line(Vxd, Vyd))
             Vxd = Vxd + tabSgn * notDirX * self.dimpleLength
             Vyd = Vyd + tabSgn * notDirY * self.dimpleLength
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            ds.append(Line(Vxd, Vyd))
             Vxd = Vxd + (tabSgn * notDirX + ddir * dirX) * self.dimpleHeight
             Vyd = Vyd + (tabSgn * notDirY + ddir * dirY) * self.dimpleHeight
-            ds += "L " + str(Vxd) + "," + str(Vyd) + " "
+            ds.append(Line(Vxd, Vyd))
         return ds
 
 
@@ -1241,7 +1240,7 @@ class BoxMaker(inkex.Effect):
             # dividerEdgeOffsetY = ;
             vectorX = (0 if dirX and prevTab else startOffsetX * self.thickness)
             vectorY = (0 if dirY and prevTab else startOffsetY * self.thickness)
-            s = "M " + str(vectorX) + "," + str(vectorY) + " "
+            s.append(Move(vectorX, vectorY))
             vectorX = (startOffsetX if startOffsetX else dirX) * self.thickness
             vectorY = (startOffsetY if startOffsetY else dirY) * self.thickness
             if notDirX and tabVec:
@@ -1255,7 +1254,7 @@ class BoxMaker(inkex.Effect):
             )
             dividerEdgeOffsetX = dirY * self.thickness
             dividerEdgeOffsetY = dirX * self.thickness
-            s = "M " + str(vectorX) + "," + str(vectorY) + " "
+            s.append(Move(vectorX, vectorY))
             if notDirX:
                 vectorY = 0  # set correct line start for tab generation
             if notDirY:
@@ -1291,19 +1290,20 @@ class BoxMaker(inkex.Effect):
                     )
                     if tabDivision == 1 and self.tabSymmetry == TabSymmetry.XY_SYMMETRIC:
                         Dx += startOffsetX * self.thickness
-                    h = "M " + str(Dx) + "," + str(Dy) + " "
+                    h = []
+                    h.append(Move(Dx, Dy))
                     Dx = Dx + holeLenX
                     Dy = Dy + holeLenY
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    h.append(Line(Dx, Dy))
                     Dx = Dx + notDirX * (secondVec - self.kerf)
                     Dy = Dy + notDirY * (secondVec + self.kerf)
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    h.append(Line(Dx, Dy))
                     Dx = Dx - holeLenX
                     Dy = Dy - holeLenY
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    h.append(Line(Dx, Dy))
                     Dx = Dx - notDirX * (secondVec - self.kerf)
                     Dy = Dy - notDirY * (secondVec + self.kerf)
-                    h += "L " + str(Dx) + "," + str(Dy) + " "
+                    h.append(Line(Dx, Dy))
                     nodes.append(self.newLinePath(h, self.linethickness, idPrefix="hole"))
             if tabDivision % 2:
                 if (
@@ -1322,19 +1322,20 @@ class BoxMaker(inkex.Effect):
                             - dividerEdgeOffsetY
                             + notDirY * halfkerf
                         )
-                        h = "M " + str(Dx) + "," + str(Dy) + " "
+                        h = []
+                        h.append(Move(Dx, Dy))
                         Dx = Dx + dirX * (first + length / 2)
                         Dy = Dy + dirY * (first + length / 2)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        h.append(Line(Dx, Dy))
                         Dx = Dx + notDirX * (self.thickness - self.kerf)
                         Dy = Dy + notDirY * (self.thickness - self.kerf)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        h.append(Line(Dx, Dy))
                         Dx = Dx - dirX * (first + length / 2)
                         Dy = Dy - dirY * (first + length / 2)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        h.append(Line(Dx, Dy))
                         Dx = Dx - notDirX * (self.thickness - self.kerf)
                         Dy = Dy - notDirY * (self.thickness - self.kerf)
-                        h += "L " + str(Dx) + "," + str(Dy) + " "
+                        h.append(Line(Dx, Dy))
                         nodes.append(self.newLinePath(h, self.linethickness, idPrefix="slot"))
                 # draw the gap
                 vectorX += (
@@ -1355,22 +1356,22 @@ class BoxMaker(inkex.Effect):
                     )
                     + notDirY * firstVec
                 )
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                s.append(Line(vectorX, vectorY))
                 if self.dogbone and isTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                    s.append(Line(vectorX, vectorY))
                 # draw the starting edge of the tab
                 s += self.dimpleStr(
                     secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, 1, isTab
                 )
                 vectorX += notDirX * secondVec
                 vectorY += notDirY * secondVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                s.append(Line(vectorX, vectorY))
                 if self.dogbone and notTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                    s.append(Line(vectorX, vectorY))
 
             else:
                 # draw the tab
@@ -1378,33 +1379,30 @@ class BoxMaker(inkex.Effect):
                                    self.kerf * notTab) + notDirX * firstVec
                 vectorY += dirY * (tabWidth + self.dogbone *
                                    self.kerf * notTab) + notDirY * firstVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                s.append(Line(vectorX, vectorY))
                 if self.dogbone and notTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                    s.append(Line(vectorX, vectorY))
                 # draw the ending edge of the tab
                 s += self.dimpleStr(
                     secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, -1, isTab
                 )
                 vectorX += notDirX * secondVec
                 vectorY += notDirY * secondVec
-                s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                s.append(Line(vectorX, vectorY))
                 if self.dogbone and isTab:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
-                    s += "L " + str(vectorX) + "," + str(vectorY) + " "
+                    s.append(Line(vectorX, vectorY))
             (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
             first = 0
 
         # finish the line off
-        s += (
-            "L "
-            + str(endOffsetX * self.thickness + dirX * length)
-            + ","
-            + str(endOffsetY * self.thickness + dirY * length)
-            + " "
-        )
+        s.append(Line(
+            endOffsetX * self.thickness + dirX * length,
+            endOffsetY * self.thickness + dirY * length
+        ))
 
         # draw last for divider joints in side walls
         if isTab and numDividers > 0 and self.tabSymmetry == 0 and not isDivider:
@@ -1426,19 +1424,20 @@ class BoxMaker(inkex.Effect):
                     - dividerEdgeOffsetY
                     + notDirY * halfkerf
                 )
-                h = "M " + str(Dx) + "," + str(Dy) + " "
+                h = []
+                h.append(Move(Dx, Dy))
                 Dx = Dx + firstholelenX
                 Dy = Dy + firstholelenY
-                h += "L " + str(Dx) + "," + str(Dy) + " "
+                h.append(Line(Dx, Dy))
                 Dx = Dx + notDirX * (self.thickness - self.kerf)
                 Dy = Dy + notDirY * (self.thickness - self.kerf)
-                h += "L " + str(Dx) + "," + str(Dy) + " "
+                h.append(Line(Dx, Dy))
                 Dx = Dx - firstholelenX
                 Dy = Dy - firstholelenY
-                h += "L " + str(Dx) + "," + str(Dy) + " "
+                h.append(Line(Dx, Dy))
                 Dx = Dx - notDirX * (self.thickness - self.kerf)
                 Dy = Dy - notDirY * (self.thickness - self.kerf)
-                h += "L " + str(Dx) + "," + str(Dy) + " "
+                h.append(Line(Dx, Dy))
                 nodes.append(self.newLinePath(h, self.linethickness, idPrefix="hole"))
 
         sidePath.path =s
