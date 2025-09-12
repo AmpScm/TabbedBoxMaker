@@ -5,7 +5,7 @@ This module defines all the enums used in the boxmaker to make the code
 more readable and maintainable while maintaining backward compatibility.
 """
 
-from enum import IntEnum
+from enum import Enum, IntEnum
 
 
 class BoxType(IntEnum):
@@ -71,3 +71,15 @@ class BoxDimensions(IntEnum):
 
     OUTSIDE = 0  # Dimensions are outside measurements
     INSIDE = 1  # Dimensions are inside measurements
+
+
+class FaceType(Enum):
+    XY = 1
+    XZ = 2
+    ZY = 3
+
+class SideEnum(Enum):
+    A = 'A'
+    B = 'B'
+    C = 'C'
+    D = 'D'
