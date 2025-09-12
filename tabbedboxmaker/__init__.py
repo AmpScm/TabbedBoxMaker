@@ -36,6 +36,7 @@ from shapely.ops import unary_union
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
+from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, BoxFaces, TabConfiguration, PieceSettings, SchroffSettings
 
 _ = gettext.gettext
 
@@ -335,28 +336,25 @@ class BoxMaker(inkex.Effect):
                 os.path.dirname(__file__), "blank.svg"
             )
 
-    def effect(self) -> None:
-        if self.cli:
-            self.options.input_file = None
-        # Get access to main SVG document element and get its dimensions.
-        svg = self.document.getroot()
-
-        # Get the attributes:
-        widthDoc = self.svg.unittouu(svg.get("width"))
-        heightDoc = self.svg.unittouu(svg.get("height"))
-
+    def parse_options_to_settings(self) -> BoxSettings:
+        """Parse command line options into a BoxSettings object"""
+        
         # Get script's option values.
         hairline = self.options.hairline
         unit = self.options.unit
         inside = self.options.inside
         schroff = self.options.schroff
-        self.kerf = self.svg.unittouu(str(self.options.kerf) + unit)
+        kerf = self.svg.unittouu(str(self.options.kerf) + unit)
 
-        # Set the line self.thickness
+        # Set the line thickness
         if hairline:
-            self.linethickness = self.svg.unittouu("0.002in")
+            linethickness = self.svg.unittouu("0.002in")
         else:
-            self.linethickness = 1
+            linethickness = 1
+        
+        # Store line thickness for later use
+        self.linethickness = linethickness
+        self.kerf = kerf
 
         if schroff:
             rows = self.options.rows
@@ -391,97 +389,105 @@ class BoxMaker(inkex.Effect):
             Y = self.svg.unittouu(str(self.options.width + self.options.kerf) + unit)
 
         Z = self.svg.unittouu(str(self.options.height + self.options.kerf) + unit)
-        self.thickness = self.svg.unittouu(str(self.options.thickness) + unit)
-        self.nomTab = self.svg.unittouu(str(self.options.tab) + unit)
-        self.equalTabs = self.options.equal
-        self.tabSymmetry = self.options.tabsymmetry
-        self.dimpleHeight = self.svg.unittouu(str(self.options.dimpleheight) + unit)
-        self.dimpleLength = self.svg.unittouu(str(self.options.dimplelength) + unit)
-        self.dogbone = 1 if self.options.tabtype == 1 else 0
-        layout = self.options.style
+        thickness = self.svg.unittouu(str(self.options.thickness) + unit)
+        nomTab = self.svg.unittouu(str(self.options.tab) + unit)
+        equalTabs = self.options.equal
+        tabSymmetry = TabSymmetry(self.options.tabsymmetry)
+        dimpleHeight = self.svg.unittouu(str(self.options.dimpleheight) + unit)
+        dimpleLength = self.svg.unittouu(str(self.options.dimplelength) + unit)
+        dogbone = self.options.tabtype == 1
+        layout = Layout(self.options.style)
         spacing = self.svg.unittouu(str(self.options.spacing) + unit)
-        boxtype : BoxType = self.options.boxtype
+        boxtype = BoxType(self.options.boxtype)
         divx = self.options.div_l
         divy = self.options.div_w
-        self.keydivwalls = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.WALLS]
-        self.keydivfloor = self.options.keydiv in [DividerKeying.ALL_SIDES , DividerKeying.FLOOR_CEILING]
+        keydivwalls = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.WALLS]
+        keydivfloor = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.FLOOR_CEILING]
         initOffsetX = 0
         initOffsetY = 0
 
         if inside:  # if inside dimension selected correct values to outside dimension
-            X += self.thickness * 2
-            Y += self.thickness * 2
-            Z += self.thickness * 2
+            X += thickness * 2
+            Y += thickness * 2
+            Z += thickness * 2
 
+        return BoxSettings(
+            X=X, Y=Y, Z=Z, thickness=thickness, nomTab=nomTab, equalTabs=equalTabs,
+            tabSymmetry=tabSymmetry, dimpleHeight=dimpleHeight, dimpleLength=dimpleLength,
+            dogbone=dogbone, layout=layout, spacing=spacing, boxtype=boxtype,
+            divx=divx, divy=divy, keydivwalls=keydivwalls, keydivfloor=keydivfloor,
+            initOffsetX=initOffsetX, initOffsetY=initOffsetY, inside=inside,
+            hairline=hairline, schroff=schroff, kerf=kerf
+        )
+
+    def parse_settings_to_configuration(self, settings: "BoxSettings", widthDoc: float, heightDoc: float) -> BoxConfiguration:
+        """Parse settings into a complete box configuration with pieces"""
+        
         # check input values mainly to avoid python errors
         # TODO restrict values to *correct* solutions
         # TODO restrict divisions to logical values
-        error = False
 
-        if min(X, Y, Z) == 0:
+        # Validate input values
+        error = False
+        if min(settings.X, settings.Y, settings.Z) == 0:
             inkex.errormsg(_("Error: Dimensions must be non zero"))
             error = True
-        if max(X, Y, Z) > max(widthDoc, heightDoc) * 10:  # crude test
+        if max(settings.X, settings.Y, settings.Z) > max(widthDoc, heightDoc) * 10:  # crude test
             inkex.errormsg(_("Error: Dimensions Too Large"))
             error = True
-        if min(X, Y, Z) < 3 * self.nomTab:
+        if min(settings.X, settings.Y, settings.Z) < 3 * settings.nomTab:
             inkex.errormsg(_("Error: Tab size too large"))
             error = True
-        if self.nomTab < self.thickness:
+        if settings.nomTab < settings.thickness:
             inkex.errormsg(_("Error: Tab size too small"))
             error = True
-        if self.thickness == 0:
-            inkex.errormsg(_("Error: self.thickness is zero"))
+        if settings.thickness == 0:
+            inkex.errormsg(_("Error: thickness is zero"))
             error = True
-        if self.thickness > min(X, Y, Z) / 3:  # crude test
+        if settings.thickness > min(settings.X, settings.Y, settings.Z) / 3:  # crude test
             inkex.errormsg(_("Error: Material too thick"))
             error = True
-        if self.kerf > min(X, Y, Z) / 3:  # crude test
-            inkex.errormsg(_("Error: self.kerf too large"))
+        if settings.kerf > min(settings.X, settings.Y, settings.Z) / 3:  # crude test
+            inkex.errormsg(_("Error: kerf too large"))
             error = True
-        if spacing > max(X, Y, Z) * 10:  # crude test
+        if settings.spacing > max(settings.X, settings.Y, settings.Z) * 10:  # crude test
             inkex.errormsg(_("Error: Spacing too large"))
             error = True
-        if spacing < self.kerf:
+        if settings.spacing < settings.kerf:
             inkex.errormsg(_("Error: Spacing too small"))
             error = True
 
         if error:
             exit(1)
 
-        layer = svg.get_current_layer()
-        if self.version: # Allow hiding version for testing purposes
-            layer.add(inkex.etree.Comment(f" Generated by BoxMaker version {self.version} "))
-            layer.add(inkex.etree.Comment(f" {self.options} "))
-            layer.add(inkex.etree.Element('metadata', text=f"createArgs={self.cli_args}"))
-
         # For code spacing consistency, we use two-character abbreviations for the six box faces,
         # where each abbreviation is the first and last letter of the face name:
         # tp=top, bm=bottom, ft=front, bk=back, lt=left, rt=right
-
         # Determine which faces the box has based on the box type
         hasTp = hasBm = hasFt = hasBk = hasLt = hasRt = True
-        if boxtype == BoxType.ONE_SIDE_OPEN:
+        if settings.boxtype == BoxType.ONE_SIDE_OPEN:
             hasTp = False
-        elif boxtype == BoxType.TWO_SIDES_OPEN:
+        elif settings.boxtype == BoxType.TWO_SIDES_OPEN:
             hasTp = hasFt = False
-        elif boxtype == BoxType.THREE_SIDES_OPEN:
+        elif settings.boxtype == BoxType.THREE_SIDES_OPEN:
             hasTp = hasFt = hasRt = False
-        elif boxtype == BoxType.OPPOSITE_ENDS_OPEN:
+        elif settings.boxtype == BoxType.OPPOSITE_ENDS_OPEN:
             hasTp = hasBm = False
-        elif boxtype == BoxType.TWO_PANELS_ONLY:
+        elif settings.boxtype == BoxType.TWO_PANELS_ONLY:
             hasTp = hasFt = hasBk = hasRt = False
         # else boxtype==1, full box, has all sides
 
+        faces = BoxFaces(hasTp=hasTp, hasBm=hasBm, hasFt=hasFt, hasBk=hasBk, hasLt=hasLt, hasRt=hasRt)
+
         # Determine where the tabs go based on the tab style
-        if self.tabSymmetry == 2:  # Antisymmetric (deprecated)
+        if settings.tabSymmetry == TabSymmetry.ANTISYMMETRIC:  # Antisymmetric (deprecated)
             tpTabInfo = 0b0110
             bmTabInfo = 0b1100
             ltTabInfo = 0b1100
             rtTabInfo = 0b0110
             ftTabInfo = 0b1100
             bkTabInfo = 0b1001
-        elif self.tabSymmetry == 1:  # Rotationally symmetric (Waffle-blocks)
+        elif settings.tabSymmetry == TabSymmetry.ROTATE_SYMMETRIC:  # Rotationally symmetric (Waffle-blocks)
             tpTabInfo = 0b1111
             bmTabInfo = 0b1111
             ltTabInfo = 0b1111
@@ -498,7 +504,7 @@ class BoxMaker(inkex.Effect):
 
         def fixTabBits(tabbed : bool, tabInfo : int, bit : int) -> tuple[bool, int]:
             newTabbed = tabbed & ~bit
-            if inside:
+            if settings.inside:
                 newTabInfo = tabInfo | bit  # set bit to 1 to use tab base line
             else:
                 newTabInfo = tabInfo & ~bit  # set bit to 0 to use tab tip line
@@ -543,6 +549,12 @@ class BoxMaker(inkex.Effect):
             ftTabbed, ftTabInfo = fixTabBits(ftTabbed, ftTabInfo, 0b0100)
             rtTabbed = 0
 
+        tabs = TabConfiguration(
+            tpTabInfo=tpTabInfo, bmTabInfo=bmTabInfo, ltTabInfo=ltTabInfo, rtTabInfo=rtTabInfo,
+            ftTabInfo=ftTabInfo, bkTabInfo=bkTabInfo, tpTabbed=tpTabbed, bmTabbed=bmTabbed,
+            ltTabbed=ltTabbed, rtTabbed=rtTabbed, ftTabbed=ftTabbed, bkTabbed=bkTabbed
+        )
+
         # Layout positions are specified in a grid of rows and columns
         row0 = (1, 0, 0, 0)  # top row
         row1y = (2, 0, 1, 0)  # second row, offset by Y
@@ -572,15 +584,15 @@ class BoxMaker(inkex.Effect):
         ltFace = 3
         rtFace = 3
 
-        def reduceOffsets(aa : dict[int, tuple[int, int, int, int]], start : int, dx : int, dy : int, dz : int):
+        def reduceOffsets(aa : list, start : int, dx : int, dy : int, dz : int):
             for ix in range(start + 1, len(aa)):
                 (s, x, y, z) = aa[ix]
                 aa[ix] = (s - 1, x - dx, y - dy, z - dz)
 
         # note first two pieces in each set are the X-divider template and
         # Y-divider template respectively
-        pieces : list[tuple] = []
-        if layout == 1:  # Diagramatic Layout
+        pieces_list : list[PieceSettings] = []
+        if settings.layout == Layout.DIAGRAMMATIC:  # Diagramatic Layout
             rr = deepcopy([row0, row1z, row2])
             cc = deepcopy([col0, col1z, col2xz, col3xzz])
             if not hasFt:
@@ -591,27 +603,27 @@ class BoxMaker(inkex.Effect):
             if not hasRt:
                 reduceOffsets(cc, 2, 0, 0, 1)
             if hasBk:
-                pieces.append([cc[1], rr[2], X, Z, bkTabInfo, bkTabbed, bkFace])
+                pieces_list.append(PieceSettings(cc[1], rr[2], settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace))
             if hasLt:
-                pieces.append([cc[0], rr[1], Z, Y, ltTabInfo, ltTabbed, ltFace])
+                pieces_list.append(PieceSettings(cc[0], rr[1], settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace))
             if hasBm:
-                pieces.append([cc[1], rr[1], X, Y, bmTabInfo, bmTabbed, bmFace])
+                pieces_list.append(PieceSettings(cc[1], rr[1], settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace))
             if hasRt:
-                pieces.append([cc[2], rr[1], Z, Y, rtTabInfo, rtTabbed, rtFace])
+                pieces_list.append(PieceSettings(cc[2], rr[1], settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace))
             if hasTp:
-                pieces.append([cc[3], rr[1], X, Y, tpTabInfo, tpTabbed, tpFace])
+                pieces_list.append(PieceSettings(cc[3], rr[1], settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace))
             if hasFt:
-                pieces.append([cc[1], rr[0], X, Z, ftTabInfo, ftTabbed, ftFace])
-        elif layout == 2:  # 3 Piece Layout
+                pieces_list.append(PieceSettings(cc[1], rr[0], settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace))
+        elif settings.layout == Layout.THREE_PIECE:  # 3 Piece Layout
             rr = deepcopy([row0, row1y])
             cc = deepcopy([col0, col1z])
             if hasBk:
-                pieces.append([cc[1], rr[1], X, Z, bkTabInfo, bkTabbed, bkFace])
+                pieces_list.append(PieceSettings(cc[1], rr[1], settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace))
             if hasLt:
-                pieces.append([cc[0], rr[0], Z, Y, ltTabInfo, ltTabbed, ltFace])
+                pieces_list.append(PieceSettings(cc[0], rr[0], settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace))
             if hasBm:
-                pieces.append([cc[1], rr[0], X, Y, bmTabInfo, bmTabbed, bmFace])
-        elif layout == 3:  # Inline(compact) Layout
+                pieces_list.append(PieceSettings(cc[1], rr[0], settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace))
+        elif settings.layout == Layout.INLINE_COMPACT:  # Inline(compact) Layout
             rr = deepcopy([row0])
             cc = deepcopy([col0, col1x, col2xx, col3xxz, col4, col5])
             if not hasTp:
@@ -626,92 +638,125 @@ class BoxMaker(inkex.Effect):
             if not hasBk:
                 reduceOffsets(cc, 4, 1, 0, 0)
             if hasBk:
-                pieces.append([cc[4], rr[0], X, Z, bkTabInfo, bkTabbed, bkFace])
+                pieces_list.append(PieceSettings(cc[4], rr[0], settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace))
             if hasLt:
-                pieces.append([cc[2], rr[0], Z, Y, ltTabInfo, ltTabbed, ltFace])
+                pieces_list.append(PieceSettings(cc[2], rr[0], settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace))
             if hasTp:
-                pieces.append([cc[0], rr[0], X, Y, tpTabInfo, tpTabbed, tpFace])
+                pieces_list.append(PieceSettings(cc[0], rr[0], settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace))
             if hasBm:
-                pieces.append([cc[1], rr[0], X, Y, bmTabInfo, bmTabbed, bmFace])
+                pieces_list.append(PieceSettings(cc[1], rr[0], settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace))
             if hasRt:
-                pieces.append([cc[3], rr[0], Z, Y, rtTabInfo, rtTabbed, rtFace])
+                pieces_list.append(PieceSettings(cc[3], rr[0], settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace))
             if hasFt:
-                pieces.append([cc[5], rr[0], X, Z, ftTabInfo, ftTabbed, ftFace])
+                pieces_list.append(PieceSettings(cc[5], rr[0], settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace))
 
-        for idx, piece in enumerate(pieces):  # generate and draw each piece of the box
-            (xs, xx, xy, xz) = piece[0]
-            (ys, yx, yy, yz) = piece[1]
+        # Handle Schroff settings if needed
+        schroff_settings = None
+        if settings.schroff:
+            unit = self.options.unit
+            schroff_settings = SchroffSettings(
+                rows=self.options.rows,
+                rail_height=self.svg.unittouu(str(self.options.rail_height) + unit),
+                row_centre_spacing=self.svg.unittouu(str(122.5) + unit),
+                row_spacing=self.svg.unittouu(str(self.options.row_spacing) + unit),
+                rail_mount_depth=self.svg.unittouu(str(self.options.rail_mount_depth) + unit),
+                rail_mount_centre_offset=self.svg.unittouu(str(self.options.rail_mount_centre_offset) + unit),
+                rail_mount_radius=self.svg.unittouu(str(2.5) + unit)
+            )
+
+        return BoxConfiguration(
+            schroff_settings=schroff_settings,
+            faces=faces,
+            tabs=tabs,
+            pieces=pieces_list
+        )
+
+    def generate_pieces(self, config: BoxConfiguration, settings: BoxSettings) -> None:
+        """Generate and draw all pieces based on the configuration"""
+        
+        groups = []
+
+        # Calculate divider spacing and hole flags once for the entire box
+        xspacing = (settings.X - settings.thickness) / (settings.divy + 1)
+        yspacing = (settings.Y - settings.thickness) / (settings.divx + 1)
+        # For divider intersections: X dividers need holes for Y dividers, Y dividers need holes for X dividers
+        divider_xholes = settings.divy > 0  # X dividers need holes if there are Y dividers
+        divider_yholes = settings.divx > 0  # Y dividers need holes if there are X dividers
+
+        for idx, piece in enumerate(config.pieces):  # generate and draw each piece of the box
+            (xs, xx, xy, xz) = piece.rootx
+            (ys, yx, yy, yz) = piece.rooty
             x = (
-                xs * spacing + xx * X + xy * Y + xz * Z + initOffsetX
+                xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
             )  # root x co-ord for piece
             y = (
-                ys * spacing + yx * X + yy * Y + yz * Z + initOffsetY
+                ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
             )  # root y co-ord for piece
-            dx = piece[2]
-            dy = piece[3]
-            tabs = piece[4]
+            dx = piece.dx
+            dy = piece.dy
+            tabs = piece.tabInfo
+            tabbed = piece.tabbed
+            faceType = piece.faceType
+            
             aIsMale = 0 < (tabs >> 3 & 1)
             bIsMale = 0 < (tabs >> 2 & 1)
             cIsMale = 0 < (tabs >> 1 & 1)
             dIsMale = 0 < (tabs & 1)  # extract tab status for each side
-            tabbed = piece[5]
             aHasTabs = 0 < (tabbed >> 3 & 1)
             bHasTabs = 0 < (tabbed >> 2 & 1)
             cHasTabs = 0 < (tabbed >> 1 & 1)
             dHasTabs = 0 < (tabbed & 1)  # extract tabbed flag for each side
-            xspacing = (X - self.thickness) / (divy + 1)
-            yspacing = (Y - self.thickness) / (divx + 1)
-            xholes = piece[6] < 3
-            yholes = piece[6] != 2
-            wall = piece[6] > 1
-            floor = piece[6] == 1
-            railholes = piece[6] == 3
+            xholes = faceType < 3
+            yholes = faceType != 2
+            wall = faceType > 1
+            floor = faceType == 1
+            railholes = faceType == 3
 
             group = self.newGroup(idPrefix="piece")
             self.svg.get_current_layer().add(group)
-            groups = [group]
+            groups.append(group)
 
-            if schroff and railholes:
+            if settings.schroff and railholes and config.schroff_settings:
+                schroff = config.schroff_settings
                 log(
-                    "rail holes enabled on piece %d at (%d, %d)"
-                    % (idx, x + self.thickness, y + self.thickness)
+                    f"rail holes enabled on piece {idx} at ({x + settings.thickness}, {y + settings.thickness})"
                 )
-                log("abcd = (%d,%d,%d,%d)" % (aIsMale, bIsMale, cIsMale, dIsMale))
-                log("dxdy = (%d,%d)" % (dx, dy))
-                rhxoffset = rail_mount_depth + self.thickness
+                log(f"abcd = ({aIsMale},{bIsMale},{cIsMale},{dIsMale})")
+                log(f"dxdy = ({dx},{dy})")
+                rhxoffset = schroff.rail_mount_depth + settings.thickness
                 if idx == 1:
                     rhx = x + rhxoffset
                 elif idx == 3:
                     rhx = x - rhxoffset + dx
                 else:
                     rhx = 0
-                log("rhxoffset = %d, rhx= %d" % (rhxoffset, rhx))
-                rystart = y + (rail_height / 2) + self.thickness
-                if rows == 1:
-                    log("just one row this time, rystart = %d" % rystart)
-                    rh1y = rystart + rail_mount_centre_offset
-                    rh2y = rh1y + (row_centre_spacing - rail_mount_centre_offset)
+                log(f"rhxoffset = {rhxoffset}, rhx= {rhx}")
+                rystart = y + (schroff.rail_height / 2) + settings.thickness
+                if schroff.rows == 1:
+                    log(f"just one row this time, rystart = {rystart}")
+                    rh1y = rystart + schroff.rail_mount_centre_offset
+                    rh2y = rh1y + (schroff.row_centre_spacing - schroff.rail_mount_centre_offset)
                     group.add(
                         self.newCirclePath(
-                            rail_mount_radius, (rhx, rh1y), self.linethickness))
+                            schroff.rail_mount_radius, (rhx, rh1y), self.linethickness))
                     group.add(
                         self.newCirclePath(
-                            rail_mount_radius, (rhx, rh2y), self.linethickness))
+                            schroff.rail_mount_radius, (rhx, rh2y), self.linethickness))
                 else:
-                    for n in range(0, rows):
-                        log("drawing row %d, rystart = %d" % (n + 1, rystart))
+                    for n in range(0, schroff.rows):
+                        log(f"drawing row {n + 1}, rystart = {rystart}")
                         # if holes are offset (eg. Vector T-strut rails), they should be offset
                         # toward each other, ie. toward the centreline of the
                         # Schroff row
-                        rh1y = rystart + rail_mount_centre_offset
-                        rh2y = rh1y + row_centre_spacing - rail_mount_centre_offset
+                        rh1y = rystart + schroff.rail_mount_centre_offset
+                        rh2y = rh1y + schroff.row_centre_spacing - schroff.rail_mount_centre_offset
                         group.add(
                             self.newCirclePath(
-                                rail_mount_radius, (rhx, rh1y), self.linethickness))
+                                schroff.rail_mount_radius, (rhx, rh1y), self.linethickness))
                         group.add(
                             self.newCirclePath(
-                                rail_mount_radius, (rhx, rh2y), self.linethickness))
-                        rystart += row_centre_spacing + row_spacing + rail_height
+                                schroff.rail_mount_radius, (rhx, rh2y), self.linethickness))
+                        rystart += schroff.row_centre_spacing + schroff.row_spacing + schroff.rail_height
 
             # generate and draw the sides of each piece
             # Side A
@@ -727,7 +772,7 @@ class BoxMaker(inkex.Effect):
                 aIsMale,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and aHasTabs and yholes)
-                * divx,
+                * settings.divx,
                 yspacing,
             )
             # Side B
@@ -743,7 +788,7 @@ class BoxMaker(inkex.Effect):
                 bIsMale,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bHasTabs and xholes)
-                * divy,
+                * settings.divy,
                 xspacing,
             )
             # Side C
@@ -759,7 +804,7 @@ class BoxMaker(inkex.Effect):
                 cIsMale,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aHasTabs and cHasTabs and yholes)
-                * divx,
+                * settings.divx,
                 yspacing,
             )
             # Side D
@@ -775,7 +820,7 @@ class BoxMaker(inkex.Effect):
                 dIsMale,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bHasTabs and dHasTabs and xholes)
-                * divy,
+                * settings.divy,
                 xspacing,
             )
 
@@ -788,12 +833,12 @@ class BoxMaker(inkex.Effect):
                     bIsMale = dIsMale = 1
                     bHasTabs = dHasTabs = 0
 
-                y = 4 * spacing + 1 * Y + 2 * Z  # root y co-ord for piece
-                for n in range(0, divx):  # generate X dividers
+                y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z  # root y co-ord for piece
+                for n in range(0, settings.divx):  # generate X dividers
                     subGroup = self.newGroup(idPrefix="xdivider")
                     self.svg.get_current_layer().add(subGroup)
                     groups.append(subGroup)
-                    x = n * (spacing + X)  # root x co-ord for piece
+                    x = n * (settings.spacing + settings.X)  # root x co-ord for piece
 
                     # Side A
                     self.side(
@@ -820,7 +865,7 @@ class BoxMaker(inkex.Effect):
                         (0, 1),
                         bIsMale,
                         True,
-                        divy * xholes,
+                        settings.divy * divider_xholes,
                         xspacing,
                     )
                     # Side C
@@ -850,12 +895,12 @@ class BoxMaker(inkex.Effect):
                         True
                     )
             elif idx == 1:
-                y = 5 * spacing + 1 * Y + 3 * Z  # root y co-ord for piece
-                for n in range(0, divy):  # generate Y dividers
+                y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z  # root y co-ord for piece
+                for n in range(0, settings.divy):  # generate Y dividers
                     subGroup = self.newGroup(idPrefix="ydivider")
                     self.svg.get_current_layer().add(subGroup)
                     groups.append(subGroup)
-                    x = n * (spacing + Z)  # root x co-ord for piece
+                    x = n * (settings.spacing + settings.Z)  # root x co-ord for piece
                     # Side A
                     self.side(
                         subGroup,
@@ -868,7 +913,7 @@ class BoxMaker(inkex.Effect):
                         (1, 0),
                         aIsMale,
                         True,
-                        divx * yholes,
+                        settings.divx * divider_yholes,
                         yspacing,
                     )
                     # Side B
@@ -911,9 +956,46 @@ class BoxMaker(inkex.Effect):
                         True
                     )
 
-            # All pieces drawn, now optimize the paths if required
-            if self.options.optimize:
-                self.optimizePieces(groups)
+        # All pieces drawn, now optimize the paths if required
+        if self.options.optimize:
+            self.optimizePieces(groups)
+
+    def effect(self) -> None:
+        if self.cli:
+            self.options.input_file = None
+        
+        # Get access to main SVG document element and get its dimensions.
+        svg = self.document.getroot()
+        widthDoc = self.svg.unittouu(svg.get("width"))
+        heightDoc = self.svg.unittouu(svg.get("height"))
+
+        # Step 1: Parse options into settings
+        settings = self.parse_options_to_settings()
+
+
+        # Store values needed for other methods
+        self.thickness = settings.thickness
+        self.nomTab = settings.nomTab
+        self.equalTabs = settings.equalTabs
+        self.tabSymmetry = settings.tabSymmetry
+        self.dimpleHeight = settings.dimpleHeight
+        self.dimpleLength = settings.dimpleLength
+        self.dogbone = settings.dogbone
+        self.keydivwalls = settings.keydivwalls
+        self.keydivfloor = settings.keydivfloor
+
+        # Step 2: Parse settings into complete configuration with pieces
+        config = self.parse_settings_to_configuration(settings, widthDoc, heightDoc)
+
+        # Add comments and metadata to SVG
+        layer = svg.get_current_layer()
+        if self.version: # Allow hiding version for testing purposes
+            layer.add(inkex.etree.Comment(f" Generated by BoxMaker version {self.version} "))
+            layer.add(inkex.etree.Comment(f" {self.options} "))
+            layer.add(inkex.etree.Element('metadata', text=f"createArgs={self.cli_args}"))
+
+        # Step 3: Generate and draw all pieces
+        self.generate_pieces(config, settings)
 
         # Fix outer canvas size
         adjust_canvas(svg)
