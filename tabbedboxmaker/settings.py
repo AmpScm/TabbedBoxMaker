@@ -9,8 +9,8 @@ class BoxSettings:
     Y: float
     Z: float
     thickness: float
-    nomTab: float
-    equalTabs: bool
+    tab_width: float
+    equal_tabs: bool
     tab_symmetry: TabSymmetry
     dimple_height: float
     dimple_length: float
@@ -28,6 +28,7 @@ class BoxSettings:
     hairline: bool
     schroff: bool
     kerf: float
+    line_thickness: float
     # Schroff-specific fields (only used when schroff=True)
     unit: str
     rows: int
@@ -88,7 +89,15 @@ class Side:
     tabbed: int
     length: float
     direction: tuple[int, int]
-    tab_symmetry: TabSymmetry = None
+    tab_symmetry: TabSymmetry
+    divisions: int
+    tab_width: float
+    gap_width: float
+    thickness: float
+    kerf: float
+    line_thickness: float = 0.1  # default line thickness
+    prev: "Side" = None
+    next: "Side" = None
 
     def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, tab_info: int, tabbed: int, length: float):
         self.name = name
@@ -104,8 +113,43 @@ class Side:
             SideEnum.C: (-1, 0),
             SideEnum.D: (0, -1),
         }
+
         self.direction = dir_cases.get(name, (0, 0))
         self.tab_symmetry = settings.tab_symmetry
+        self.tab_width = settings.tab_width
+        self.thickness = settings.thickness
+        self.kerf = settings.kerf
+        self.line_thickness = settings.line_thickness
+
+        halfkerf = settings.kerf / 2
+
+        if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
+            self.divisions = (length - 2 * settings.thickness) // self.tab_width
+            if self.divisions % 2:
+                self.divisions += 1  # make divs even
+            tabs = self.divisions / 2  # tabs for side
+        else:
+            self.divisions = length // self.tab_width
+            if not self.divisions % 2:
+                self.divisions -= 1  # make divs odd
+            tabs = (self.divisions - 1) / 2  # tabs for side
+
+        if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
+            self.gap_width = self.tab_width = (length - 2 * settings.thickness) / self.divisions
+        elif settings.equal_tabs:
+            self.gap_width = self.tab_width = length / self.divisions
+        else:
+            self.tab_width = self.tab_width
+            self.gap_width = (length - tabs * self.tab_width) / (self.divisions - tabs)
+
+        if is_male:  # self.kerf correction
+            self.gap_width -= settings.kerf
+            self.tab_width += settings.kerf
+            self.first = halfkerf
+        else:
+            self.gap_width += settings.kerf
+            self.tab_width -= settings.kerf
+            self.first = -halfkerf
 
 
 
@@ -126,6 +170,15 @@ class PieceSettings:
         self.faceType = faceType
         self.dx = sides[0].length
         self.dy = sides[1].length
+
+        sides[0].next = sides[1]
+        sides[1].next = sides[2]
+        sides[2].next = sides[3]
+        sides[3].next = sides[0]
+        sides[0].prev = sides[3]
+        sides[1].prev = sides[0]
+        sides[2].prev = sides[1]
+        sides[3].prev = sides[2]
 
 
 @dataclass
