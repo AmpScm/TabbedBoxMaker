@@ -17,8 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import inkex
-from inkex.paths.lines import Line, Move, move, ZoneClose, zoneClose
-from shapely.geometry import Polygon, MultiPolygon, LinearRing
+from inkex.paths.lines import Line, Move, ZoneClose
+from shapely.geometry import Polygon, LinearRing
+
 
 def fstr(f: float) -> str:
     """Format float to string with minimal decimal places, avoiding scientific notation."""
@@ -31,6 +32,7 @@ def fstr(f: float) -> str:
         return r[:-2]
     else:
         return r
+
 
 def path_to_polygon(path_obj : inkex.Path) -> Polygon | None:
     # Accepts inkex.Path object, only absolute Move/Line/Close
@@ -48,6 +50,7 @@ def path_to_polygon(path_obj : inkex.Path) -> Polygon | None:
     if len(coords) > 2:
         return Polygon(coords)
     return None
+
 
 def polygon_to_path(poly : Polygon) -> inkex.Path:
     # Accepts shapely Polygon, returns inkex.Path string
@@ -98,24 +101,22 @@ def polygon_to_path(poly : Polygon) -> inkex.Path:
 
 
 def adjust_canvas(svg) -> None:
-        """ Adjust the SVG canvas to fit the content """
+    """ Adjust the SVG canvas to fit the content """
 
-        layer = svg.get_current_layer()
-        # Collect all bboxes
-        all_bboxes = []
-        for el in layer.descendants():
-            if isinstance(el, inkex.PathElement):
-                all_bboxes.append(el.bounding_box())
+    layer = svg.get_current_layer()
+    # Collect all bboxes
+    all_bboxes = []
+    for el in layer.descendants():
+        if isinstance(el, inkex.PathElement):
+            all_bboxes.append(el.bounding_box())
 
-        if all_bboxes:
-            minx = min(min(b.left for b in all_bboxes), 0)
-            miny = min(min(b.top for b in all_bboxes), 0)
-            maxx = max(b.right for b in all_bboxes)
-            maxy = max(b.bottom for b in all_bboxes)
-            width = maxx - minx
-            height = maxy - miny
-            svg.set('width', fstr(width) + svg.unit)
-            svg.set('height', fstr(height) + svg.unit)
-            svg.set('viewBox', f"{fstr(minx)} {fstr(miny)} {fstr(width)} {fstr(height)}")
-
-    
+    if all_bboxes:
+        minx = min(min(b.left for b in all_bboxes), 0)
+        miny = min(min(b.top for b in all_bboxes), 0)
+        maxx = max(b.right for b in all_bboxes)
+        maxy = max(b.bottom for b in all_bboxes)
+        width = maxx - minx
+        height = maxy - miny
+        svg.set('width', fstr(width) + svg.unit)
+        svg.set('height', fstr(height) + svg.unit)
+        svg.set('viewBox', f"{fstr(minx)} {fstr(miny)} {fstr(width)} {fstr(height)}")

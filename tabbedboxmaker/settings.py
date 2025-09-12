@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry
+
 
 @dataclass
 class BoxSettings:
@@ -27,6 +28,15 @@ class BoxSettings:
     hairline: bool
     schroff: bool
     kerf: float
+    # Schroff-specific fields (only used when schroff=True)
+    unit: str
+    rows: int
+    rail_height: float
+    row_spacing: float
+    rail_mount_depth: float
+    rail_mount_centre_offset: float
+    rail_mount_radius: float
+
 
 @dataclass
 class SchroffSettings:
@@ -39,6 +49,7 @@ class SchroffSettings:
     rail_mount_centre_offset: float
     rail_mount_radius: float
 
+
 @dataclass
 class BoxFaces:
     """Which faces the box has based on the box type"""
@@ -48,6 +59,7 @@ class BoxFaces:
     hasBk: bool  # back
     hasLt: bool  # left
     hasRt: bool  # right
+
 
 @dataclass
 class TabConfiguration:
@@ -65,6 +77,7 @@ class TabConfiguration:
     ftTabbed: int
     bkTabbed: int
 
+
 @dataclass
 class PieceSettings:
     """Settings for a single piece"""
@@ -74,7 +87,8 @@ class PieceSettings:
     dy: float  # Y dimension
     tabInfo: int  # tab pattern
     tabbed: int   # which sides have tabs
-    faceType: int # piece type (1=XY, 2=XZ, 3=ZY)
+    faceType: int  # piece type (1=XY, 2=XZ, 3=ZY)
+
 
 @dataclass
 class BoxConfiguration:

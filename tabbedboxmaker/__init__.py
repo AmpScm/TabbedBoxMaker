@@ -30,7 +30,6 @@ import gettext
 from inkex.paths.lines import Line, Move
 
 from copy import deepcopy
-from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import unary_union
 
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
@@ -46,6 +45,7 @@ def log(text: str) -> None:
         f = open(os.environ.get("SCHROFF_LOG"), "a")
         f.write(text + "\n")
 
+
 def fstr(f: float) -> str:
     """Format float to string with minimal decimal places, avoiding scientific notation."""
     if f.is_integer():
@@ -57,6 +57,7 @@ def fstr(f: float) -> str:
         return r[:-2]
     else:
         return r
+
 
 class BoxMaker(inkex.Effect):
     linethickness: float = 1
@@ -338,7 +339,7 @@ class BoxMaker(inkex.Effect):
 
     def parse_options_to_settings(self) -> BoxSettings:
         """Parse command line options into a BoxSettings object"""
-        
+
         # Get script's option values.
         hairline = self.options.hairline
         unit = self.options.unit
@@ -351,7 +352,7 @@ class BoxMaker(inkex.Effect):
             linethickness = self.svg.unittouu("0.002in")
         else:
             linethickness = 1
-        
+
         # Store line thickness for later use
         self.linethickness = linethickness
         self.kerf = kerf
@@ -368,6 +369,14 @@ class BoxMaker(inkex.Effect):
                 str(self.options.rail_mount_centre_offset) + unit
             )
             rail_mount_radius = self.svg.unittouu(str(2.5) + unit)
+        else:
+            # Default values when not in Schroff mode
+            rows = 0
+            rail_height = 0.0
+            row_spacing = 0.0
+            rail_mount_depth = 0.0
+            rail_mount_centre_offset = 0.0
+            rail_mount_radius = 0.0
 
         # minimally different behaviour for schroffmaker.inx vs. boxmaker.inx
         # essentially schroffmaker.inx is just an alternate interface with different
@@ -417,12 +426,14 @@ class BoxMaker(inkex.Effect):
             dogbone=dogbone, layout=layout, spacing=spacing, boxtype=boxtype,
             divx=divx, divy=divy, keydivwalls=keydivwalls, keydivfloor=keydivfloor,
             initOffsetX=initOffsetX, initOffsetY=initOffsetY, inside=inside,
-            hairline=hairline, schroff=schroff, kerf=kerf
+            hairline=hairline, schroff=schroff, kerf=kerf, unit=unit, rows=rows,
+            rail_height=rail_height, row_spacing=row_spacing, rail_mount_depth=rail_mount_depth,
+            rail_mount_centre_offset=rail_mount_centre_offset, rail_mount_radius=rail_mount_radius
         )
 
-    def parse_settings_to_configuration(self, settings: "BoxSettings", widthDoc: float, heightDoc: float) -> BoxConfiguration:
+    def parse_settings_to_configuration(self, settings: BoxSettings) -> BoxConfiguration:
         """Parse settings into a complete box configuration with pieces"""
-        
+
         # check input values mainly to avoid python errors
         # TODO restrict values to *correct* solutions
         # TODO restrict divisions to logical values
@@ -431,9 +442,6 @@ class BoxMaker(inkex.Effect):
         error = False
         if min(settings.X, settings.Y, settings.Z) == 0:
             inkex.errormsg(_("Error: Dimensions must be non zero"))
-            error = True
-        if max(settings.X, settings.Y, settings.Z) > max(widthDoc, heightDoc) * 10:  # crude test
-            inkex.errormsg(_("Error: Dimensions Too Large"))
             error = True
         if min(settings.X, settings.Y, settings.Z) < 3 * settings.nomTab:
             inkex.errormsg(_("Error: Tab size too large"))
@@ -653,15 +661,14 @@ class BoxMaker(inkex.Effect):
         # Handle Schroff settings if needed
         schroff_settings = None
         if settings.schroff:
-            unit = self.options.unit
             schroff_settings = SchroffSettings(
-                rows=self.options.rows,
-                rail_height=self.svg.unittouu(str(self.options.rail_height) + unit),
-                row_centre_spacing=self.svg.unittouu(str(122.5) + unit),
-                row_spacing=self.svg.unittouu(str(self.options.row_spacing) + unit),
-                rail_mount_depth=self.svg.unittouu(str(self.options.rail_mount_depth) + unit),
-                rail_mount_centre_offset=self.svg.unittouu(str(self.options.rail_mount_centre_offset) + unit),
-                rail_mount_radius=self.svg.unittouu(str(2.5) + unit)
+                rows=settings.rows,
+                rail_height=settings.rail_height,
+                row_centre_spacing=self.svg.unittouu(str(122.5) + settings.unit),
+                row_spacing=settings.row_spacing,
+                rail_mount_depth=settings.rail_mount_depth,
+                rail_mount_centre_offset=settings.rail_mount_centre_offset,
+                rail_mount_radius=settings.rail_mount_radius
             )
 
         return BoxConfiguration(
@@ -673,7 +680,7 @@ class BoxMaker(inkex.Effect):
 
     def generate_pieces(self, config: BoxConfiguration, settings: BoxSettings) -> None:
         """Generate and draw all pieces based on the configuration"""
-        
+
         groups = []
 
         # Calculate divider spacing and hole flags once for the entire box
@@ -697,7 +704,7 @@ class BoxMaker(inkex.Effect):
             tabs = piece.tabInfo
             tabbed = piece.tabbed
             faceType = piece.faceType
-            
+
             aIsMale = 0 < (tabs >> 3 & 1)
             bIsMale = 0 < (tabs >> 2 & 1)
             cIsMale = 0 < (tabs >> 1 & 1)
@@ -963,15 +970,9 @@ class BoxMaker(inkex.Effect):
     def effect(self) -> None:
         if self.cli:
             self.options.input_file = None
-        
-        # Get access to main SVG document element and get its dimensions.
-        svg = self.document.getroot()
-        widthDoc = self.svg.unittouu(svg.get("width"))
-        heightDoc = self.svg.unittouu(svg.get("height"))
 
         # Step 1: Parse options into settings
         settings = self.parse_options_to_settings()
-
 
         # Store values needed for other methods
         self.thickness = settings.thickness
@@ -985,13 +986,16 @@ class BoxMaker(inkex.Effect):
         self.keydivfloor = settings.keydivfloor
 
         # Step 2: Parse settings into complete configuration with pieces
-        config = self.parse_settings_to_configuration(settings, widthDoc, heightDoc)
+        config = self.parse_settings_to_configuration(settings)
 
         # Add comments and metadata to SVG
+        svg = self.document.getroot()
         layer = svg.get_current_layer()
-        if self.version: # Allow hiding version for testing purposes
+
+        # Allow hiding version for testing purposes
+        if self.version:
             layer.add(inkex.etree.Comment(f" Generated by BoxMaker version {self.version} "))
-            layer.add(inkex.etree.Comment(f" {self.options} "))
+            layer.add(inkex.etree.Comment(f" {settings} "))
             layer.add(inkex.etree.Element('metadata', text=f"createArgs={self.cli_args}"))
 
         # Step 3: Generate and draw all pieces
@@ -1004,7 +1008,7 @@ class BoxMaker(inkex.Effect):
         # Step 1: Combine paths to form the outer boundary
         skip_elements = []
         for group in groups:
-            paths = [ child for child in group if isinstance(child, inkex.PathElement) ]
+            paths = [child for child in group if isinstance(child, inkex.PathElement)]
 
             for path_element in paths:
                 path = path_element.path
@@ -1026,7 +1030,7 @@ class BoxMaker(inkex.Effect):
 
                     other_first = other_path[0]
 
-                    if (other_first.x == path_last.x and other_first.y == path_last.y ):
+                    if (other_first.x == path_last.x and other_first.y == path_last.y):
                         new_id = min(path_element.get_id(), other_element.get_id())
                         path_element.path = path + other_path[1:]
                         group.remove(other_element)
@@ -1038,7 +1042,7 @@ class BoxMaker(inkex.Effect):
                         path_last = path[-1]
 
             # List updated, refresh
-            paths = [ child for child in group  if isinstance(child, inkex.PathElement) ]
+            paths = [child for child in group if isinstance(child, inkex.PathElement)]
 
             # Step 2: Close the the paths, if not already closed
             for path_element in paths:
@@ -1094,7 +1098,6 @@ class BoxMaker(inkex.Effect):
 
                 path_element.path = simplified_path
 
-
             # Step 4: Include gaps in the panel outline by removing them from the panel path
             if len(paths) > 1:
                 panel = paths[0]
@@ -1114,7 +1117,6 @@ class BoxMaker(inkex.Effect):
 
                     # Replace panel path with result
                     panel.path = polygon_to_path(result)
-
 
             # Last step: If the group now just contains one path, remove
             # the group around this path
@@ -1161,9 +1163,8 @@ class BoxMaker(inkex.Effect):
             ds.append(Line(Vxd, Vyd))
         return ds
 
-
-    def makeId(self,
-               prefix: str | None) -> str:
+    def makeId(self, prefix: str | None) -> str:
+        """Generate a new unique ID with the given prefix."""
 
         prefix = prefix if prefix is not None else 'id'
 
@@ -1175,10 +1176,8 @@ class BoxMaker(inkex.Effect):
 
         return f"{prefix}_{id:03d}"
 
-
-    def newGroup(self,
-                 idPrefix: str | None = 'group') -> inkex.Group:
-        # Create a new group and add element created from line string
+    def newGroup(self, idPrefix: str | None = 'group') -> inkex.Group:
+        """Create a new group with a unique ID and return it."""
         panelId = self.makeId(idPrefix)
         group = inkex.Group(id=panelId)
         return group
@@ -1187,6 +1186,7 @@ class BoxMaker(inkex.Effect):
                     XYstring: str,
                     linethickness: float,
                     idPrefix : str | None = 'line') -> inkex.PathElement:
+        """Create a new line path element with the given path data and line thickness."""
         line = inkex.PathElement(id=self.makeId(idPrefix))
         line.style = {
             "stroke": "#000000",
@@ -1204,6 +1204,7 @@ class BoxMaker(inkex.Effect):
                       c: tuple[float, float],
                       linethickness: float,
                       idPrefix: str | None = 'circle') -> inkex.PathElement:
+        """Create a new circle path element with the given radius, center, and line thickness."""
         (cx, cy) = c
         log("putting circle at (%d,%d)" % (cx, cy))
         circle = inkex.PathElement.arc((cx, cy), r, id=self.makeId(idPrefix))
@@ -1225,10 +1226,11 @@ class BoxMaker(inkex.Effect):
         length: float,
         direction: tuple[int, int],
         isTab: bool,
-        isDivider: bool=False,
-        numDividers: int=0,
-        dividerSpacing: float=0,
+        isDivider: bool = False,
+        numDividers: int = 0,
+        dividerSpacing: float = 0,
     ) -> str:
+        """Draw one side of a piece, with tabs or holes as required"""
         rootX, rootY = root
         startOffsetX, startOffsetY = startOffset
         endOffsetX, endOffsetY = endOffset
@@ -1237,7 +1239,7 @@ class BoxMaker(inkex.Effect):
 
         if tabVec:
             # Calculate direction
-            tabVec = self.thickness if (direction == (1,0) or direction == (0,-1)) != isTab else -self.thickness
+            tabVec = self.thickness if (direction == (1, 0) or direction == (0, -1)) != isTab else -self.thickness
 
         halfkerf = self.kerf / 2
 

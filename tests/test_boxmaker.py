@@ -1,8 +1,15 @@
-import io, os, pytest, re, xml.dom.minidom
+import io
+import os
+import pytest
+import re
+import xml.dom.minidom
 from tabbedboxmaker import BoxMaker
 
+
 def mask_unstable(svgin: str) -> str:
+    """Mask out unstable parts of SVG output that may vary between runs."""
     return re.sub(r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"', svgin).replace('\r\n', '\n')
+
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
@@ -506,6 +513,7 @@ actual_output_dir = os.path.join(os.path.dirname(__file__), "actual")
 os.makedirs(actual_output_dir, exist_ok=True)
 os.makedirs(os.path.join(actual_output_dir, 'o'), exist_ok=True)
 
+
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_tabbed(case):
     name = case["label"]
@@ -523,7 +531,7 @@ def test_tabbed(case):
 
         tbm.parse_arguments(args)
         tbm.options.output = outfh
-        tbm.version = None # Disable version string to keep output consistent
+        tbm.version = None  # Disable version string to keep output consistent
 
         tbm.load_raw()
         tbm.save_raw(tbm.effect())
@@ -536,15 +544,13 @@ def test_tabbed(case):
 
         return (mask_unstable(output), mask_unstable(expected))
 
-
-    output, expected = run_one(name, args + ['--optimize=0'])
-    output_o, expected_o = run_one(os.path.join('o', name), args  + ['--optimize=True'])
+    output, expected = run_one(name, args + ['--optimize=False'])
+    output_o, expected_o = run_one(os.path.join('o', name), args + ['--optimize=True'])
 
     # Compare outputs
     assert (
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
-
 
     assert (
         output_o == expected_o
