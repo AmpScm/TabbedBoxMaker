@@ -772,9 +772,7 @@ class BoxMaker(inkex.Effect):
             self.side(
                 group,
                 (x, y),
-                (dSide.is_male, aSide.is_male),
-                (-bSide.is_male, aSide.is_male),
-                aSide, dSide,
+                dSide, aSide, bSide,
                 dx,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and aSide.has_tabs and yholes)
@@ -785,9 +783,7 @@ class BoxMaker(inkex.Effect):
             self.side(
                 group,
                 (x + dx, y),
-                (-bSide.is_male, aSide.is_male),
-                (-bSide.is_male, -cSide.is_male),
-                bSide, aSide,
+                aSide, bSide, cSide,
                 dy,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bSide.has_tabs and xholes)
@@ -798,9 +794,7 @@ class BoxMaker(inkex.Effect):
             self.side(
                 group,
                 (x + dx, y + dy),
-                (-bSide.is_male, -cSide.is_male),
-                (dSide.is_male, -cSide.is_male),
-                cSide, bSide,
+                bSide, cSide, dSide,
                 dx,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aSide.has_tabs and cSide.has_tabs and yholes)
@@ -811,9 +805,7 @@ class BoxMaker(inkex.Effect):
             self.side(
                 group,
                 (x, y + dy),
-                (dSide.is_male, -cSide.is_male),
-                (dSide.is_male, aSide.is_male),
-                dSide, cSide,
+                cSide, dSide, aSide,
                 dy,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bSide.has_tabs and dSide.has_tabs and xholes)
@@ -842,9 +834,7 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x, y),
-                        (dSide.is_male, aSide.is_male),
-                        (-bSide.is_male, aSide.is_male),
-                        aSide, dSide,
+                        dSide, aSide, bSide,
                         dx,
                         True
                     )
@@ -852,9 +842,7 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x + dx, y),
-                        (-bSide.is_male, aSide.is_male),
-                        (-bSide.is_male, -cSide.is_male),
-                        bSide, aSide,
+                        aSide, bSide, cSide,
                         dy,
                         True,
                         settings.div_y * divider_x_holes,
@@ -864,9 +852,7 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x + dx, y + dy),
-                        (-bSide.is_male, -cSide.is_male),
-                        (dSide.is_male, -cSide.is_male),
-                        cSide, bSide,
+                        bSide, cSide, dSide,
                         dx,
                         True,
                     )
@@ -874,9 +860,7 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x, y + dy),
-                        (dSide.is_male, -cSide.is_male),
-                        (dSide.is_male, aSide.is_male),
-                        dSide, cSide,
+                        cSide, dSide, aSide,
                         dy,
                         True
                     )
@@ -900,9 +884,7 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x, y),
-                        (dSide.is_male, aSide.is_male),
-                        (-bSide.is_male, aSide.is_male),
-                        aSide, dSide,
+                        dSide, aSide, bSide,
                         dx,
                         True,
                         settings.div_x * divider_y_holes,
@@ -912,9 +894,7 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x + dx, y),
-                        (-bSide.is_male, aSide.is_male),
-                        (-bSide.is_male, -cSide.is_male),
-                        bSide, aSide,
+                        aSide, bSide, cSide,
                         dy,
                         True
                     )
@@ -922,9 +902,7 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x + dx, y + dy),
-                        (-bSide.is_male, -cSide.is_male),
-                        (dSide.is_male, -cSide.is_male),
-                        cSide, bSide,
+                        bSide, cSide, dSide,
                         dx,
                         True
                     )
@@ -932,9 +910,7 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x, y + dy),
-                        (dSide.is_male, -cSide.is_male),
-                        (dSide.is_male, aSide.is_male),
-                        dSide, cSide,
+                        cSide, dSide, aSide,
                         dy,
                         True
                     )
@@ -1195,17 +1171,26 @@ class BoxMaker(inkex.Effect):
         self,
         group: inkex.Group,
         root: tuple[float, float],
-        startOffset: tuple[float, float],
-        endOffset: tuple[float, float],
-        sideDef: Side,
         prevSideDef: Side,
+        sideDef: Side,
+        nextSideDef: Side,
         length: float,
         isDivider: bool = False,
         numDividers: int = 0,
         dividerSpacing: float = 0,
-    ) -> str:
+    ) -> None:
         """Draw one side of a piece, with tabs or holes as required"""
         rootX, rootY = root
+
+        offs_cases = {
+            SideEnum.A: [(prevSideDef.is_male, sideDef.is_male), (-nextSideDef.is_male, sideDef.is_male)],
+            SideEnum.B: [(-sideDef.is_male, prevSideDef.is_male), (-sideDef.is_male, -nextSideDef.is_male)],
+            SideEnum.C: [(-prevSideDef.is_male, -sideDef.is_male), (nextSideDef.is_male, -sideDef.is_male)],
+            SideEnum.D: [(sideDef.is_male, -prevSideDef.is_male), (sideDef.is_male, nextSideDef.is_male),],
+        }
+
+        startOffset, endOffset = offs_cases[sideDef.name]
+
         startOffsetX, startOffsetY = startOffset
         endOffsetX, endOffsetY = endOffset
 
@@ -1482,4 +1467,3 @@ class BoxMaker(inkex.Effect):
         for i in nodes:
             i.path = i.path.translate(rootX, rootY)
             group.add(i)
-        return nodes
