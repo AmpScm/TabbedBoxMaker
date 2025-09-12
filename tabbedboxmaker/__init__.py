@@ -713,14 +713,6 @@ class BoxMaker(inkex.Effect):
             sides = piece.sides
             # Sides: [A, B, C, D]
             aSide, bSide, cSide, dSide = sides
-            aIsMale = aSide.is_male
-            bIsMale = bSide.is_male
-            cIsMale = cSide.is_male
-            dIsMale = dSide.is_male
-            aHasTabs = aSide.has_tabs
-            bHasTabs = bSide.has_tabs
-            cHasTabs = cSide.has_tabs
-            dHasTabs = dSide.has_tabs
             faceType = piece.faceType
 
             # Already extracted above from Side objects
@@ -738,7 +730,7 @@ class BoxMaker(inkex.Effect):
             if settings.schroff and railholes and config.schroff_settings:
                 schroff = config.schroff_settings
                 log(f"rail holes enabled on piece {idx} at ({x + settings.thickness}, {y + settings.thickness})")
-                log(f"abcd = ({aIsMale},{bIsMale},{cIsMale},{dIsMale})")
+                log(f"abcd = ({aSide.is_male},{bSide.is_male},{cSide.is_male},{dSide.is_male})")
                 log(f"dxdy = ({dx},{dy})")
                 rhxoffset = schroff.rail_mount_depth + settings.thickness
                 if idx == 1:
@@ -780,15 +772,15 @@ class BoxMaker(inkex.Effect):
             self.side(
                 group,
                 (x, y),
-                (dIsMale, aIsMale),
-                (-bIsMale, aIsMale),
-                aHasTabs,
-                dHasTabs,
+                (dSide.is_male, aSide.is_male),
+                (-bSide.is_male, aSide.is_male),
+                aSide.has_tabs,
+                dSide.has_tabs,
                 dx,
                 (1, 0),
-                aIsMale,
+                aSide.is_male,
                 False,
-                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and aHasTabs and yholes)
+                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and aSide.has_tabs and yholes)
                 * settings.div_x,
                 yspacing,
             )
@@ -796,15 +788,15 @@ class BoxMaker(inkex.Effect):
             self.side(
                 group,
                 (x + dx, y),
-                (-bIsMale, aIsMale),
-                (-bIsMale, -cIsMale),
-                bHasTabs,
-                aHasTabs,
+                (-bSide.is_male, aSide.is_male),
+                (-bSide.is_male, -cSide.is_male),
+                bSide.has_tabs,
+                aSide.has_tabs,
                 dy,
                 (0, 1),
-                bIsMale,
+                bSide.is_male,
                 False,
-                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bHasTabs and xholes)
+                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bSide.has_tabs and xholes)
                 * settings.div_y,
                 xspacing,
             )
@@ -812,15 +804,15 @@ class BoxMaker(inkex.Effect):
             self.side(
                 group,
                 (x + dx, y + dy),
-                (-bIsMale, -cIsMale),
-                (dIsMale, -cIsMale),
-                cHasTabs,
-                bHasTabs,
+                (-bSide.is_male, -cSide.is_male),
+                (dSide.is_male, -cSide.is_male),
+                cSide.has_tabs,
+                bSide.has_tabs,
                 dx,
                 (-1, 0),
-                cIsMale,
+                cSide.is_male,
                 False,
-                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aHasTabs and cHasTabs and yholes)
+                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aSide.has_tabs and cSide.has_tabs and yholes)
                 * settings.div_x,
                 yspacing,
             )
@@ -828,27 +820,28 @@ class BoxMaker(inkex.Effect):
             self.side(
                 group,
                 (x, y + dy),
-                (dIsMale, -cIsMale),
-                (dIsMale, aIsMale),
-                dHasTabs,
-                cHasTabs,
+                (dSide.is_male, -cSide.is_male),
+                (dSide.is_male, aSide.is_male),
+                dSide.has_tabs,
+                cSide.has_tabs,
                 dy,
                 (0, -1),
-                dIsMale,
+                dSide.is_male,
                 False,
-                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bHasTabs and dHasTabs and xholes)
+                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bSide.has_tabs and dSide.has_tabs and xholes)
                 * settings.div_y,
                 xspacing,
             )
 
             if idx == 0:
                 # remove tabs from dividers if not required
+                aSide, bSide, cSide, dSide = deepcopy([aSide, bSide, cSide, dSide])
                 if not self.keydivfloor:
-                    aIsMale = cIsMale = 1
-                    aHasTabs = cHasTabs = 0
+                    aSide.is_male = cSide.is_male = 1
+                    aSide.has_tabs = cSide.has_tabs = 0
                 if not self.keydivwalls:
-                    bIsMale = dIsMale = 1
-                    bHasTabs = dHasTabs = 0
+                    bSide.is_male = dSide.is_male = 1
+                    bSide.has_tabs = dSide.has_tabs = 0
 
                 y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z  # root y co-ord for piece
                 for n in range(0, settings.div_x):  # generate X dividers
@@ -861,26 +854,26 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x, y),
-                        (dIsMale, aIsMale),
-                        (-bIsMale, aIsMale),
-                        self.keydivfloor and aHasTabs,
-                        dHasTabs,
+                        (dSide.is_male, aSide.is_male),
+                        (-bSide.is_male, aSide.is_male),
+                        aSide.has_tabs,
+                        dSide.has_tabs,
                         dx,
                         (1, 0),
-                        aIsMale,
+                        aSide.is_male,
                         True
                     )
                     # Side B
                     self.side(
                         subGroup,
                         (x + dx, y),
-                        (-bIsMale, aIsMale),
-                        (-bIsMale, -cIsMale),
-                        self.keydivwalls and bHasTabs,
-                        aHasTabs,
+                        (-bSide.is_male, aSide.is_male),
+                        (-bSide.is_male, -cSide.is_male),
+                        bSide.has_tabs,
+                        aSide.has_tabs,
                         dy,
                         (0, 1),
-                        bIsMale,
+                        bSide.is_male,
                         True,
                         settings.div_y * divider_x_holes,
                         xspacing,
@@ -889,29 +882,38 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x + dx, y + dy),
-                        (-bIsMale, -cIsMale),
-                        (dIsMale, -cIsMale),
-                        self.keydivfloor and cHasTabs,
-                        bHasTabs,
+                        (-bSide.is_male, -cSide.is_male),
+                        (dSide.is_male, -cSide.is_male),
+                        cSide.has_tabs,
+                        bSide.has_tabs,
                         dx,
                         (-1, 0),
-                        cIsMale,
+                        cSide.is_male,
                         True,
                     )
                     # Side D
                     self.side(
                         subGroup,
                         (x, y + dy),
-                        (dIsMale, -cIsMale),
-                        (dIsMale, aIsMale),
-                        self.keydivwalls * dHasTabs,
-                        cHasTabs,
+                        (dSide.is_male, -cSide.is_male),
+                        (dSide.is_male, aSide.is_male),
+                        dSide.has_tabs,
+                        cSide.has_tabs,
                         dy,
                         (0, -1),
-                        dIsMale,
+                        dSide.is_male,
                         True
                     )
             elif idx == 1:
+                # remove tabs from dividers if not required
+                aSide, bSide, cSide, dSide = deepcopy([aSide, bSide, cSide, dSide])
+                if not self.keydivwalls:
+                    aSide.is_male = cSide.is_male = 1
+                    aSide.has_tabs = cSide.has_tabs = 0
+                if not self.keydivfloor:
+                    bSide.is_male = dSide.is_male = 1
+                    bSide.has_tabs = dSide.has_tabs = 0
+
                 y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z  # root y co-ord for piece
                 for n in range(0, settings.div_y):  # generate Y dividers
                     subGroup = self.newGroup(idPrefix="ydivider")
@@ -922,13 +924,13 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x, y),
-                        (dIsMale, aIsMale),
-                        (-bIsMale, aIsMale),
-                        self.keydivwalls and aHasTabs,
-                        dHasTabs,
+                        (dSide.is_male, aSide.is_male),
+                        (-bSide.is_male, aSide.is_male),
+                        aSide.has_tabs,
+                        dSide.has_tabs,
                         dx,
                         (1, 0),
-                        aIsMale,
+                        aSide.is_male,
                         True,
                         settings.div_x * divider_y_holes,
                         yspacing,
@@ -937,39 +939,39 @@ class BoxMaker(inkex.Effect):
                     self.side(
                         subGroup,
                         (x + dx, y),
-                        (-bIsMale, aIsMale),
-                        (-bIsMale, -cIsMale),
-                        self.keydivfloor and bHasTabs,
-                        aHasTabs,
+                        (-bSide.is_male, aSide.is_male),
+                        (-bSide.is_male, -cSide.is_male),
+                        bSide.has_tabs,
+                        aSide.has_tabs,
                         dy,
                         (0, 1),
-                        bIsMale,
+                        bSide.is_male,
                         True
                     )
                     # Side C
                     self.side(
                         subGroup,
                         (x + dx, y + dy),
-                        (-bIsMale, -cIsMale),
-                        (dIsMale, -cIsMale),
-                        self.keydivwalls and cHasTabs,
-                        bHasTabs,
+                        (-bSide.is_male, -cSide.is_male),
+                        (dSide.is_male, -cSide.is_male),
+                        cSide.has_tabs,
+                        bSide.has_tabs,
                         dx,
                         (-1, 0),
-                        cIsMale,
+                        cSide.is_male,
                         True
                     )
                     # Side D
                     self.side(
                         subGroup,
                         (x, y + dy),
-                        (dIsMale, -cIsMale),
-                        (dIsMale, aIsMale),
-                        self.keydivfloor and dHasTabs,
-                        cHasTabs,
+                        (dSide.is_male, -cSide.is_male),
+                        (dSide.is_male, aSide.is_male),
+                        dSide.has_tabs,
+                        cSide.has_tabs,
                         dy,
                         (0, -1),
-                        dIsMale,
+                        dSide.is_male,
                         True
                     )
 
