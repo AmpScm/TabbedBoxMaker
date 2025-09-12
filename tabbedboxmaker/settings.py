@@ -11,17 +11,17 @@ class BoxSettings:
     thickness: float
     nomTab: float
     equalTabs: bool
-    tabSymmetry: TabSymmetry
-    dimpleHeight: float
-    dimpleLength: float
+    tab_symmetry: TabSymmetry
+    dimple_height: float
+    dimple_length: float
     dogbone: bool
     layout: Layout
     spacing: float
     boxtype: BoxType
     div_x: float
     div_y: float
-    keydivwalls: bool
-    keydivfloor: bool
+    keydiv_walls: bool
+    keydiv_floor: bool
     initOffsetX: float
     initOffsetY: float
     inside: bool
@@ -86,6 +86,27 @@ class Side:
     has_tabs: bool
     tab_info: int
     tabbed: int
+    length: float
+    direction: tuple[int, int]
+    tab_symmetry: TabSymmetry = None
+
+    def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, tab_info: int, tabbed: int, length: float):
+        self.name = name
+        self.is_male = is_male
+        self.has_tabs = has_tabs
+        self.tab_info = tab_info
+        self.tabbed = tabbed
+        self.length = length
+
+        dir_cases = {
+            SideEnum.A: (1, 0),
+            SideEnum.B: (0, 1),
+            SideEnum.C: (-1, 0),
+            SideEnum.D: (0, -1),
+        }
+        self.direction = dir_cases.get(name, (0, 0))
+        self.tab_symmetry = settings.tab_symmetry
+
 
 
 @dataclass
@@ -97,6 +118,14 @@ class PieceSettings:
     dy: float  # Y dimension
     sides: list[Side]
     faceType: FaceType
+
+    def __init__(self, rootx: tuple[int, int, int, int], rooty: tuple[int, int, int, int], sides: list[Side], faceType: FaceType):
+        self.rootx = rootx
+        self.rooty = rooty
+        self.sides = sides
+        self.faceType = faceType
+        self.dx = sides[0].length
+        self.dy = sides[1].length
 
 
 @dataclass
