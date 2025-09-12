@@ -28,7 +28,7 @@ import inkex
 import gettext
 
 from inkex.paths import Path
-from inkex.paths.lines import Line, Move
+from inkex.paths.lines import Line, Move, ZoneClose
 
 from copy import deepcopy
 from shapely.ops import unary_union
@@ -1279,6 +1279,7 @@ class BoxMaker(inkex.Effect):
                     Dx = Dx - notDirX * (secondVec - kerf)
                     Dy = Dy - notDirY * (secondVec + kerf)
                     h.append(Line(Dx, Dy))
+                    h.append(ZoneClose())
                     nodes.append(self.newLinePath(h, line_thickness, idPrefix="hole"))
             if tabDivision % 2:
                 if (
@@ -1311,6 +1312,7 @@ class BoxMaker(inkex.Effect):
                         Dx = Dx - notDirX * (thickness - kerf)
                         Dy = Dy - notDirY * (thickness - kerf)
                         h.append(Line(Dx, Dy))
+                        h.append(ZoneClose())
                         nodes.append(self.newLinePath(h, line_thickness, idPrefix="slot"))
                 # draw the gap
                 vectorX += (
@@ -1415,6 +1417,7 @@ class BoxMaker(inkex.Effect):
                 Dx = Dx - notDirX * (thickness - kerf)
                 Dy = Dy - notDirY * (thickness - kerf)
                 h.append(Line(Dx, Dy))
+                h.append(ZoneClose())
                 nodes.append(self.newLinePath(h, line_thickness, idPrefix="hole"))
 
         rootX, rootY = root
