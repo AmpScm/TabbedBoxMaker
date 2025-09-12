@@ -206,6 +206,31 @@ cases = [
         ],
     },
     {
+        "label": "outside_measurement_kerf_nonzero",
+        "args": [
+            "--unit=mm",
+            "--inside=0",
+            "--length=80",
+            "--width=100",
+            "--depth=40",
+            "--equal=0",
+            "--tab=6",
+            "--tabtype=0",
+            "--tabsymmetry=0",
+            "--dimpleheight=0",
+            "--dimplelength=0",
+            "--hairline=1",
+            "--thickness=3",
+            "--kerf=0.5",
+            "--style=1",
+            "--boxtype=2",
+            "--div_l=0",
+            "--div_w=0",
+            "--keydiv=1",
+            "--spacing=1",
+        ],
+    },
+    {
         "label": "with_dogbone",
         "args": [
             "--unit=mm",
@@ -524,8 +549,9 @@ def test_tabbed(case):
         expected_file = os.path.join(expected_output_dir, name + ".svg")
         expected = ""
         actual_file = os.path.join(actual_output_dir, name + ".svg")
-        with open(expected_file, "r") as f:
-            expected = f.read()
+        if os.path.exists(expected_file):
+            with open(expected_file, "r") as f:
+                expected = f.read()
 
         tbm = BoxMaker(cli=True)
 
