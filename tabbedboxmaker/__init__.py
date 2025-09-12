@@ -774,11 +774,8 @@ class BoxMaker(inkex.Effect):
                 (x, y),
                 (dSide.is_male, aSide.is_male),
                 (-bSide.is_male, aSide.is_male),
-                aSide.has_tabs,
-                dSide.has_tabs,
+                aSide, dSide,
                 dx,
-                (1, 0),
-                aSide.is_male,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and aSide.has_tabs and yholes)
                 * settings.div_x,
@@ -790,11 +787,8 @@ class BoxMaker(inkex.Effect):
                 (x + dx, y),
                 (-bSide.is_male, aSide.is_male),
                 (-bSide.is_male, -cSide.is_male),
-                bSide.has_tabs,
-                aSide.has_tabs,
+                bSide, aSide,
                 dy,
-                (0, 1),
-                bSide.is_male,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bSide.has_tabs and xholes)
                 * settings.div_y,
@@ -806,11 +800,8 @@ class BoxMaker(inkex.Effect):
                 (x + dx, y + dy),
                 (-bSide.is_male, -cSide.is_male),
                 (dSide.is_male, -cSide.is_male),
-                cSide.has_tabs,
-                bSide.has_tabs,
+                cSide, bSide,
                 dx,
-                (-1, 0),
-                cSide.is_male,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aSide.has_tabs and cSide.has_tabs and yholes)
                 * settings.div_x,
@@ -822,11 +813,8 @@ class BoxMaker(inkex.Effect):
                 (x, y + dy),
                 (dSide.is_male, -cSide.is_male),
                 (dSide.is_male, aSide.is_male),
-                dSide.has_tabs,
-                cSide.has_tabs,
+                dSide, cSide,
                 dy,
-                (0, -1),
-                dSide.is_male,
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bSide.has_tabs and dSide.has_tabs and xholes)
                 * settings.div_y,
@@ -856,11 +844,8 @@ class BoxMaker(inkex.Effect):
                         (x, y),
                         (dSide.is_male, aSide.is_male),
                         (-bSide.is_male, aSide.is_male),
-                        aSide.has_tabs,
-                        dSide.has_tabs,
+                        aSide, dSide,
                         dx,
-                        (1, 0),
-                        aSide.is_male,
                         True
                     )
                     # Side B
@@ -869,11 +854,8 @@ class BoxMaker(inkex.Effect):
                         (x + dx, y),
                         (-bSide.is_male, aSide.is_male),
                         (-bSide.is_male, -cSide.is_male),
-                        bSide.has_tabs,
-                        aSide.has_tabs,
+                        bSide, aSide,
                         dy,
-                        (0, 1),
-                        bSide.is_male,
                         True,
                         settings.div_y * divider_x_holes,
                         xspacing,
@@ -884,11 +866,8 @@ class BoxMaker(inkex.Effect):
                         (x + dx, y + dy),
                         (-bSide.is_male, -cSide.is_male),
                         (dSide.is_male, -cSide.is_male),
-                        cSide.has_tabs,
-                        bSide.has_tabs,
+                        cSide, bSide,
                         dx,
-                        (-1, 0),
-                        cSide.is_male,
                         True,
                     )
                     # Side D
@@ -897,11 +876,8 @@ class BoxMaker(inkex.Effect):
                         (x, y + dy),
                         (dSide.is_male, -cSide.is_male),
                         (dSide.is_male, aSide.is_male),
-                        dSide.has_tabs,
-                        cSide.has_tabs,
+                        dSide, cSide,
                         dy,
-                        (0, -1),
-                        dSide.is_male,
                         True
                     )
             elif idx == 1:
@@ -926,11 +902,8 @@ class BoxMaker(inkex.Effect):
                         (x, y),
                         (dSide.is_male, aSide.is_male),
                         (-bSide.is_male, aSide.is_male),
-                        aSide.has_tabs,
-                        dSide.has_tabs,
+                        aSide, dSide,
                         dx,
-                        (1, 0),
-                        aSide.is_male,
                         True,
                         settings.div_x * divider_y_holes,
                         yspacing,
@@ -941,11 +914,8 @@ class BoxMaker(inkex.Effect):
                         (x + dx, y),
                         (-bSide.is_male, aSide.is_male),
                         (-bSide.is_male, -cSide.is_male),
-                        bSide.has_tabs,
-                        aSide.has_tabs,
+                        bSide, aSide,
                         dy,
-                        (0, 1),
-                        bSide.is_male,
                         True
                     )
                     # Side C
@@ -954,11 +924,8 @@ class BoxMaker(inkex.Effect):
                         (x + dx, y + dy),
                         (-bSide.is_male, -cSide.is_male),
                         (dSide.is_male, -cSide.is_male),
-                        cSide.has_tabs,
-                        bSide.has_tabs,
+                        cSide, bSide,
                         dx,
-                        (-1, 0),
-                        cSide.is_male,
                         True
                     )
                     # Side D
@@ -967,11 +934,8 @@ class BoxMaker(inkex.Effect):
                         (x, y + dy),
                         (dSide.is_male, -cSide.is_male),
                         (dSide.is_male, aSide.is_male),
-                        dSide.has_tabs,
-                        cSide.has_tabs,
+                        dSide, cSide,
                         dy,
-                        (0, -1),
-                        dSide.is_male,
                         True
                     )
 
@@ -1233,11 +1197,9 @@ class BoxMaker(inkex.Effect):
         root: tuple[float, float],
         startOffset: tuple[float, float],
         endOffset: tuple[float, float],
-        tabVec: float,
-        prevTab: bool,
+        sideDef: Side,
+        prevSideDef: Side,
         length: float,
-        direction: tuple[int, int],
-        isTab: bool,
         isDivider: bool = False,
         numDividers: int = 0,
         dividerSpacing: float = 0,
@@ -1246,12 +1208,26 @@ class BoxMaker(inkex.Effect):
         rootX, rootY = root
         startOffsetX, startOffsetY = startOffset
         endOffsetX, endOffsetY = endOffset
-        dirX, dirY = direction
+
+        isTab = sideDef.is_male
         notTab = not isTab
 
-        if tabVec:
+        dir_cases = {
+            SideEnum.A: (1, 0),
+            SideEnum.B: (0, 1),
+            SideEnum.C: (-1, 0),
+            SideEnum.D: (0, -1),
+        }
+        direction = dir_cases[sideDef.name]
+        dirX, dirY = direction
+
+        if sideDef.has_tabs:
             # Calculate direction
             tabVec = self.thickness if (direction == (1, 0) or direction == (0, -1)) != isTab else -self.thickness
+        else:
+            tabVec = 0
+
+        prevTab = prevSideDef.has_tabs
 
         halfkerf = self.kerf / 2
 
