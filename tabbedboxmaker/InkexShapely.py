@@ -53,7 +53,7 @@ def polygon_to_path(poly : Polygon) -> inkex.Path:
     # Accepts shapely Polygon, returns inkex.Path string
     coords = list(poly.exterior.coords)
 
-    path = []
+    path = inkex.Path()
     path.append(Move(coords[0][0], coords[0][1]))
     for x, y in coords[1:]:
         path.append(Line(x, y))
@@ -94,5 +94,28 @@ def polygon_to_path(poly : Polygon) -> inkex.Path:
             path.append(Line(x, y))
         path.append(ZoneClose())
 
-    return inkex.Path(path)
+    return path
 
+
+def adjust_canvas(svg) -> None:
+        """ Adjust the SVG canvas to fit the content """
+
+        layer = svg.get_current_layer()
+        # Collect all bboxes
+        all_bboxes = []
+        for el in layer.descendants():
+            if isinstance(el, inkex.PathElement):
+                all_bboxes.append(el.bounding_box())
+
+        if all_bboxes:
+            minx = min(min(b.left for b in all_bboxes), 0)
+            miny = min(min(b.top for b in all_bboxes), 0)
+            maxx = max(b.right for b in all_bboxes)
+            maxy = max(b.bottom for b in all_bboxes)
+            width = maxx - minx
+            height = maxy - miny
+            svg.set('width', fstr(width) + svg.unit)
+            svg.set('height', fstr(height) + svg.unit)
+            svg.set('viewBox', f"{fstr(minx)} {fstr(miny)} {fstr(width)} {fstr(height)}")
+
+    

@@ -34,7 +34,7 @@ from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import unary_union
 
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying
-from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
+from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
 
 _ = gettext.gettext
@@ -916,7 +916,7 @@ class BoxMaker(inkex.Effect):
                 self.optimizePieces(groups)
 
         # Fix outer canvas size
-        self.fixCanvas()
+        adjust_canvas(svg)
 
     def optimizePieces(self, groups) -> None:
         # Step 1: Combine paths to form the outer boundary
@@ -1043,29 +1043,6 @@ class BoxMaker(inkex.Effect):
                 parent.replace(group, item)
                 item.set_id(group_id)
 
-    def fixCanvas(self) -> None:
-        """ Adjust the SVG canvas to fit the content """
-
-        unit = self.options.unit
-        svg = self.document.getroot()
-        layer = svg.get_current_layer()
-        # Collect all bboxes
-        all_bboxes = []
-        for el in layer.descendants():
-            if isinstance(el, inkex.PathElement):
-                all_bboxes.append(el.bounding_box())
-
-        if all_bboxes:
-            minx = min(min(b.left for b in all_bboxes), 0)
-            miny = min(min(b.top for b in all_bboxes), 0)
-            maxx = max(b.right for b in all_bboxes)
-            maxy = max(b.bottom for b in all_bboxes)
-            width = maxx - minx
-            height = maxy - miny
-            svg.set('width', fstr(width) + unit)
-            svg.set('height', fstr(height) + unit)
-            svg.set('viewBox', f"{fstr(minx)} {fstr(miny)} {fstr(width)} {fstr(height)}")
-
     def dimpleStr(
         self,
         tabVector: float,
@@ -1150,7 +1127,7 @@ class BoxMaker(inkex.Effect):
         circle = inkex.PathElement.arc((cx, cy), r, id=self.makeId(idPrefix))
         circle.style = {
             "stroke": "#000000",
-            "stroke-width": str(linethickness),
+            "stroke-width": str(round(linethickness, 8)),
             "fill": "none",
         }
         return circle
@@ -1216,7 +1193,7 @@ class BoxMaker(inkex.Effect):
             first = -halfkerf
         firstholelenX = 0
         firstholelenY = 0
-        s = []
+        s = inkex.Path()
         h = []
         firstVec = 0
         secondVec = tabVec
@@ -1392,6 +1369,8 @@ class BoxMaker(inkex.Effect):
             endOffsetY * self.thickness + dirY * length
         ))
 
+        sidePath.path = s
+
         # draw last for divider joints in side walls
         if isTab and numDividers > 0 and self.tabSymmetry == 0 and not isDivider:
             # BH: Find out if this is the right correction. Without it the with_dividers_keyed_all.svg test is broken
@@ -1427,8 +1406,6 @@ class BoxMaker(inkex.Effect):
                 Dy = Dy - notDirY * (self.thickness - self.kerf)
                 h.append(Line(Dx, Dy))
                 nodes.append(self.newLinePath(h, self.linethickness, idPrefix="hole"))
-
-        sidePath.path =s
 
         for i in nodes:
             i.path = i.path.translate(rootX, rootY)
