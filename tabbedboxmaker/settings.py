@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, FaceType, SideEnum
 
 
 @dataclass
@@ -18,8 +18,8 @@ class BoxSettings:
     layout: Layout
     spacing: float
     boxtype: BoxType
-    divx: float
-    divy: float
+    div_x: float
+    div_y: float
     keydivwalls: bool
     keydivfloor: bool
     initOffsetX: float
@@ -78,6 +78,16 @@ class TabConfiguration:
     bkTabbed: int
 
 
+
+@dataclass
+class Side:
+    name: SideEnum
+    is_male: bool
+    has_tabs: bool
+    tab_info: int
+    tabbed: int
+
+
 @dataclass
 class PieceSettings:
     """Settings for a single piece"""
@@ -85,9 +95,8 @@ class PieceSettings:
     rooty: tuple[int, int, int, int]  # (spacing,X,Y,Z) multipliers
     dx: float  # X dimension
     dy: float  # Y dimension
-    tabInfo: int  # tab pattern
-    tabbed: int   # which sides have tabs
-    faceType: int  # piece type (1=XY, 2=XZ, 3=ZY)
+    sides: list[Side]
+    faceType: FaceType
 
 
 @dataclass
