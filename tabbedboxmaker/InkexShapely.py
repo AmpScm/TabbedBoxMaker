@@ -113,10 +113,10 @@ def adjust_canvas(svg) -> None:
     if all_bboxes:
         minx = min(min(b.left for b in all_bboxes), 0)
         miny = min(min(b.top for b in all_bboxes), 0)
-        maxx = max(b.right for b in all_bboxes)
-        maxy = max(b.bottom for b in all_bboxes)
-        width = maxx - minx
-        height = maxy - miny
+        maxx = max(max(b.right for b in all_bboxes), 0)
+        maxy = max(max(b.bottom for b in all_bboxes), 0)
+        width = maxx - minx + 1
+        height = maxy - miny + 1
         svg.set('width', fstr(width) + svg.unit)
         svg.set('height', fstr(height) + svg.unit)
         svg.set('viewBox', f"{fstr(minx)} {fstr(miny)} {fstr(width)} {fstr(height)}")
