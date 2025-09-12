@@ -1386,8 +1386,9 @@ class BoxMaker(inkex.Effect):
         # draw last for divider joints in side walls
         if isTab and numDividers > 0 and side.tab_symmetry == 0 and not isDivider:
             # BH: Find out if this is the right correction. Without it the with_dividers_keyed_all.svg test is broken
-            firstholelenX += (holeLenX - thickness) if holeLenX else 0
-            firstholelenY += (holeLenY - thickness) if holeLenY else 0
+            if firstholelenX == 0 and firstholelenY == 0:
+                firstholelenX += (holeLenX - thickness) if holeLenX else 0
+                firstholelenY += (holeLenY - thickness) if holeLenY else 0
 
             for dividerNumber in range(1, int(numDividers) + 1):
                 Dx = (
