@@ -127,7 +127,9 @@ class TabbedBoxMaker(inkex.Effect):
         circle = inkex.PathElement.arc((cx, cy), r, id=self.makeId(id))
         circle.style = { "stroke": "#000000", "stroke-width": str(self.linethickness), "fill": "none" }
         return circle
-    
+
+
+
     def _setup_arguments(self) -> None:
         """Define options"""
 
@@ -1177,8 +1179,20 @@ class TabbedBoxMaker(inkex.Effect):
         isDivider: bool = False,
         numDividers: int = 0,
         dividerSpacing: float = 0,
-    ) -> list:
-        """Draw one side of a piece, with tabs or holes as required"""
+    ) -> None:
+        """Draw one side of a piece, with tabs or holes as required. Returns result in group"""
+
+        for i in self.render_side_side(root, side) + \
+                self.render_side_slots(root, side, isDivider, numDividers, dividerSpacing) + \
+                self.render_side_holes(root, side, isDivider, numDividers, dividerSpacing):
+            group.add(i)        
+
+    def render_side_side(
+        self,
+        root: tuple[float, float],
+        side: Side
+    ) -> list[inkex.PathElement]:
+        """Draw one side of a piece"""
 
         direction = side.direction
         dirX, dirY = direction
@@ -1202,7 +1216,6 @@ class TabbedBoxMaker(inkex.Effect):
         notTab = not isTab
         thickness = side.thickness
 
-
         if side.has_tabs:
             # Calculate direction
             tabVec = thickness if (direction == (1, 0) or direction == (0, -1)) != isTab else -thickness
@@ -1223,10 +1236,8 @@ class TabbedBoxMaker(inkex.Effect):
         tabWidth = side.tab_width
         first = side.first
 
-
         firstVec = 0
         secondVec = tabVec
-        dividerEdgeOffsetX = dividerEdgeOffsetY = thickness
         notDirX = dirX == 0  # used to select operation on x or y
         notDirY = dirY == 0
         s = inkex.Path()
@@ -1247,8 +1258,6 @@ class TabbedBoxMaker(inkex.Effect):
                 startOffsetX * thickness,
                 startOffsetY * thickness,
             )
-            dividerEdgeOffsetX = dirY * thickness
-            dividerEdgeOffsetY = dirX * thickness
             s.append(Move(vectorX, vectorY))
             if notDirX:
                 vectorY = 0  # set correct line start for tab generation
@@ -1258,83 +1267,9 @@ class TabbedBoxMaker(inkex.Effect):
         # generate line as tab or hole using:
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
-        firstHole = True
+
         for tabDivision in range(1, int(divisions)):
-            # draw holes for divider tabs to key into side walls
-            if (((tabDivision % 2) > 0) != (not isTab)) and numDividers > 0 and not isDivider:
-                w = gapWidth if isTab else tabWidth
-                if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
-                    w -= startOffsetX * thickness
-                holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
-                holeLenY = dirY * (w + first) + (firstVec if notDirY else 0)
-                if firstHole:
-                    firstHoleLenX = holeLenX
-                    firstHoleLenY = holeLenY
-                    firstHole = False
-                for dividerNumber in range(1, int(numDividers) + 1):
-                    Dx = (
-                        vectorX
-                        + -dirY * dividerSpacing * dividerNumber
-                        + (halfkerf if notDirX else 0)
-                        + ((dirX * halfkerf - first * dirX) if self.dogbone else 0)
-                    )
-                    Dy = (
-                        vectorY
-                        + dirX * dividerSpacing * dividerNumber
-                        - (halfkerf if notDirY else 0)
-                        + ((dirY * halfkerf - first * dirY) if self.dogbone else 0)
-                    )
-                    if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
-                        Dx += startOffsetX * thickness
-                    h = inkex.Path()
-                    h.append(Move(Dx, Dy))
-                    Dx = Dx + holeLenX
-                    Dy = Dy + holeLenY
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx + notDirX * (secondVec - kerf)
-                    Dy = Dy + notDirY * (secondVec + kerf)
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx - holeLenX
-                    Dy = Dy - holeLenY
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx - notDirX * (secondVec - kerf)
-                    Dy = Dy - notDirY * (secondVec + kerf)
-                    h.append(Line(Dx, Dy))
-                    h.append(ZoneClose())
-                    nodes.append(self.makeLine(h, "hole"))
             if tabDivision % 2:
-                if (
-                    tabDivision == 1 and numDividers > 0 and isDivider
-                ):  # draw slots for dividers to slot into each other
-                    for dividerNumber in range(1, int(numDividers) + 1):
-                        Dx = (
-                            vectorX
-                            + -dirY * dividerSpacing * dividerNumber
-                            - dividerEdgeOffsetX
-                            + notDirX * halfkerf
-                        )
-                        Dy = (
-                            vectorY
-                            + dirX * dividerSpacing * dividerNumber
-                            - dividerEdgeOffsetY
-                            + notDirY * halfkerf
-                        )
-                        h = inkex.Path()
-                        h.append(Move(Dx, Dy))
-                        Dx = Dx + dirX * (first + length / 2)
-                        Dy = Dy + dirY * (first + length / 2)
-                        h.append(Line(Dx, Dy))
-                        Dx = Dx + notDirX * (thickness - kerf)
-                        Dy = Dy + notDirY * (thickness - kerf)
-                        h.append(Line(Dx, Dy))
-                        Dx = Dx - dirX * (first + length / 2)
-                        Dy = Dy - dirY * (first + length / 2)
-                        h.append(Line(Dx, Dy))
-                        Dx = Dx - notDirX * (thickness - kerf)
-                        Dy = Dy - notDirY * (thickness - kerf)
-                        h.append(Line(Dx, Dy))
-                        h.append(ZoneClose())
-                        nodes.append(self.makeLine(h, "slot"))
                 # draw the gap
                 vectorX += (
                     dirX
@@ -1402,11 +1337,276 @@ class TabbedBoxMaker(inkex.Effect):
             endOffsetY * thickness + dirY * length
         ))
 
+        rootX, rootY = root
+        rootX += root_offs[0]
+        rootY += root_offs[1]
+
         sidePath.path = s
+        sidePath.path = sidePath.path.translate(rootX, rootY)
+        return [sidePath]
+    
+    def render_side_slots(
+        self,
+        root: tuple[float, float],
+        side: Side,
+        isDivider: bool = False,
+        numDividers: int = 0,
+        dividerSpacing: float = 0,
+    ) -> list[inkex.PathElement]:
+        """Draw tabs or holes as required"""
+
+        if numDividers == 0 or not isDivider:
+            return []
+
+        direction = side.direction
+        dirX, dirY = direction
+
+        # TODO: Use rotation matrix to simplify this logic
+        # All values are booleans so results will be -1, 0, or 1
+        
+        offs_cases = {
+            SideEnum.A: [(0,0), (side.prev.is_male, side.is_male)],
+            SideEnum.B: [(side.prev.length, 0), (-side.is_male, side.prev.is_male)],
+            SideEnum.C: [(side.length, side.prev.length), (-side.prev.is_male, -side.is_male)],
+            SideEnum.D: [(0, side.length), (side.is_male, -side.prev.is_male)],
+        }
+        root_offs, startOffset = offs_cases[side.name]
+
+        startOffsetX, startOffsetY = startOffset
+        length = side.length
+
+        thickness = side.thickness
+
+        kerf = side.kerf
+        halfkerf = kerf / 2
+        line_thickness = side.line_thickness
+
+        nodes = []
+
+        first = side.first
+        
+        notDirX = dirX == 0  # used to select operation on x or y
+        notDirY = dirY == 0
+        if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
+            dividerEdgeOffsetX = dirX * thickness
+            dividerEdgeOffsetY = thickness
+            vectorX = (startOffsetX if startOffsetX else dirX) * thickness
+            vectorY = (startOffsetY if startOffsetY else dirY) * thickness
+        else:
+            vectorX = startOffsetX * thickness
+            vectorY = startOffsetY * thickness
+
+            dividerEdgeOffsetX = dirY * thickness
+            dividerEdgeOffsetY = dirX * thickness
+            if notDirX:
+                vectorY = 0  # set correct line start for tab generation
+            if notDirY:
+                vectorX = 0
+
+        for dividerNumber in range(1, int(numDividers) + 1):
+            Dx = (
+                vectorX
+                + -dirY * dividerSpacing * dividerNumber
+                - dividerEdgeOffsetX
+                + notDirX * halfkerf
+            )
+            Dy = (
+                vectorY
+                + dirX * dividerSpacing * dividerNumber
+                - dividerEdgeOffsetY
+                + notDirY * halfkerf
+            )
+            h = []
+            h.append(Move(Dx, Dy))
+            Dx = Dx + dirX * (first + length / 2)
+            Dy = Dy + dirY * (first + length / 2)
+            h.append(Line(Dx, Dy))
+            Dx = Dx + notDirX * (thickness - kerf)
+            Dy = Dy + notDirY * (thickness - kerf)
+            h.append(Line(Dx, Dy))
+            Dx = Dx - dirX * (first + length / 2)
+            Dy = Dy - dirY * (first + length / 2)
+            h.append(Line(Dx, Dy))
+            Dx = Dx - notDirX * (thickness - kerf)
+            Dy = Dy - notDirY * (thickness - kerf)
+            h.append(Line(Dx, Dy))
+            h.append(ZoneClose())
+            nodes.append(self.makeLine(h, "slot"))
+
+        rootX, rootY = root
+        rootX += root_offs[0]
+        rootY += root_offs[1]
+        for node in nodes:
+            node.path = node.path.translate(rootX, rootY)
+
+        return nodes
+
+    def render_side_holes(
+        self,
+        root: tuple[float, float],
+        side: Side,
+        isDivider: bool = False,
+        numDividers: int = 0,
+        dividerSpacing: float = 0,
+    ) -> list[inkex.PathElement]:
+        """Draw tabs or holes as required"""
+
+        direction = side.direction
+        dirX, dirY = direction
+
+        # TODO: Use rotation matrix to simplify this logic
+        # All values are booleans so results will be -1, 0, or 1
+        
+        offs_cases = {
+            SideEnum.A: [(0,0), (side.prev.is_male, side.is_male)],
+            SideEnum.B: [(side.prev.length, 0), (-side.is_male, side.prev.is_male)],
+            SideEnum.C: [(side.length, side.prev.length), (-side.prev.is_male, -side.is_male)],
+            SideEnum.D: [(0, side.length), (side.is_male, -side.prev.is_male)],
+        }
+        root_offs, startOffset = offs_cases[side.name]
+
+        startOffsetX, startOffsetY = startOffset
+        length = side.length
+
+        isTab = side.is_male
+        notTab = not isTab
+        thickness = side.thickness
+
+
+        if side.has_tabs:
+            # Calculate direction
+            tabVec = thickness if (direction == (1, 0) or direction == (0, -1)) != isTab else -thickness
+        else:
+            tabVec = 0
+
+        kerf = side.kerf
+        halfkerf = kerf / 2
+        line_thickness = side.line_thickness
+
+        nodes = []
+
+        divisions = side.divisions
+        gapWidth = side.gap_width
+        tabWidth = side.tab_width
+        first = side.first
+
+        firstVec = 0
+        secondVec = tabVec
+        notDirX = dirX == 0  # used to select operation on x or y
+        notDirY = dirY == 0
+        if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
+            dividerEdgeOffsetX = dirX * thickness
+            dividerEdgeOffsetY = thickness
+            vectorX = (startOffsetX if startOffsetX else dirX) * thickness
+            vectorY = (startOffsetY if startOffsetY else dirY) * thickness
+        else:
+            (vectorX, vectorY) = (
+                startOffsetX * thickness,
+                startOffsetY * thickness,
+            )
+            dividerEdgeOffsetX = dirY * thickness
+            dividerEdgeOffsetY = dirX * thickness
+            if notDirX:
+                vectorY = 0  # set correct line start for tab generation
+            if notDirY:
+                vectorX = 0
+
+        w = gapWidth if isTab else tabWidth
+        if side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+            w -= startOffsetX * thickness
+        holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
+        holeLenY = dirY * (w + first) + (firstVec if notDirY else 0)
+        firstholelenX = holeLenX
+        firstholelenY = holeLenY
+
+        # generate line as tab or hole using:
+        #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
+        #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
+        firstHole = True
+        for tabDivision in range(1, int(divisions)):
+            # draw holes for divider tabs to key into side walls
+            if (((tabDivision % 2) > 0) != (not isTab)) and numDividers > 0 and not isDivider:
+                w = gapWidth if isTab else tabWidth
+                if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+                    w -= startOffsetX * thickness
+                holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
+                holeLenY = dirY * (w + first) + (firstVec if notDirY else 0)
+                if firstHole:
+                    firstHoleLenX = holeLenX
+                    firstHoleLenY = holeLenY
+                    firstHole = False
+                for dividerNumber in range(1, int(numDividers) + 1):
+                    Dx = (
+                        vectorX
+                        + -dirY * dividerSpacing * dividerNumber
+                        + (halfkerf if notDirX else 0)
+                        + ((dirX * halfkerf - first * dirX) if self.dogbone else 0)
+                    )
+                    Dy = (
+                        vectorY
+                        + dirX * dividerSpacing * dividerNumber
+                        - (halfkerf if notDirY else 0)
+                        + ((dirY * halfkerf - first * dirY) if self.dogbone else 0)
+                    )
+                    if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+                        Dx += startOffsetX * thickness
+                    h = inkex.Path()
+                    h.append(Move(Dx, Dy))
+                    Dx = Dx + holeLenX
+                    Dy = Dy + holeLenY
+                    h.append(Line(Dx, Dy))
+                    Dx = Dx + notDirX * (secondVec - kerf)
+                    Dy = Dy + notDirY * (secondVec + kerf)
+                    h.append(Line(Dx, Dy))
+                    Dx = Dx - holeLenX
+                    Dy = Dy - holeLenY
+                    h.append(Line(Dx, Dy))
+                    Dx = Dx - notDirX * (secondVec - kerf)
+                    Dy = Dy - notDirY * (secondVec + kerf)
+                    h.append(Line(Dx, Dy))
+                    h.append(ZoneClose())
+                    nodes.append(self.makeLine(h, "hole"))
+            if tabDivision % 2:
+                # draw the gap
+                vectorX += (
+                    dirX
+                    * (
+                        gapWidth
+                        + (first if not (isTab and self.dogbone) else 0)
+                        + self.dogbone * kerf * isTab
+                    )
+                    + notDirX * firstVec
+                )
+                vectorY += (
+                    dirY
+                    * (
+                        gapWidth
+                        + (first if not (isTab and self.dogbone) else 0)
+                        + (kerf if self.dogbone and isTab else 0)
+                    )
+                    + notDirY * firstVec
+                )
+                if self.dogbone and isTab:
+                    vectorX -= dirX * halfkerf
+                    vectorY -= dirY * halfkerf
+            else:
+                # draw the tab
+                vectorX += dirX * (tabWidth + self.dogbone *
+                                   kerf * notTab) + notDirX * firstVec
+                vectorY += dirY * (tabWidth + self.dogbone *
+                                   kerf * notTab) + notDirY * firstVec
+
+            if self.dogbone and notTab:
+                vectorX -= dirX * halfkerf
+                vectorY -= dirY * halfkerf
+            vectorX += notDirX * secondVec
+            vectorY += notDirY * secondVec
+
+            (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
+            first = 0
 
         # draw last for divider joints in side walls
         if isTab and numDividers > 0 and side.tab_symmetry == 0 and not isDivider:
-
             for dividerNumber in range(1, int(numDividers) + 1):
                 Dx = (
                     vectorX
@@ -1445,12 +1645,11 @@ class TabbedBoxMaker(inkex.Effect):
         rootY += root_offs[1]
         for node in nodes:
             node.path = node.path.translate(rootX, rootY)
-            group.add(node)
 
+        return nodes
 
 
 if __name__ == "__main__":
   # Create effect instance and apply it.
   effect = TabbedBoxMaker(cli=True)
   effect.run()
-
