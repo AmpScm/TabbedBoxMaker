@@ -1,5 +1,5 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="135.5mm" height="358mm" viewBox="-1.5 0 135.5 358" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="134mm" height="358mm" viewBox="0 0 134 358" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
   <sodipodi:namedview id="namedview7" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:document-units="mm" showgrid="false" inkscape:zoom="0.64052329" inkscape:cx="397.33138" inkscape:cy="561.25984" inkscape:window-width="2086" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer1"/>
   <defs id="defs2"/>
   <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
@@ -13,7 +13,7 @@
     <g id="xdivider_001">
       <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 3 209 L 7 209 L 7 209 L 13 209 L 13 209 L 20 209 L 20 209 L 26 209 L 26 209 L 33 209 L 33 209 L 39 209 L 39 209 L 43 209"/>
       <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43 209 L 43 212.444 L 46 212.444 L 46 218.444 L 43 218.444 L 43 224.889 L 46 224.889 L 46 230.889 L 43 230.889 L 43 237.333 L 46 237.333 L 46 243.333 L 43 243.333 L 43 249.778 L 46 249.778 L 46 255.778 L 43 255.778 L 43 262.222 L 46 262.222 L 46 268.222 L 43 268.222 L 43 274.667 L 46 274.667 L 46 280.667 L 43 280.667 L 43 287.111 L 46 287.111 L 46 293.111 L 43 293.111 L 43 299.556 L 46 299.556 L 46 305.556 L 43 305.556 L 43 309"/>
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M -1.5 206 L -1.5 259 L 1.5 259 L 1.5 206 L -1.5 206 Z"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 40 206 L 40 259 L 43 259 L 43 206 L 40 206 Z"/>
       <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43 309 L 39 309 L 39 309 L 33 309 L 33 309 L 26 309 L 26 309 L 20 309 L 20 309 L 13 309 L 13 309 L 7 309 L 7 309 L 3 309"/>
       <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 3 309 L 3 305.556 L 3 305.556 L 3 299.556 L 3 299.556 L 3 293.111 L 3 293.111 L 3 287.111 L 3 287.111 L 3 280.667 L 3 280.667 L 3 274.667 L 3 274.667 L 3 268.222 L 3 268.222 L 3 262.222 L 3 262.222 L 3 255.778 L 3 255.778 L 3 249.778 L 3 249.778 L 3 243.333 L 3 243.333 L 3 237.333 L 3 237.333 L 3 230.889 L 3 230.889 L 3 224.889 L 3 224.889 L 3 218.444 L 3 218.444 L 3 212.444 L 3 212.444 L 3 209"/>
     </g>

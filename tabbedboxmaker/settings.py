@@ -20,6 +20,8 @@ class BoxSettings:
     boxtype: BoxType
     div_x: float
     div_y: float
+    div_x_spacing: list[float]  # Custom spacing for X-axis dividers (partition widths)
+    div_y_spacing: list[float]  # Custom spacing for Y-axis dividers (partition widths)
     keydiv_walls: bool
     keydiv_floor: bool
     initOffsetX: float
@@ -99,6 +101,7 @@ class Side:
     prev: "Side" = None
     next: "Side" = None
     dogbone: bool = False
+    divider_spacings: list[float] = None  # Pre-calculated divider spacings (partition widths)
 
     def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, tab_info: int, tabbed: int, length: float):
         self.name = name
@@ -107,6 +110,7 @@ class Side:
         self.tab_info = tab_info
         self.tabbed = tabbed
         self.length = length
+        self.divider_spacings = []
 
         dir_cases = {
             SideEnum.A: (1, 0),
