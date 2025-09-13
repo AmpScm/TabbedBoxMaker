@@ -98,6 +98,7 @@ class Side:
     line_thickness: float = 0.1  # default line thickness
     prev: "Side" = None
     next: "Side" = None
+    dogbone: bool = False
 
     def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, tab_info: int, tabbed: int, length: float):
         self.name = name
@@ -120,6 +121,7 @@ class Side:
         self.thickness = settings.thickness
         self.kerf = settings.kerf
         self.line_thickness = settings.line_thickness
+        self.dogbone = settings.dogbone
 
         halfkerf = settings.kerf / 2
 

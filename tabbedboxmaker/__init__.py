@@ -973,7 +973,6 @@ class TabbedBoxMaker(inkex.Effect):
         # Store values needed for other methods
         self.dimpleHeight = settings.dimple_height
         self.dimpleLength = settings.dimple_length
-        self.dogbone = settings.dogbone
         self.keydivwalls = settings.keydiv_walls
         self.keydivfloor = settings.keydiv_floor
         self.kerf = settings.kerf
@@ -1145,10 +1144,10 @@ class TabbedBoxMaker(inkex.Effect):
         notDirX: bool,
         notDirY: bool,
         ddir: int,
-        isTab: bool
+        isMale: bool
     ) -> inkex.Path:
         ds = []
-        if not isTab:
+        if not isMale:
             ddir = -ddir
         if self.dimpleHeight > 0 and tabVector != 0:
             if tabVector > 0:
@@ -1212,13 +1211,13 @@ class TabbedBoxMaker(inkex.Effect):
         endOffsetX, endOffsetY = endOffset
         length = side.length
 
-        isTab = side.is_male
-        notTab = not isTab
+        isMale = side.is_male
+        notMale = not isMale
         thickness = side.thickness
 
         if side.has_tabs:
             # Calculate direction
-            tabVec = thickness if (direction == (1, 0) or direction == (0, -1)) != isTab else -thickness
+            tabVec = thickness if (direction == (1, 0) or direction == (0, -1)) != isMale else -thickness
         else:
             tabVec = 0
 
@@ -1227,6 +1226,7 @@ class TabbedBoxMaker(inkex.Effect):
         kerf = side.kerf
         halfkerf = kerf / 2
         line_thickness = side.line_thickness
+        dogbone = side.dogbone
 
         sidePath = self.makeLine('', "side")
         nodes = [sidePath]
@@ -1242,8 +1242,6 @@ class TabbedBoxMaker(inkex.Effect):
         notDirY = dirY == 0
         s = inkex.Path()
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            dividerEdgeOffsetX = dirX * thickness
-            # dividerEdgeOffsetY = ;
             vectorX = (0 if dirX and prevTab else startOffsetX * thickness)
             vectorY = (0 if dirY and prevTab else startOffsetY * thickness)
             s.append(Move(vectorX, vectorY))
@@ -1254,10 +1252,8 @@ class TabbedBoxMaker(inkex.Effect):
             if notDirY and tabVec:
                 endOffsetY = 0
         else:
-            (vectorX, vectorY) = (
-                startOffsetX * thickness,
-                startOffsetY * thickness,
-            )
+            vectorX = startOffsetX * thickness
+            vectorY = startOffsetY * thickness
             s.append(Move(vectorX, vectorY))
             if notDirX:
                 vectorY = 0  # set correct line start for tab generation
@@ -1275,8 +1271,8 @@ class TabbedBoxMaker(inkex.Effect):
                     dirX
                     * (
                         gapWidth
-                        + (first if not (isTab and self.dogbone) else 0)
-                        + self.dogbone * kerf * isTab
+                        + (first if not (isMale and dogbone) else 0)
+                        + dogbone * kerf * isMale
                     )
                     + notDirX * firstVec
                 )
@@ -1284,47 +1280,47 @@ class TabbedBoxMaker(inkex.Effect):
                     dirY
                     * (
                         gapWidth
-                        + (first if not (isTab and self.dogbone) else 0)
-                        + (kerf if self.dogbone and isTab else 0)
+                        + (first if not (isMale and dogbone) else 0)
+                        + (kerf if dogbone and isMale else 0)
                     )
                     + notDirY * firstVec
                 )
                 s.append(Line(vectorX, vectorY))
-                if self.dogbone and isTab:
+                if dogbone and isMale:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
                     s.append(Line(vectorX, vectorY))
                 # draw the starting edge of the tab
                 s += self.dimpleStr(
-                    secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, 1, isTab
+                    secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, 1, isMale
                 )
                 vectorX += notDirX * secondVec
                 vectorY += notDirY * secondVec
                 s.append(Line(vectorX, vectorY))
-                if self.dogbone and notTab:
+                if dogbone and notMale:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
                     s.append(Line(vectorX, vectorY))
 
             else:
                 # draw the tab
-                vectorX += dirX * (tabWidth + self.dogbone *
-                                   kerf * notTab) + notDirX * firstVec
-                vectorY += dirY * (tabWidth + self.dogbone *
-                                   kerf * notTab) + notDirY * firstVec
+                vectorX += dirX * (tabWidth + dogbone *
+                                   kerf * notMale) + notDirX * firstVec
+                vectorY += dirY * (tabWidth + dogbone *
+                                   kerf * notMale) + notDirY * firstVec
                 s.append(Line(vectorX, vectorY))
-                if self.dogbone and notTab:
+                if dogbone and notMale:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
                     s.append(Line(vectorX, vectorY))
                 # draw the ending edge of the tab
                 s += self.dimpleStr(
-                    secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, -1, isTab
+                    secondVec, vectorX, vectorY, dirX, dirY, notDirX, notDirY, -1, isMale
                 )
                 vectorX += notDirX * secondVec
                 vectorY += notDirY * secondVec
                 s.append(Line(vectorX, vectorY))
-                if self.dogbone and isTab:
+                if dogbone and isMale:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
                     s.append(Line(vectorX, vectorY))
@@ -1379,7 +1375,6 @@ class TabbedBoxMaker(inkex.Effect):
 
         kerf = side.kerf
         halfkerf = kerf / 2
-        line_thickness = side.line_thickness
 
         nodes = []
 
@@ -1466,22 +1461,21 @@ class TabbedBoxMaker(inkex.Effect):
         root_offs, startOffset = offs_cases[side.name]
 
         startOffsetX, startOffsetY = startOffset
-        length = side.length
 
-        isTab = side.is_male
-        notTab = not isTab
+        isMale = side.is_male
+        notMale = not isMale
         thickness = side.thickness
 
 
         if side.has_tabs:
             # Calculate direction
-            tabVec = thickness if (direction == (1, 0) or direction == (0, -1)) != isTab else -thickness
+            tabVec = thickness if (direction == (1, 0) or direction == (0, -1)) != isMale else -thickness
         else:
             tabVec = 0
 
         kerf = side.kerf
         halfkerf = kerf / 2
-        line_thickness = side.line_thickness
+        dogbone = side.dogbone
 
         nodes = []
 
@@ -1500,18 +1494,12 @@ class TabbedBoxMaker(inkex.Effect):
             vectorX = (startOffsetX if startOffsetX else dirX) * thickness
             vectorY = (startOffsetY if startOffsetY else dirY) * thickness
         else:
-            (vectorX, vectorY) = (
-                startOffsetX * thickness,
-                startOffsetY * thickness,
-            )
             dividerEdgeOffsetX = dirY * thickness
             dividerEdgeOffsetY = dirX * thickness
-            if notDirX:
-                vectorY = 0  # set correct line start for tab generation
-            if notDirY:
-                vectorX = 0
+            vectorX = (startOffsetX * thickness) if notDirX else 0
+            vectorY = (startOffsetY * thickness) if notDirY else 0
 
-        w = gapWidth if isTab else tabWidth
+        w = gapWidth if isMale else tabWidth
         if side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
             w -= startOffsetX * thickness
         holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
@@ -1525,8 +1513,8 @@ class TabbedBoxMaker(inkex.Effect):
         firstHole = True
         for tabDivision in range(1, int(divisions)):
             # draw holes for divider tabs to key into side walls
-            if (((tabDivision % 2) > 0) != (not isTab)) and numDividers > 0 and not isDivider:
-                w = gapWidth if isTab else tabWidth
+            if (((tabDivision % 2) > 0) != (not isMale)) and numDividers > 0 and not isDivider:
+                w = gapWidth if isMale else tabWidth
                 if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                     w -= startOffsetX * thickness
                 holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
@@ -1540,13 +1528,13 @@ class TabbedBoxMaker(inkex.Effect):
                         vectorX
                         + -dirY * dividerSpacing * dividerNumber
                         + (halfkerf if notDirX else 0)
-                        + ((dirX * halfkerf - first * dirX) if self.dogbone else 0)
+                        + ((dirX * halfkerf - first * dirX) if dogbone else 0)
                     )
                     Dy = (
                         vectorY
                         + dirX * dividerSpacing * dividerNumber
                         - (halfkerf if notDirY else 0)
-                        + ((dirY * halfkerf - first * dirY) if self.dogbone else 0)
+                        + ((dirY * halfkerf - first * dirY) if dogbone else 0)
                     )
                     if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                         Dx += startOffsetX * thickness
@@ -1572,8 +1560,8 @@ class TabbedBoxMaker(inkex.Effect):
                     dirX
                     * (
                         gapWidth
-                        + (first if not (isTab and self.dogbone) else 0)
-                        + self.dogbone * kerf * isTab
+                        + (first if not (isMale and dogbone) else 0)
+                        + dogbone * kerf * isMale
                     )
                     + notDirX * firstVec
                 )
@@ -1581,22 +1569,22 @@ class TabbedBoxMaker(inkex.Effect):
                     dirY
                     * (
                         gapWidth
-                        + (first if not (isTab and self.dogbone) else 0)
-                        + (kerf if self.dogbone and isTab else 0)
+                        + (first if not (isMale and dogbone) else 0)
+                        + (kerf if dogbone and isMale else 0)
                     )
                     + notDirY * firstVec
                 )
-                if self.dogbone and isTab:
+                if dogbone and isMale:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
             else:
                 # draw the tab
-                vectorX += dirX * (tabWidth + self.dogbone *
-                                   kerf * notTab) + notDirX * firstVec
-                vectorY += dirY * (tabWidth + self.dogbone *
-                                   kerf * notTab) + notDirY * firstVec
-
-            if self.dogbone and notTab:
+                vectorX += dirX * (tabWidth + dogbone *
+                                   kerf * notMale) + notDirX * firstVec
+                vectorY += dirY * (tabWidth + dogbone *
+                                   kerf * notMale) + notDirY * firstVec
+                
+            if dogbone and notMale:
                 vectorX -= dirX * halfkerf
                 vectorY -= dirY * halfkerf
             vectorX += notDirX * secondVec
@@ -1606,14 +1594,14 @@ class TabbedBoxMaker(inkex.Effect):
             first = 0
 
         # draw last for divider joints in side walls
-        if isTab and numDividers > 0 and side.tab_symmetry == 0 and not isDivider:
+        if isMale and numDividers > 0 and side.tab_symmetry == 0 and not isDivider:
             for dividerNumber in range(1, int(numDividers) + 1):
                 Dx = (
                     vectorX
                     + -dirY * dividerSpacing * dividerNumber
                     + notDirX * halfkerf
-                    + dirX * self.dogbone * halfkerf
-                    - self.dogbone * first * dirX
+                    + dirX * side.dogbone * halfkerf
+                    - side.dogbone * first * dirX
                 )
                 Dy = (
                     vectorY
