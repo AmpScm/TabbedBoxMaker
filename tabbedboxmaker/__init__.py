@@ -99,16 +99,17 @@ class TabbedBoxMaker(inkex.Effect):
         prefix = prefix if prefix is not None else "id"
         if prefix not in self.nextId:
             id = self.nextId[prefix] = 0
-        
+
         self.nextId[prefix] = id = self.nextId[prefix] + 1
 
         return f"{prefix}_{id:03d}"
 
 
-    def makeGroup(self, id='piece') -> inkex.Group:
+    def makeGroup(self, id="piece") -> inkex.Group:
         # Create a new group and add element created from line string
-        panelId = self.makeId(id)
-        group = self.svg.get_current_layer().add(inkex.Group(id=panelId))
+        group = inkex.Group(id=self.makeId(id))
+
+        self.svg.get_current_layer().add(group)
         return group
 
 
@@ -365,6 +366,22 @@ class TabbedBoxMaker(inkex.Effect):
             help="Key dividers into walls/floor",
         )
         self.arg_parser.add_argument(
+            "--div_l_spacing",
+            action="store",
+            type=str,
+            dest="div_l_spacing",
+            default="",
+            help="Custom spacing for X-axis dividers (semicolon separated widths)",
+        )
+        self.arg_parser.add_argument(
+            "--div_w_spacing",
+            action="store",
+            type=str,
+            dest="div_w_spacing",
+            default="",
+            help="Custom spacing for Y-axis dividers (semicolon separated widths)",
+        )
+        self.arg_parser.add_argument(
             "--optimize",
             action="store",
             type=inkex.utils.Boolean,
@@ -399,6 +416,57 @@ class TabbedBoxMaker(inkex.Effect):
         self._run_effect()
 
         adjust_canvas(svg, unit=self.options.unit)
+
+
+    def parse_divider_spacing(self, spacing_str: str, unit: str, available_width: float,
+                            thickness: float, num_dividers: int) -> list[float]:
+        """Parse semicolon-separated spacing values and validate them"""
+        if not spacing_str.strip():
+            return []
+
+        # Parse the spacing values (these represent section widths, not divider positions)
+        try:
+            values = [float(v.strip()) for v in spacing_str.split(';') if v.strip()]
+        except ValueError as e:
+            inkex.errormsg(f"Error: Invalid divider spacing format: {e}")
+            exit(1)
+
+        # Convert to document units
+        values = [self.svg.unittouu(str(v) + unit) for v in values]
+
+        # num_dividers represents the total number of dividers to place
+        # values represents the widths of the first N sections (before each specified divider)
+        # We need num_dividers + 1 total sections (sections between and around dividers)
+
+        num_sections = num_dividers + 1
+
+        # Validate number of values
+        if len(values) > num_sections:
+            inkex.errormsg(f"Error: Too many divider spacing values ({len(values)}) for {num_dividers} dividers (max {num_sections} sections)")
+            exit(1)
+
+        # Calculate remaining space for auto-sized sections
+        used_width = sum(values)  # width of specified sections
+
+        remaining_sections = num_sections - len(values)
+
+        if remaining_sections > 0:
+            remaining_width = available_width - used_width
+            if remaining_width <= 0:
+                inkex.errormsg(f"Error: Specified section widths exceed available space")
+                exit(1)
+            auto_width = remaining_width / remaining_sections
+            values.extend([auto_width] * remaining_sections)
+        else:
+            # Check if total width fits
+            total_used = used_width
+            if total_used > available_width:
+                inkex.errormsg(f"Error: Total section widths ({total_used:.2f}) exceed available space ({available_width:.2f})")
+                exit(1)
+
+        return values
+
+
 
     def parse_options_to_settings(self) -> BoxSettings:
         """Parse command line options into a BoxSettings object"""
@@ -441,6 +509,7 @@ class TabbedBoxMaker(inkex.Effect):
         # essentially schroffmaker.inx is just an alternate interface with different
         # default settings, some options removed, and a tiny amount of extra
         # logic
+        base_corr = 0.0  # mm correction to get to pure outside dimension
         if schroff:
             # schroffmaker.inx
             X = self.svg.unittouu(str(self.options.hp * 5.08) + unit)
@@ -455,6 +524,7 @@ class TabbedBoxMaker(inkex.Effect):
             # boxmaker.inx
             X = self.svg.unittouu(str(self.options.length + self.options.kerf) + unit)
             Y = self.svg.unittouu(str(self.options.width + self.options.kerf) + unit)
+            base_corr = self.options.kerf
 
         Z = self.svg.unittouu(str(self.options.height + self.options.kerf) + unit)
         thickness = self.svg.unittouu(str(self.options.thickness) + unit)
@@ -479,11 +549,21 @@ class TabbedBoxMaker(inkex.Effect):
             Y += thickness * 2
             Z += thickness * 2
 
+        # Parse custom divider spacing using pure user dimensions (without kerf)
+        div_x_spacing = self.parse_divider_spacing(
+            self.options.div_l_spacing, unit, Y - 2 * thickness - base_corr, thickness, int(div_x)
+        ) if div_x > 0 else []
+
+        div_y_spacing = self.parse_divider_spacing(
+            self.options.div_w_spacing, unit, X - 2 * thickness - base_corr, thickness, int(div_y)
+        ) if div_y > 0 else []
+
         return BoxSettings(
             X=X, Y=Y, Z=Z, thickness=thickness, tab_width=tab_width, equal_tabs=equal_tabs,
             tab_symmetry=tabSymmetry, dimple_height=dimpleHeight, dimple_length=dimpleLength,
             dogbone=dogbone, layout=layout, spacing=spacing, boxtype=boxtype,
-            div_x=div_x, div_y=div_y, keydiv_walls=keydivwalls, keydiv_floor=keydivfloor,
+            div_x=div_x, div_y=div_y, div_x_spacing=div_x_spacing, div_y_spacing=div_y_spacing,
+            keydiv_walls=keydivwalls, keydiv_floor=keydivfloor,
             initOffsetX=initOffsetX, initOffsetY=initOffsetY, inside=inside,
             hairline=hairline, schroff=schroff, kerf=kerf, line_thickness=line_thickness, unit=unit, rows=rows,
             rail_height=rail_height, row_spacing=row_spacing, rail_mount_depth=rail_mount_depth,
@@ -651,14 +731,53 @@ class TabbedBoxMaker(inkex.Effect):
         ltFace = FaceType.ZY
         rtFace = FaceType.ZY
 
-        def make_sides(settings : BoxSettings, dx : float, dy : float, tabInfo : int, tabbed : int) -> list[Side]:
+        def make_sides(settings : BoxSettings, dx : float, dy : float, tabInfo : int, tabbed : int, faceType: FaceType) -> list[Side]:
+            # Determine which divider spacings to use based on face type
+            # X-axis dividers run along the Y direction, so they need Y spacing
+            # Y-axis dividers run along the X direction, so they need X spacing
+
+            def calculate_even_spacing(num_dividers: int, available_width: float, thickness: float) -> list[float]:
+                """Calculate even spacing for dividers when no custom spacing is provided"""
+                if num_dividers <= 0:
+                    return []
+                # Original calculation: equal spacing between and around dividers
+                partition_width = (available_width - thickness) / (num_dividers + 1)
+                return [partition_width] * num_dividers
+
+            if faceType == FaceType.XY:  # Top/Bottom faces
+                # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
+                # Side B/D (vertical) gets X-axis divider spacing (div_y)"
+                horizontal_spacing = settings.div_x_spacing if settings.div_x_spacing else calculate_even_spacing(int(settings.div_x), settings.Y, settings.thickness)
+                vertical_spacing = settings.div_y_spacing if settings.div_y_spacing else calculate_even_spacing(int(settings.div_y), settings.X, settings.thickness)
+            elif faceType == FaceType.XZ:  # Front/Back faces
+                # Side A/C (horizontal) gets no dividers (Z direction)
+                # Side B/D (vertical) gets X-axis divider spacing (div_y)
+                horizontal_spacing = []
+                vertical_spacing = settings.div_y_spacing if settings.div_y_spacing else calculate_even_spacing(int(settings.div_y), settings.X, settings.thickness)
+            elif faceType == FaceType.ZY:  # Left/Right faces"
+                # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
+                # Side B/D (vertical) gets no dividers (Z direction)
+                horizontal_spacing = settings.div_x_spacing if settings.div_x_spacing else calculate_even_spacing(int(settings.div_x), settings.Y, settings.thickness)
+                vertical_spacing = []
+            else:
+                horizontal_spacing = []
+                vertical_spacing = []
+
             # Sides: A=top, B=right, C=bottom, D=left
-            return [
+            sides = [
                 Side(settings, SideEnum.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), (tabInfo >> 3) & 1, (tabbed >> 3) & 1, dx),
                 Side(settings, SideEnum.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), (tabInfo >> 2) & 1, (tabbed >> 2) & 1, dy),
                 Side(settings, SideEnum.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), (tabInfo >> 1) & 1, (tabbed >> 1) & 1, dx),
                 Side(settings, SideEnum.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), tabInfo & 1, tabbed & 1, dy)
             ]
+
+            # Assign divider spacings to appropriate sides
+            sides[0].divider_spacings = horizontal_spacing  # A (top)
+            sides[1].divider_spacings = vertical_spacing    # B (right)
+            sides[2].divider_spacings = horizontal_spacing  # C (bottom)
+            sides[3].divider_spacings = vertical_spacing    # D (left)
+
+            return sides
 
         def reduceOffsets(aa : list, start : int, dx : int, dy : int, dz : int):
             for ix in range(start + 1, len(aa)):
@@ -678,26 +797,26 @@ class TabbedBoxMaker(inkex.Effect):
             if not hasRt:
                 reduceOffsets(cc, 2, 0, 0, 1)
             if hasBk:
-                pieces_list.append(PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed), bkFace))
+                pieces_list.append(PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace))
             if hasLt:
-                pieces_list.append(PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, ltTabInfo, ltTabbed), ltFace))
+                pieces_list.append(PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace))
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed), bmFace))
+                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace))
             if hasRt:
-                pieces_list.append(PieceSettings(cc[2], rr[1], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed), rtFace))
+                pieces_list.append(PieceSettings(cc[2], rr[1], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace), rtFace))
             if hasTp:
-                pieces_list.append(PieceSettings(cc[3], rr[1], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed), tpFace))
+                pieces_list.append(PieceSettings(cc[3], rr[1], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace), tpFace))
             if hasFt:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed), ftFace))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace), ftFace))
         elif settings.layout == Layout.THREE_PIECE:  # 3 Piece Layout
             rr = deepcopy([row0, row1y])
             cc = deepcopy([col0, col1z])
             if hasBk:
-                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed), bkFace))
+                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace))
             if hasLt:
-                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed), ltFace))
+                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace))
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed), bmFace))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace))
         elif settings.layout == Layout.INLINE_COMPACT:  # Inline(compact) Layout
             rr = deepcopy([row0])
             cc = deepcopy([col0, col1x, col2xx, col3xxz, col4, col5])
@@ -713,17 +832,17 @@ class TabbedBoxMaker(inkex.Effect):
             if not hasBk:
                 reduceOffsets(cc, 4, 1, 0, 0)
             if hasBk:
-                pieces_list.append(PieceSettings(cc[4], rr[0], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed), bkFace))
+                pieces_list.append(PieceSettings(cc[4], rr[0], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace))
             if hasLt:
-                pieces_list.append(PieceSettings(cc[2], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed), ltFace))
+                pieces_list.append(PieceSettings(cc[2], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace))
             if hasTp:
-                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed), tpFace))
+                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace), tpFace))
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed), bmFace))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace))
             if hasRt:
-                pieces_list.append(PieceSettings(cc[3], rr[0], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed), rtFace))
+                pieces_list.append(PieceSettings(cc[3], rr[0], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace), rtFace))
             if hasFt:
-                pieces_list.append(PieceSettings(cc[5], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed), ftFace))
+                pieces_list.append(PieceSettings(cc[5], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace), ftFace))
 
         # Handle Schroff settings if needed
         schroff_settings = None
@@ -750,9 +869,6 @@ class TabbedBoxMaker(inkex.Effect):
 
         groups = []
 
-        # Calculate divider spacing and hole flags once for the entire box
-        xspacing = (settings.X - settings.thickness) / (settings.div_y + 1)
-        yspacing = (settings.Y - settings.thickness) / (settings.div_x + 1)
         # For divider intersections: X dividers need holes for Y dividers, Y dividers need holes for X dividers
         divider_x_holes = settings.div_y > 0  # X dividers need holes if there are Y dividers
         divider_y_holes = settings.div_x > 0  # Y dividers need holes if there are X dividers
@@ -827,6 +943,8 @@ class TabbedBoxMaker(inkex.Effect):
                         rystart += settings.schroff.row_centre_spacing + settings.schroff.row_spacing + settings.schroff.rail_height
 
             # generate and draw the sides of each piece
+            # Calculate average spacing for each side's dividers (for uniform spacing assumption in render functions)
+
             # Side A
             self.render_side(
                 group,
@@ -835,7 +953,6 @@ class TabbedBoxMaker(inkex.Effect):
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and aSide.has_tabs and yholes)
                 * settings.div_x,
-                yspacing,
             )
             # Side B
             self.render_side(
@@ -845,7 +962,6 @@ class TabbedBoxMaker(inkex.Effect):
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bSide.has_tabs and xholes)
                 * settings.div_y,
-                xspacing,
             )
             # Side C
             self.render_side(
@@ -855,7 +971,6 @@ class TabbedBoxMaker(inkex.Effect):
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aSide.has_tabs and cSide.has_tabs and yholes)
                 * settings.div_x,
-                yspacing,
             )
             # Side D
             self.render_side(
@@ -865,7 +980,6 @@ class TabbedBoxMaker(inkex.Effect):
                 False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bSide.has_tabs and dSide.has_tabs and xholes)
                 * settings.div_y,
-                xspacing,
             )
 
             if idx == 0:
@@ -898,7 +1012,6 @@ class TabbedBoxMaker(inkex.Effect):
                         bSide,
                         True,
                         settings.div_y * divider_x_holes,
-                        xspacing,
                     )
                     # Side C
                     self.render_side(
@@ -937,7 +1050,6 @@ class TabbedBoxMaker(inkex.Effect):
                         aSide,
                         True,
                         settings.div_x * divider_y_holes,
-                        yspacing,
                     )
                     # Side B
                     self.render_side(
@@ -1176,15 +1288,14 @@ class TabbedBoxMaker(inkex.Effect):
         root: tuple[float, float],
         side: Side,
         isDivider: bool = False,
-        numDividers: int = 0,
-        dividerSpacing: float = 0,
+        numDividers: int = 0
     ) -> None:
         """Draw one side of a piece, with tabs or holes as required. Returns result in group"""
 
         for i in self.render_side_side(root, side) + \
-                self.render_side_slots(root, side, isDivider, numDividers, dividerSpacing) + \
-                self.render_side_holes(root, side, isDivider, numDividers, dividerSpacing):
-            group.add(i)        
+                self.render_side_slots(root, side, isDivider, numDividers) + \
+                self.render_side_holes(root, side, isDivider, numDividers):
+            group.add(i)
 
     def render_side_side(
         self,
@@ -1198,7 +1309,7 @@ class TabbedBoxMaker(inkex.Effect):
 
         # TODO: Use rotation matrix to simplify this logic
         # All values are booleans so results will be -1, 0, or 1
-        
+
         offs_cases = {
             SideEnum.A: [(0,0), (side.prev.is_male, side.is_male), (-side.next.is_male, side.is_male)],
             SideEnum.B: [(side.prev.length, 0), (-side.is_male, side.prev.is_male), (-side.is_male, -side.next.is_male)],
@@ -1238,8 +1349,7 @@ class TabbedBoxMaker(inkex.Effect):
 
         firstVec = 0
         secondVec = tabVec
-        notDirX = dirX == 0  # used to select operation on x or y
-        notDirY = dirY == 0
+        notDirX, notDirY = self._get_perpendicular_flags(direction)
         s = inkex.Path()
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             vectorX = (0 if dirX and prevTab else startOffsetX * thickness)
@@ -1340,26 +1450,49 @@ class TabbedBoxMaker(inkex.Effect):
         sidePath.path = s
         sidePath.path = sidePath.path.translate(rootX, rootY)
         return [sidePath]
-    
+
+    # Calculate cumulative positions for dividers
+    @staticmethod
+    def calculate_cumulative_position(divider_number: int, divider_spacings: list[float], side_thickness: float) -> float:
+        """Calculate cumulative position for divider number (1-based)"""
+
+        if not divider_spacings:
+            return 0  # No custom spacing provided, fall back to default even spacing calculation
+
+        cumulative = 0
+        # Divider N comes after section N, so add sections 1 through N
+        for i in range(divider_number):
+            if i < len(divider_spacings):
+                cumulative += divider_spacings[i]
+            else:
+                # This should not happen as parse_divider_spacing should fill all slots
+                break
+
+        return cumulative
+
+
     def render_side_slots(
         self,
         root: tuple[float, float],
         side: Side,
         isDivider: bool = False,
         numDividers: int = 0,
-        dividerSpacing: float = 0,
+        dividerSpacings: list[float] = None,
     ) -> list[inkex.PathElement]:
         """Draw tabs or holes as required"""
 
         if numDividers == 0 or not isDivider:
             return []
 
+        dividerSpacings = side.divider_spacings
+
+
         direction = side.direction
         dirX, dirY = direction
 
         # TODO: Use rotation matrix to simplify this logic
         # All values are booleans so results will be -1, 0, or 1
-        
+
         offs_cases = {
             SideEnum.A: [(0,0), (side.prev.is_male, side.is_male)],
             SideEnum.B: [(side.prev.length, 0), (-side.is_male, side.prev.is_male)],
@@ -1379,9 +1512,8 @@ class TabbedBoxMaker(inkex.Effect):
         nodes = []
 
         first = side.first
-        
-        notDirX = dirX == 0  # used to select operation on x or y
-        notDirY = dirY == 0
+
+        notDirX, notDirY = self._get_perpendicular_flags(direction)
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             dividerEdgeOffsetX = dirX * thickness
             dividerEdgeOffsetY = thickness
@@ -1399,32 +1531,29 @@ class TabbedBoxMaker(inkex.Effect):
                 vectorX = 0
 
         for dividerNumber in range(1, int(numDividers) + 1):
-            Dx = (
-                vectorX
-                + -dirY * dividerSpacing * dividerNumber
-                - dividerEdgeOffsetX
-                + notDirX * halfkerf
-            )
-            Dy = (
-                vectorY
-                + dirX * dividerSpacing * dividerNumber
-                - dividerEdgeOffsetY
-                + notDirY * halfkerf
-            )
+            base_pos = (vectorX, vectorY)
+            cumulative_position = self.calculate_cumulative_position(dividerNumber, dividerSpacings, thickness)
+            divider_offset = (-dirY * cumulative_position, dirX * cumulative_position)
+            edge_offset = (-dividerEdgeOffsetX, -dividerEdgeOffsetY)
+            kerf_offset = (notDirX * halfkerf, notDirY * halfkerf)
+
+            start_pos = self._point_add(base_pos, self._point_add(divider_offset,
+                                      self._point_add(edge_offset, kerf_offset)))
+
             h = []
-            h.append(Move(Dx, Dy))
-            Dx = Dx + dirX * (first + length / 2)
-            Dy = Dy + dirY * (first + length / 2)
-            h.append(Line(Dx, Dy))
-            Dx = Dx + notDirX * (thickness - kerf)
-            Dy = Dy + notDirY * (thickness - kerf)
-            h.append(Line(Dx, Dy))
-            Dx = Dx - dirX * (first + length / 2)
-            Dy = Dy - dirY * (first + length / 2)
-            h.append(Line(Dx, Dy))
-            Dx = Dx - notDirX * (thickness - kerf)
-            Dy = Dy - notDirY * (thickness - kerf)
-            h.append(Line(Dx, Dy))
+            h.append(Move(*start_pos))
+
+            slot_end = self._point_add(start_pos, self._point_scale(direction, first + length / 2))
+            h.append(Line(*slot_end))
+
+            side_offset = self._point_add(slot_end, (notDirX * (thickness - kerf), notDirY * (thickness - kerf)))
+            h.append(Line(*side_offset))
+
+            back_to_start = self._point_subtract(side_offset, self._point_scale(direction, first + length / 2))
+            h.append(Line(*back_to_start))
+
+            final_pos = self._point_subtract(back_to_start, (notDirX * (thickness - kerf), notDirY * (thickness - kerf)))
+            h.append(Line(*final_pos))
             h.append(ZoneClose())
             nodes.append(self.makeLine(h, "slot"))
 
@@ -1442,16 +1571,18 @@ class TabbedBoxMaker(inkex.Effect):
         side: Side,
         isDivider: bool = False,
         numDividers: int = 0,
-        dividerSpacing: float = 0,
     ) -> list[inkex.PathElement]:
         """Draw tabs or holes as required"""
+
+        dividerSpacings = side.divider_spacings
+
 
         direction = side.direction
         dirX, dirY = direction
 
         # TODO: Use rotation matrix to simplify this logic
         # All values are booleans so results will be -1, 0, or 1
-        
+
         offs_cases = {
             SideEnum.A: [(0,0), (side.prev.is_male, side.is_male)],
             SideEnum.B: [(side.prev.length, 0), (-side.is_male, side.prev.is_male)],
@@ -1486,8 +1617,7 @@ class TabbedBoxMaker(inkex.Effect):
 
         firstVec = 0
         secondVec = tabVec
-        notDirX = dirX == 0  # used to select operation on x or y
-        notDirY = dirY == 0
+        notDirX, notDirY = self._get_perpendicular_flags(direction)
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             dividerEdgeOffsetX = dirX * thickness
             dividerEdgeOffsetY = thickness
@@ -1524,34 +1654,33 @@ class TabbedBoxMaker(inkex.Effect):
                     firstHoleLenY = holeLenY
                     firstHole = False
                 for dividerNumber in range(1, int(numDividers) + 1):
-                    Dx = (
-                        vectorX
-                        + -dirY * dividerSpacing * dividerNumber
-                        + (halfkerf if notDirX else 0)
-                        + ((dirX * halfkerf - first * dirX) if dogbone else 0)
-                    )
-                    Dy = (
-                        vectorY
-                        + dirX * dividerSpacing * dividerNumber
-                        - (halfkerf if notDirY else 0)
-                        + ((dirY * halfkerf - first * dirY) if dogbone else 0)
-                    )
+                    base_pos = (vectorX, vectorY)
+                    cumulative_position = self.calculate_cumulative_position(dividerNumber, dividerSpacings, thickness)
+                    divider_offset = (-dirY * cumulative_position, dirX * cumulative_position)
+                    kerf_offset = (halfkerf if notDirX else 0, -(halfkerf if notDirY else 0))
+                    dogbone_offset = ((dirX * halfkerf - first * dirX) if dogbone else 0,
+                                    (dirY * halfkerf - first * dirY) if dogbone else 0)
+
+                    start_pos = self._point_add(base_pos, self._point_add(divider_offset,
+                                              self._point_add(kerf_offset, dogbone_offset)))
+
                     if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
-                        Dx += startOffsetX * thickness
-                    h = inkex.Path()
-                    h.append(Move(Dx, Dy))
-                    Dx = Dx + holeLenX
-                    Dy = Dy + holeLenY
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx + notDirX * (secondVec - kerf)
-                    Dy = Dy + notDirY * (secondVec + kerf)
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx - holeLenX
-                    Dy = Dy - holeLenY
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx - notDirX * (secondVec - kerf)
-                    Dy = Dy - notDirY * (secondVec + kerf)
-                    h.append(Line(Dx, Dy))
+                        start_pos = self._point_add(start_pos, (startOffsetX * thickness, 0))
+
+                    h = []
+                    h.append(Move(*start_pos))
+
+                    hole_end = self._point_add(start_pos, (holeLenX, holeLenY))
+                    h.append(Line(*hole_end))
+
+                    side_offset = self._point_add(hole_end, (notDirX * (secondVec - kerf), notDirY * (secondVec + kerf)))
+                    h.append(Line(*side_offset))
+
+                    back_to_start = self._point_subtract(side_offset, (holeLenX, holeLenY))
+                    h.append(Line(*back_to_start))
+
+                    final_pos = self._point_subtract(back_to_start, (notDirX * (secondVec - kerf), notDirY * (secondVec + kerf)))
+                    h.append(Line(*final_pos))
                     h.append(ZoneClose())
                     nodes.append(self.makeLine(h, "hole"))
             if tabDivision % 2:
@@ -1574,6 +1703,7 @@ class TabbedBoxMaker(inkex.Effect):
                     )
                     + notDirY * firstVec
                 )
+
                 if dogbone and isMale:
                     vectorX -= dirX * halfkerf
                     vectorY -= dirY * halfkerf
@@ -1583,7 +1713,7 @@ class TabbedBoxMaker(inkex.Effect):
                                    kerf * notMale) + notDirX * firstVec
                 vectorY += dirY * (tabWidth + dogbone *
                                    kerf * notMale) + notDirY * firstVec
-                
+
             if dogbone and notMale:
                 vectorX -= dirX * halfkerf
                 vectorY -= dirY * halfkerf
@@ -1596,35 +1726,31 @@ class TabbedBoxMaker(inkex.Effect):
         # draw last for divider joints in side walls
         if isMale and numDividers > 0 and side.tab_symmetry == 0 and not isDivider:
             for dividerNumber in range(1, int(numDividers) + 1):
-                Dx = (
-                    vectorX
-                    + -dirY * dividerSpacing * dividerNumber
-                    + notDirX * halfkerf
-                    + dirX * side.dogbone * halfkerf
-                    - side.dogbone * first * dirX
-                )
-                Dy = (
-                    vectorY
-                    + dirX * dividerSpacing * dividerNumber
-                    - dividerEdgeOffsetY
-                    + notDirY * halfkerf
-                )
-                Dy += firstHoleLenY + notDirY * (thickness-self.kerf)
+                base_pos = (vectorX, vectorY)
+                cumulative_position = self.calculate_cumulative_position(dividerNumber, dividerSpacings, thickness)
+                divider_offset = (-dirY * cumulative_position, dirX * cumulative_position)
+                kerf_offset = (notDirX * halfkerf, notDirY * halfkerf)
+                edge_offset = (-dividerEdgeOffsetX, -dividerEdgeOffsetY)
 
-                h = inkex.Path()
-                h.append(Move(Dx, Dy))
-                Dx = Dx + firstHoleLenX
-                Dy = Dy - firstHoleLenY
-                h.append(Line(Dx, Dy))
-                Dx = Dx + notDirX * (thickness - self.kerf)
-                Dy = Dy - notDirY * (thickness - self.kerf)
-                h.append(Line(Dx, Dy))
-                Dx = Dx - firstHoleLenX
-                Dy = Dy + firstHoleLenY
-                h.append(Line(Dx, Dy))
-                Dx = Dx - notDirX * (thickness - self.kerf)
-                Dy = Dy + notDirY * (thickness - self.kerf)
-                h.append(Line(Dx, Dy))
+                start_pos = self._point_add(
+                            self._point_add(base_pos, self._point_add(divider_offset,
+                            self._point_add(kerf_offset, edge_offset))),
+                            (0, firstHoleLenY + notDirY * (thickness-self.kerf)))
+
+                h = []
+                h.append(Move(*start_pos))
+
+                hole_end = self._point_add(start_pos, (firstholelenX, -firstholelenY))
+                h.append(Line(*hole_end))
+
+                side_offset = self._point_add(hole_end, (notDirX * (thickness - kerf), -notDirY * (thickness - kerf)))
+                h.append(Line(*side_offset))
+
+                back_to_start = self._point_subtract(side_offset, (firstholelenX, -firstholelenY))
+                h.append(Line(*back_to_start))
+
+                final_pos = self._point_subtract(back_to_start, (notDirX * (thickness - kerf), -notDirY * (thickness - kerf)))
+                h.append(Line(*final_pos))
                 h.append(ZoneClose())
                 nodes.append(self.makeLine(h, "hole"))
 
@@ -1635,6 +1761,23 @@ class TabbedBoxMaker(inkex.Effect):
             node.path = node.path.translate(rootX, rootY)
 
         return nodes
+
+    def _point_add(self, p1: tuple[float, float], p2: tuple[float, float]) -> tuple[float, float]:
+        """Add two points/vectors"""
+        return (p1[0] + p2[0], p1[1] + p2[1])
+
+    def _point_subtract(self, p1: tuple[float, float], p2: tuple[float, float]) -> tuple[float, float]:
+        """Subtract two points/vectors"""
+        return (p1[0] - p2[0], p1[1] - p2[1])
+
+    def _point_scale(self, point: tuple[float, float], scale: float) -> tuple[float, float]:
+        """Scale a point/vector by a scalar"""
+        return (point[0] * scale, point[1] * scale)
+
+    def _get_perpendicular_flags(self, direction: tuple[float, float]) -> tuple[bool, bool]:
+        """Get perpendicular direction flags for easier axis selection"""
+        dirX, dirY = direction
+        return (dirX == 0, dirY == 0)  # (notDirX, notDirY)
 
 
 if __name__ == "__main__":
