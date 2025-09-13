@@ -537,7 +537,29 @@ cases = [
             "--keydiv=0",
             "--spacing=1",
         ],
-    }
+    },
+    {
+        "label": "custom_divider_spacing",
+        "args": [
+            "--unit=mm",
+            "--inside=1",
+            "--length=50",
+            "--width=50",
+            "--depth=20",
+            "--thickness=2",
+            "--style=1",
+            "--boxtype=2",
+            "--tab=3",
+            "--div_l=3",
+            "--div_w=4",
+            "--div_l_spacing=10;5;10",
+            "--div_w_spacing=10;5",
+            "--spacing=1",
+            "--keydiv=0",
+            "--hairline=1",
+            "--kerf=0.1",
+        ]
+    },
 ]
 
 expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected")
