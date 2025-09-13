@@ -1250,56 +1250,6 @@ class BoxMaker(inkex.Effect):
         
         return self.newLinePath(h, side.line_thickness, idPrefix="slot")
 
-    def create_final_divider_hole(
-        self,
-        side: Side,
-        vectorX: float,
-        vectorY: float,
-        dividerSpacing: float,
-        dividerNumber: int,
-        firstholelenX: float,
-        firstholelenY: float,
-        dividerEdgeOffsetY: float,
-        first: float
-    ) -> inkex.PathElement:
-        """Create final holes for divider joints in side walls"""
-        dirX, dirY = side.direction
-        notDirX = dirX == 0
-        notDirY = dirY == 0
-        halfkerf = side.kerf / 2
-        
-        Dx = (
-            vectorX
-            + -dirY * dividerSpacing * dividerNumber
-            + notDirX * halfkerf
-            + dirX * self.dogbone * halfkerf
-            - self.dogbone * first * dirX
-        )
-        Dy = (
-            vectorY
-            + dirX * dividerSpacing * dividerNumber
-            - dividerEdgeOffsetY
-            + notDirY * halfkerf
-        )
-        
-        h = inkex.Path()
-        h.append(Move(Dx, Dy))
-        Dx = Dx + firstholelenX
-        Dy = Dy + firstholelenY
-        h.append(Line(Dx, Dy))
-        Dx = Dx + notDirX * (side.thickness - side.kerf)
-        Dy = Dy + notDirY * (side.thickness - side.kerf)
-        h.append(Line(Dx, Dy))
-        Dx = Dx - firstholelenX
-        Dy = Dy - firstholelenY
-        h.append(Line(Dx, Dy))
-        Dx = Dx - notDirX * (side.thickness - side.kerf)
-        Dy = Dy - notDirY * (side.thickness - side.kerf)
-        h.append(Line(Dx, Dy))
-        h.append(ZoneClose())
-        
-        return self.newLinePath(h, side.line_thickness, idPrefix="hole")
-
     def render_side(
         self,
         group: inkex.Group,
@@ -1489,16 +1439,19 @@ class BoxMaker(inkex.Effect):
         sidePath.path = s
 
         # draw last for divider joints in side walls
-        if isTab and numDividers > 0 and side.tab_symmetry == 0 and not isDivider:
-            # BH: Find out if this is the right correction. Without it the with_dividers_keyed_all.svg test is broken
-            if firstholelenX == 0 and firstholelenY == 0:
-                firstholelenX += (holeLenX - thickness) if holeLenX else 0
-                firstholelenY += (holeLenY - thickness) if holeLenY else 0
-
+        if isTab and numDividers > 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC and not isDivider:
+            # For symmetric tabs, create the final holes at the end of the side
+            # This should use the same logic as regular holes but positioned at the end
+            
+            # Calculate the dimensions for the final gap/tab (same as first for symmetric)
+            w = gapWidth if isTab else tabWidth
+            finalHoleLenX = dirX * w  # No 'first' offset for final hole
+            finalHoleLenY = dirY * w  # No 'firstVec' offset for final hole
+            
             for dividerNumber in range(1, int(numDividers) + 1):
-                hole = self.create_final_divider_hole(
+                hole = self.create_divider_hole(
                     side, vectorX, vectorY, dividerSpacing, dividerNumber,
-                    firstholelenX, firstholelenY, dividerEdgeOffsetY, first
+                    finalHoleLenX, finalHoleLenY, secondVec, 0, 0, int(divisions)  # first=0, startOffsetX=0
                 )
                 nodes.append(hole)
 
