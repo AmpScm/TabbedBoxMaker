@@ -543,7 +543,6 @@ os.makedirs(os.path.join(actual_output_dir, 'p'), exist_ok=True)
 def run_one(name, args) -> tuple[str, str]:
     """Run one test case and return (output, expected) strings."""
 
-    print(args)
     outfh = io.BytesIO()
     expected_file = os.path.join(expected_output_dir, name + ".svg")
     expected = ""
@@ -575,17 +574,21 @@ def test_tabbed(case):
     args = case["args"]
 
     output, expected = run_one(name, args + ['--optimize=False'])
-    output_o, expected_o = run_one(os.path.join('o', name), args + ['--optimize=True'])
 
     # Compare outputs
     assert (
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
 
-    assert (
-        output_o == expected_o
-    ), f"Test case {name} failed - optimized output doesn't match expected"
+@pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
+def test_tabbed_optimized(case):
+    name = case["label"]
+    args = case["args"]
 
+    output, expected = run_one(os.path.join('o', name), args + ['--optimize=True'])
+    assert (
+        output == expected
+    ), f"Test case {name} failed - optimized output doesn't match expected"
 
 gen_args = [
     ('unit', ["mm", "in"]),
