@@ -228,7 +228,7 @@ class BoxMaker(inkex.Effect):
             type=int,
             dest="tabtype",
             default=0,
-            help="Tab type: regular or self.dogbone",
+            help="Tab type: regular or dogbone",
         )
         self.arg_parser.add_argument(
             "--dimpleheight",
@@ -236,7 +236,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="dimpleheight",
             default=0,
-            help="Tab Dimple Height",
+            help="Tab Dimple Height (float)",
         )
         self.arg_parser.add_argument(
             "--dimplelength",
@@ -244,7 +244,7 @@ class BoxMaker(inkex.Effect):
             type=float,
             dest="dimplelength",
             default=0,
-            help="Tab Dimple Tip Length",
+            help="Tab Dimple Tip Length (float)",
         )
         self.arg_parser.add_argument(
             "--hairline",
@@ -820,7 +820,7 @@ class BoxMaker(inkex.Effect):
                     subGroup = self.newGroup(idPrefix="xdivider")
                     self.svg.get_current_layer().add(subGroup)
                     groups.append(subGroup)
-                    x = n * (settings.spacing + settings.X)  # root x co-ord for piece
+                    x = n * (settings.spacing + settings.X) + settings.spacing # root x co-ord for piece
 
                     # Side A
                     self.render_side(
@@ -1147,6 +1147,159 @@ class BoxMaker(inkex.Effect):
         }
         return circle
 
+    def create_divider_hole(
+        self,
+        side: Side,
+        vectorX: float,
+        vectorY: float,
+        dividerSpacing: float,
+        dividerNumber: int,
+        holeLenX: float,
+        holeLenY: float,
+        secondVec: float,
+        first: float,
+        startOffsetX: float = 0,
+        tabDivision: int = 1
+    ) -> inkex.PathElement:
+        """Create a hole for divider tabs to key into side walls"""
+        dirX, dirY = side.direction
+        notDirX = dirX == 0
+        notDirY = dirY == 0
+        halfkerf = side.kerf / 2
+        
+        Dx = (
+            vectorX
+            + -dirY * dividerSpacing * dividerNumber
+            + (halfkerf if notDirX else 0)
+            + ((dirX * halfkerf - first * dirX) if self.dogbone else 0)
+        )
+        Dy = (
+            vectorY
+            + dirX * dividerSpacing * dividerNumber
+            - (halfkerf if notDirY else 0)
+            + ((dirY * halfkerf - first * dirY) if self.dogbone else 0)
+        )
+        
+        # Adjust for XY symmetric tab style
+        if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+            Dx += startOffsetX * side.thickness
+            
+        h = inkex.Path()
+        h.append(Move(Dx, Dy))
+        Dx = Dx + holeLenX
+        Dy = Dy + holeLenY
+        h.append(Line(Dx, Dy))
+        Dx = Dx + notDirX * (secondVec - side.kerf)
+        Dy = Dy + notDirY * (secondVec + side.kerf)
+        h.append(Line(Dx, Dy))
+        Dx = Dx - holeLenX
+        Dy = Dy - holeLenY
+        h.append(Line(Dx, Dy))
+        Dx = Dx - notDirX * (secondVec - side.kerf)
+        Dy = Dy - notDirY * (secondVec + side.kerf)
+        h.append(Line(Dx, Dy))
+        h.append(ZoneClose())
+        
+        return self.newLinePath(h, side.line_thickness, idPrefix="hole")
+
+    def create_divider_slot(
+        self,
+        side: Side,
+        vectorX: float,
+        vectorY: float,
+        dividerSpacing: float,
+        dividerNumber: int,
+        dividerEdgeOffsetX: float,
+        dividerEdgeOffsetY: float,
+        first: float
+    ) -> inkex.PathElement:
+        """Create slots for dividers to slot into each other"""
+        dirX, dirY = side.direction
+        notDirX = dirX == 0
+        notDirY = dirY == 0
+        halfkerf = side.kerf / 2
+        
+        Dx = (
+            vectorX
+            + -dirY * dividerSpacing * dividerNumber
+            - dividerEdgeOffsetX
+            + notDirX * halfkerf
+        )
+        Dy = (
+            vectorY
+            + dirX * dividerSpacing * dividerNumber
+            - dividerEdgeOffsetY
+            + notDirY * halfkerf
+        )
+        
+        h = inkex.Path()
+        h.append(Move(Dx, Dy))
+        Dx = Dx + dirX * (first + side.length / 2)
+        Dy = Dy + dirY * (first + side.length / 2)
+        h.append(Line(Dx, Dy))
+        Dx = Dx + notDirX * (side.thickness - side.kerf)
+        Dy = Dy + notDirY * (side.thickness - side.kerf)
+        h.append(Line(Dx, Dy))
+        Dx = Dx - dirX * (first + side.length / 2)
+        Dy = Dy - dirY * (first + side.length / 2)
+        h.append(Line(Dx, Dy))
+        Dx = Dx - notDirX * (side.thickness - side.kerf)
+        Dy = Dy - notDirY * (side.thickness - side.kerf)
+        h.append(Line(Dx, Dy))
+        h.append(ZoneClose())
+        
+        return self.newLinePath(h, side.line_thickness, idPrefix="slot")
+
+    def create_final_divider_hole(
+        self,
+        side: Side,
+        vectorX: float,
+        vectorY: float,
+        dividerSpacing: float,
+        dividerNumber: int,
+        firstholelenX: float,
+        firstholelenY: float,
+        dividerEdgeOffsetY: float,
+        first: float
+    ) -> inkex.PathElement:
+        """Create final holes for divider joints in side walls"""
+        dirX, dirY = side.direction
+        notDirX = dirX == 0
+        notDirY = dirY == 0
+        halfkerf = side.kerf / 2
+        
+        Dx = (
+            vectorX
+            + -dirY * dividerSpacing * dividerNumber
+            + notDirX * halfkerf
+            + dirX * self.dogbone * halfkerf
+            - self.dogbone * first * dirX
+        )
+        Dy = (
+            vectorY
+            + dirX * dividerSpacing * dividerNumber
+            - dividerEdgeOffsetY
+            + notDirY * halfkerf
+        )
+        
+        h = inkex.Path()
+        h.append(Move(Dx, Dy))
+        Dx = Dx + firstholelenX
+        Dy = Dy + firstholelenY
+        h.append(Line(Dx, Dy))
+        Dx = Dx + notDirX * (side.thickness - side.kerf)
+        Dy = Dy + notDirY * (side.thickness - side.kerf)
+        h.append(Line(Dx, Dy))
+        Dx = Dx - firstholelenX
+        Dy = Dy - firstholelenY
+        h.append(Line(Dx, Dy))
+        Dx = Dx - notDirX * (side.thickness - side.kerf)
+        Dy = Dy - notDirY * (side.thickness - side.kerf)
+        h.append(Line(Dx, Dy))
+        h.append(ZoneClose())
+        
+        return self.newLinePath(h, side.line_thickness, idPrefix="hole")
+
     def render_side(
         self,
         group: inkex.Group,
@@ -1251,69 +1404,21 @@ class BoxMaker(inkex.Effect):
                     firstholelenX = holeLenX
                     firstholelenY = holeLenY
                 for dividerNumber in range(1, int(numDividers) + 1):
-                    Dx = (
-                        vectorX
-                        + -dirY * dividerSpacing * dividerNumber
-                        + (halfkerf if notDirX else 0)
-                        + ((dirX * halfkerf - first * dirX) if self.dogbone else 0)
+                    hole = self.create_divider_hole(
+                        side, vectorX, vectorY, dividerSpacing, dividerNumber,
+                        holeLenX, holeLenY, secondVec, first, startOffsetX, tabDivision
                     )
-                    Dy = (
-                        vectorY
-                        + dirX * dividerSpacing * dividerNumber
-                        - (halfkerf if notDirY else 0)
-                        + ((dirY * halfkerf - first * dirY) if self.dogbone else 0)
-                    )
-                    if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
-                        Dx += startOffsetX * thickness
-                    h = []
-                    h.append(Move(Dx, Dy))
-                    Dx = Dx + holeLenX
-                    Dy = Dy + holeLenY
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx + notDirX * (secondVec - kerf)
-                    Dy = Dy + notDirY * (secondVec + kerf)
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx - holeLenX
-                    Dy = Dy - holeLenY
-                    h.append(Line(Dx, Dy))
-                    Dx = Dx - notDirX * (secondVec - kerf)
-                    Dy = Dy - notDirY * (secondVec + kerf)
-                    h.append(Line(Dx, Dy))
-                    h.append(ZoneClose())
-                    nodes.append(self.newLinePath(h, line_thickness, idPrefix="hole"))
+                    nodes.append(hole)
             if tabDivision % 2:
                 if (
                     tabDivision == 1 and numDividers > 0 and isDivider
                 ):  # draw slots for dividers to slot into each other
                     for dividerNumber in range(1, int(numDividers) + 1):
-                        Dx = (
-                            vectorX
-                            + -dirY * dividerSpacing * dividerNumber
-                            - dividerEdgeOffsetX
-                            + notDirX * halfkerf
+                        slot = self.create_divider_slot(
+                            side, vectorX, vectorY, dividerSpacing, dividerNumber,
+                            dividerEdgeOffsetX, dividerEdgeOffsetY, first
                         )
-                        Dy = (
-                            vectorY
-                            + dirX * dividerSpacing * dividerNumber
-                            - dividerEdgeOffsetY
-                            + notDirY * halfkerf
-                        )
-                        h = []
-                        h.append(Move(Dx, Dy))
-                        Dx = Dx + dirX * (first + length / 2)
-                        Dy = Dy + dirY * (first + length / 2)
-                        h.append(Line(Dx, Dy))
-                        Dx = Dx + notDirX * (thickness - kerf)
-                        Dy = Dy + notDirY * (thickness - kerf)
-                        h.append(Line(Dx, Dy))
-                        Dx = Dx - dirX * (first + length / 2)
-                        Dy = Dy - dirY * (first + length / 2)
-                        h.append(Line(Dx, Dy))
-                        Dx = Dx - notDirX * (thickness - kerf)
-                        Dy = Dy - notDirY * (thickness - kerf)
-                        h.append(Line(Dx, Dy))
-                        h.append(ZoneClose())
-                        nodes.append(self.newLinePath(h, line_thickness, idPrefix="slot"))
+                        nodes.append(slot)
                 # draw the gap
                 vectorX += (
                     dirX
@@ -1391,35 +1496,11 @@ class BoxMaker(inkex.Effect):
                 firstholelenY += (holeLenY - thickness) if holeLenY else 0
 
             for dividerNumber in range(1, int(numDividers) + 1):
-                Dx = (
-                    vectorX
-                    + -dirY * dividerSpacing * dividerNumber
-                    + notDirX * halfkerf
-                    + dirX * self.dogbone * halfkerf
-                    - self.dogbone * first * dirX
+                hole = self.create_final_divider_hole(
+                    side, vectorX, vectorY, dividerSpacing, dividerNumber,
+                    firstholelenX, firstholelenY, dividerEdgeOffsetY, first
                 )
-                Dy = (
-                    vectorY
-                    + dirX * dividerSpacing * dividerNumber
-                    - dividerEdgeOffsetY
-                    + notDirY * halfkerf
-                )
-                h = []
-                h.append(Move(Dx, Dy))
-                Dx = Dx + firstholelenX
-                Dy = Dy + firstholelenY
-                h.append(Line(Dx, Dy))
-                Dx = Dx + notDirX * (thickness - kerf)
-                Dy = Dy + notDirY * (thickness - kerf)
-                h.append(Line(Dx, Dy))
-                Dx = Dx - firstholelenX
-                Dy = Dy - firstholelenY
-                h.append(Line(Dx, Dy))
-                Dx = Dx - notDirX * (thickness - kerf)
-                Dy = Dy - notDirY * (thickness - kerf)
-                h.append(Line(Dx, Dy))
-                h.append(ZoneClose())
-                nodes.append(self.newLinePath(h, line_thickness, idPrefix="hole"))
+                nodes.append(hole)
 
         rootX, rootY = root
         rootX += root_offs[0]
