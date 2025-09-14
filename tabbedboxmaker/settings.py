@@ -130,15 +130,15 @@ class Side:
         halfkerf = settings.kerf / 2
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            self.divisions = (length - 2 * settings.thickness) // self.tab_width
+            self.divisions = int((length - 2 * settings.thickness) / self.tab_width)
             if self.divisions % 2:
                 self.divisions += 1  # make divs even
-            tabs = self.divisions / 2  # tabs for side
+            tabs = self.divisions // 2  # tabs for side
         else:
-            self.divisions = length // self.tab_width
+            self.divisions = int(length // self.tab_width)
             if not self.divisions % 2:
                 self.divisions -= 1  # make divs odd
-            tabs = (self.divisions - 1) / 2  # tabs for side
+            tabs = (self.divisions - 1) // 2  # tabs for side
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             self.gap_width = self.tab_width = (length - 2 * settings.thickness) / self.divisions
