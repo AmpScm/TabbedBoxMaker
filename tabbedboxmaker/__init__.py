@@ -882,8 +882,6 @@ class TabbedBoxMaker(inkex.Effect):
             y = (
                 ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
             )  # root y co-ord for piece
-            dx = piece.dx
-            dy = piece.dy
             # Use new sides list
             sides = piece.sides
             # Sides: [A, B, C, D]
@@ -904,6 +902,9 @@ class TabbedBoxMaker(inkex.Effect):
 
             if settings.schroff and railholes and config.schroff_settings:
                 schroff = config.schroff_settings
+                dx = piece.dx
+                dy = piece.dy
+
                 log(f"rail holes enabled on piece {idx} at ({x + settings.thickness}, {y + settings.thickness})")
                 log(f"abcd = ({aSide.is_male},{bSide.is_male},{cSide.is_male},{dSide.is_male})")
                 log(f"dxdy = ({dx},{dy})")
@@ -984,92 +985,92 @@ class TabbedBoxMaker(inkex.Effect):
 
             if idx == 0:
                 # remove tabs from dividers if not required
-                aSide, bSide, cSide, dSide = deepcopy([aSide, bSide, cSide, dSide])
+                aSideX, bSideX, cSideX, dSideX = deepcopy([aSide, bSide, cSide, dSide])
                 if not self.keydivfloor:
-                    aSide.is_male = cSide.is_male = 1
-                    aSide.has_tabs = cSide.has_tabs = 0
+                    aSideX.is_male = cSideX.is_male = 1
+                    aSideX.has_tabs = cSideX.has_tabs = 0
                 if not self.keydivwalls:
-                    bSide.is_male = dSide.is_male = 1
-                    bSide.has_tabs = dSide.has_tabs = 0
+                    bSideX.is_male = dSideX.is_male = 1
+                    bSideX.has_tabs = dSideX.has_tabs = 0
 
-                y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z  # root y co-ord for piece
+                divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z  # root y co-ord for piece
                 for n in range(0, settings.div_x):  # generate X dividers
                     subGroup = self.makeGroup('xdivider')
                     groups.append(subGroup)
-                    x = n * (settings.spacing + settings.X)  # root x co-ord for piece
+                    divider_x = n * (settings.spacing + settings.X)  # root x co-ord for piece
 
                     # Side A
                     self.render_side(
                         subGroup,
-                        (x, y),
-                        aSide,
+                        (divider_x, divider_y),
+                        aSideX,
                         True
                     )
                     # Side B
                     self.render_side(
                         subGroup,
-                        (x, y),
-                        bSide,
+                        (divider_x, divider_y),
+                        bSideX,
                         True,
                         settings.div_y * divider_x_holes,
                     )
                     # Side C
                     self.render_side(
                         subGroup,
-                        (x, y),
-                        cSide,
+                        (divider_x, divider_y),
+                        cSideX,
                         True,
                     )
                     # Side D
                     self.render_side(
                         subGroup,
-                        (x, y),
-                        dSide,
+                        (divider_x, divider_y),
+                        dSideX,
                         True
                     )
             elif idx == 1:
                 # remove tabs from dividers if not required
-                aSide, bSide, cSide, dSide = deepcopy([aSide, bSide, cSide, dSide])
+                aSideX, bSideX, cSideX, dSideX = deepcopy([aSide, bSide, cSide, dSide])
                 if not self.keydivwalls:
-                    aSide.is_male = cSide.is_male = 1
-                    aSide.has_tabs = cSide.has_tabs = 0
+                    aSideX.is_male = cSideX.is_male = 1
+                    aSideX.has_tabs = cSideX.has_tabs = 0
                 if not self.keydivfloor:
-                    bSide.is_male = dSide.is_male = 1
-                    bSide.has_tabs = dSide.has_tabs = 0
+                    bSideX.is_male = dSideX.is_male = 1
+                    bSideX.has_tabs = dSideX.has_tabs = 0
 
-                y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z  # root y co-ord for piece
+                divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z  # root y co-ord for piece
                 for n in range(0, settings.div_y):  # generate Y dividers
                     subGroup = self.makeGroup("ydivider")
                     self.svg.get_current_layer().add(subGroup)
                     groups.append(subGroup)
-                    x = n * (settings.spacing + settings.Z)  # root x co-ord for piece
+                    divider_x = n * (settings.spacing + settings.Z)  # root x co-ord for piece
                     # Side A
                     self.render_side(
                         subGroup,
-                        (x, y),
-                        aSide,
+                        (divider_x, divider_y),
+                        aSideX,
                         True,
                         settings.div_x * divider_y_holes,
                     )
                     # Side B
                     self.render_side(
                         subGroup,
-                        (x, y),
-                        bSide,
+                        (divider_x, divider_y),
+                        bSideX,
                         True
                     )
                     # Side C
                     self.render_side(
                         subGroup,
-                        (x, y),
-                        cSide,
+                        (divider_x, divider_y),
+                        cSideX,
                         True
                     )
                     # Side D
                     self.render_side(
                         subGroup,
-                        (x, y),
-                        dSide,
+                        (divider_x, divider_y),
+                        dSideX,
                         True
                     )
 
@@ -1501,6 +1502,10 @@ class TabbedBoxMaker(inkex.Effect):
         }
         root_offs, startOffset = offs_cases[side.name]
 
+        #if not side.has_tabs and side.is_male:
+        #if not side.has_tabs and side.is_male:
+        #    startOffset = (0, 0)
+
         startOffsetX, startOffsetY = startOffset
         length = side.length
 
@@ -1618,6 +1623,7 @@ class TabbedBoxMaker(inkex.Effect):
         firstVec = 0
         secondVec = tabVec
         notDirX, notDirY = self._get_perpendicular_flags(direction)
+
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             dividerEdgeOffsetX = dirX * thickness
             dividerEdgeOffsetY = thickness
@@ -1632,10 +1638,6 @@ class TabbedBoxMaker(inkex.Effect):
         w = gapWidth if isMale else tabWidth
         if side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
             w -= startOffsetX * thickness
-        holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
-        holeLenY = dirY * (w + first) + (firstVec if notDirY else 0)
-        firstholelenX = holeLenX
-        firstholelenY = holeLenY
 
         # generate line as tab or hole using:
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
@@ -1740,13 +1742,13 @@ class TabbedBoxMaker(inkex.Effect):
                 h = []
                 h.append(Move(*start_pos))
 
-                hole_end = self._point_add(start_pos, (firstholelenX, -firstholelenY))
+                hole_end = self._point_add(start_pos, (firstHoleLenX, -firstHoleLenY))
                 h.append(Line(*hole_end))
 
                 side_offset = self._point_add(hole_end, (notDirX * (thickness - kerf), -notDirY * (thickness - kerf)))
                 h.append(Line(*side_offset))
 
-                back_to_start = self._point_subtract(side_offset, (firstholelenX, -firstholelenY))
+                back_to_start = self._point_subtract(side_offset, (firstHoleLenX, -firstHoleLenY))
                 h.append(Line(*back_to_start))
 
                 final_pos = self._point_subtract(back_to_start, (notDirX * (thickness - kerf), -notDirY * (thickness - kerf)))
