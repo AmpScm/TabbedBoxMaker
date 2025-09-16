@@ -1577,6 +1577,9 @@ class TabbedBoxMaker(inkex.Effect):
     ) -> list[inkex.PathElement]:
         """Draw tabs or holes as required"""
 
+        if numDividers == 0 and not isDivider:
+            return []
+
         dividerSpacings = side.divider_spacings
 
 
@@ -1623,13 +1626,9 @@ class TabbedBoxMaker(inkex.Effect):
         notDirX, notDirY = self._get_perpendicular_flags(direction)
 
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            dividerEdgeOffsetX = dirX * thickness
-            dividerEdgeOffsetY = thickness
             vectorX = (startOffsetX if startOffsetX else dirX) * thickness
             vectorY = (startOffsetY if startOffsetY else dirY) * thickness
         else:
-            dividerEdgeOffsetX = dirY * thickness
-            dividerEdgeOffsetY = dirX * thickness
             vectorX = (startOffsetX * thickness) if notDirX else 0
             vectorY = (startOffsetY * thickness) if notDirY else 0
 
@@ -1641,7 +1640,7 @@ class TabbedBoxMaker(inkex.Effect):
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
         firstHole = True
-        for tabDivision in range(1, divisions):
+        for tabDivision in range(1, divisions+1):
             # draw holes for divider tabs to key into side walls
             if (((tabDivision % 2) > 0) != (not isMale)) and numDividers > 0 and not isDivider:
                 w = gapWidth if isMale else tabWidth
@@ -1653,6 +1652,9 @@ class TabbedBoxMaker(inkex.Effect):
                     firstHoleLenX = holeLenX
                     firstHoleLenY = holeLenY
                     firstHole = False
+                if (tabDivision == 1 or tabDivision >= divisions) and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+                    holeLenX = firstHoleLenX
+                    holeLenY = firstHoleLenY
                 for dividerNumber in range(1, int(numDividers) + 1):
                     base_pos = (vectorX, vectorY)
                     cumulative_position = self.calculate_cumulative_position(dividerNumber, dividerSpacings, thickness)
@@ -1722,37 +1724,6 @@ class TabbedBoxMaker(inkex.Effect):
 
             (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
             first = 0
-
-        # draw last for divider joints in side walls
-        if isMale and numDividers > 0 and side.tab_symmetry == 0 and not isDivider:
-            for dividerNumber in range(1, int(numDividers) + 1):
-                base_pos = (vectorX, vectorY)
-                cumulative_position = self.calculate_cumulative_position(dividerNumber, dividerSpacings, thickness)
-                divider_offset = (-dirY * cumulative_position, dirX * cumulative_position)
-                kerf_offset = (notDirX * halfkerf, notDirY * halfkerf)
-                edge_offset = (-dividerEdgeOffsetX, -dividerEdgeOffsetY)
-
-                start_pos = self._point_add(
-                            self._point_add(base_pos, self._point_add(divider_offset,
-                            self._point_add(kerf_offset, edge_offset))),
-                            (0, firstHoleLenY + notDirY * (thickness-self.kerf)))
-
-                h = []
-                h.append(Move(*start_pos))
-
-                hole_end = self._point_add(start_pos, (firstHoleLenX, -firstHoleLenY))
-                h.append(Line(*hole_end))
-
-                side_offset = self._point_add(hole_end, (notDirX * (thickness - kerf), -notDirY * (thickness - kerf)))
-                h.append(Line(*side_offset))
-
-                back_to_start = self._point_subtract(side_offset, (firstHoleLenX, -firstHoleLenY))
-                h.append(Line(*back_to_start))
-
-                final_pos = self._point_subtract(back_to_start, (notDirX * (thickness - kerf), -notDirY * (thickness - kerf)))
-                h.append(Line(*final_pos))
-                h.append(ZoneClose())
-                nodes.append(self.makeLine(h, "hole"))
 
         rootX, rootY = root
         rootX += root_offs[0]
