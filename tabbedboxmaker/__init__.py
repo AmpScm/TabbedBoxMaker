@@ -1337,11 +1337,9 @@ class TabbedBoxMaker(inkex.Effect):
 
         kerf = side.kerf
         halfkerf = kerf / 2
-        line_thickness = side.line_thickness
         dogbone = side.dogbone
 
         sidePath = self.makeLine('', "side")
-        nodes = [sidePath]
 
         divisions = side.divisions
         gapWidth = side.gap_width
@@ -1643,7 +1641,7 @@ class TabbedBoxMaker(inkex.Effect):
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
         firstHole = True
-        for tabDivision in range(1, int(divisions)):
+        for tabDivision in range(1, divisions):
             # draw holes for divider tabs to key into side walls
             if (((tabDivision % 2) > 0) != (not isMale)) and numDividers > 0 and not isDivider:
                 w = gapWidth if isMale else tabWidth
