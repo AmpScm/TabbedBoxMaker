@@ -536,7 +536,7 @@ class TabbedBoxMaker(inkex.Effect):
         dogbone = self.options.tabtype == 1
         layout = Layout(self.options.style)
         spacing = self.svg.unittouu(str(self.options.spacing) + unit)
-        boxtype = BoxType(self.options.boxtype)
+        box_type = BoxType(self.options.boxtype)
         div_x = self.options.div_x
         div_y = self.options.div_y
         keydivwalls = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.WALLS]
@@ -544,10 +544,33 @@ class TabbedBoxMaker(inkex.Effect):
         initOffsetX = 0
         initOffsetY = 0
 
+
+        # For code spacing consistency, we use two-character abbreviations for the six box faces,
+        # where each abbreviation is the first and last letter of the face name:
+        # tp=top, bm=bottom, ft=front, bk=back, lt=left, rt=right
+        # Determine which faces the box has based on the box type
+        pieceTypes = [PieceType.Back, PieceType.Left, PieceType.Bottom, PieceType.Right, PieceType.Top, PieceType.Front]
+        if box_type == BoxType.ONE_SIDE_OPEN:
+            pieceTypes = [PieceType.Bottom, PieceType.Front, PieceType.Back, PieceType.Left, PieceType.Right]
+        elif box_type == BoxType.TWO_SIDES_OPEN:
+            pieceTypes = [PieceType.Bottom, PieceType.Back, PieceType.Left, PieceType.Right]
+        elif box_type == BoxType.THREE_SIDES_OPEN:
+            pieceTypes = [PieceType.Bottom,PieceType.Back, PieceType.Left]
+        elif box_type == BoxType.OPPOSITE_ENDS_OPEN:
+            pieceTypes = [PieceType.Back, PieceType.Left, PieceType.Right, PieceType.Front]
+        elif box_type == BoxType.TWO_PANELS_ONLY:
+            pieceTypes = [PieceType.Left, PieceType.Bottom]
+
         if inside:  # if inside dimension selected correct values to outside dimension
-            X += thickness * 2
-            Y += thickness * 2
-            Z += thickness * 2
+            inside_X, inside_Y, inside_Z = X, Y, Z
+
+            X += thickness * ((PieceType.Left in pieceTypes) + (PieceType.Right in pieceTypes))
+            Y += thickness * ((PieceType.Front in pieceTypes) + (PieceType.Back  in pieceTypes))
+            Z += thickness * ((PieceType.Top  in pieceTypes) + (PieceType.Bottom in pieceTypes))
+        else:
+            inside_X = X - thickness * ((PieceType.Left in pieceTypes) + (PieceType.Right in pieceTypes))
+            inside_Y = Y - thickness * ((PieceType.Front in pieceTypes) + (PieceType.Back  in pieceTypes))
+            inside_Z = Z - thickness * ((PieceType.Top  in pieceTypes) + (PieceType.Bottom in pieceTypes))
 
         # Parse custom divider spacing using pure user dimensions (without kerf)
         div_x_spacing = self.parse_divider_spacing(
@@ -559,12 +582,14 @@ class TabbedBoxMaker(inkex.Effect):
         ) if div_y > 0 else []
 
         return BoxSettings(
-            X=X, Y=Y, Z=Z, thickness=thickness, tab_width=tab_width, equal_tabs=equal_tabs,
+            X=X, Y=Y, Z=Z, 
+            inside_X=inside_X, inside_Y=inside_Y, inside_Z=inside_Z,
+            thickness=thickness, tab_width=tab_width, equal_tabs=equal_tabs,
             tab_symmetry=tabSymmetry, dimple_height=dimpleHeight, dimple_length=dimpleLength,
-            dogbone=dogbone, layout=layout, spacing=spacing, boxtype=boxtype,
+            dogbone=dogbone, layout=layout, spacing=spacing, boxtype=box_type,
             div_x=div_x, div_y=div_y, div_x_spacing=div_x_spacing, div_y_spacing=div_y_spacing,
             keydiv_walls=keydivwalls, keydiv_floor=keydivfloor,
-            initOffsetX=initOffsetX, initOffsetY=initOffsetY, inside=inside,
+            initOffsetX=initOffsetX, initOffsetY=initOffsetY,
             hairline=hairline, schroff=schroff, kerf=kerf, line_thickness=line_thickness, unit=unit, rows=rows,
             rail_height=rail_height, row_spacing=row_spacing, rail_mount_depth=rail_mount_depth,
             rail_mount_centre_offset=rail_mount_centre_offset, rail_mount_radius=rail_mount_radius
@@ -626,6 +651,21 @@ class TabbedBoxMaker(inkex.Effect):
 
         faces = BoxFaces(hasTp=hasTp, hasBm=hasBm, hasFt=hasFt, hasBk=hasBk, hasLt=hasLt, hasRt=hasRt)
 
+        pieceTypes : list[PieceType] = []
+
+        if hasTp:
+            pieceTypes.append(PieceType.Top)
+        if hasBm:
+            pieceTypes.append(PieceType.Bottom)
+        if hasFt:
+            pieceTypes.append(PieceType.Front)
+        if hasBk:
+            pieceTypes.append(PieceType.Back)
+        if hasLt:
+            pieceTypes.append(PieceType.Left)
+        if hasRt:
+            pieceTypes.append(PieceType.Right)
+
         # Determine where the tabs go based on the tab style
         if settings.tab_symmetry == TabSymmetry.ANTISYMMETRIC:  # deprecated
             tpTabInfo = 0b0110
@@ -651,10 +691,7 @@ class TabbedBoxMaker(inkex.Effect):
 
         def fixTabBits(tabbed : bool, tabInfo : int, bit : int) -> tuple[bool, int]:
             newTabbed = tabbed & ~bit
-            if settings.inside:
-                newTabInfo = tabInfo | bit  # set bit to 1 to use tab base line
-            else:
-                newTabInfo = tabInfo & ~bit  # set bit to 0 to use tab tip line
+            newTabInfo = tabInfo & ~bit  # set bit to 0 to use tab tip line
             return newTabbed, newTabInfo
 
         # Update the tab bits based on which sides of the box don't exist
@@ -1462,8 +1499,8 @@ class TabbedBoxMaker(inkex.Effect):
             vectorX = (startOffsetX * thickness) if notDirX else 0
             vectorY = (startOffsetY * thickness) if notDirY else 0
 
-            dividerEdgeOffsetX = dirY * thickness
-            dividerEdgeOffsetY = dirX * thickness
+            dividerEdgeOffsetX = dirY * thickness #* side.prev.has_tabs
+            dividerEdgeOffsetY = dirX * thickness #* side.prev.has_tabs
 
         for dividerNumber in range(numDividers):
             base_pos = (vectorX, vectorY)
