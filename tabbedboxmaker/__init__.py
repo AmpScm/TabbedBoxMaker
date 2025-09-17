@@ -470,7 +470,7 @@ class TabbedBoxMaker(inkex.Effect):
 
     def parse_options_to_settings(self) -> BoxSettings:
         """Parse command line options into a BoxSettings object"""
-    
+
         # Get access to main SVG document element and get its dimensions.
         svg = self.document.getroot()
 
@@ -784,6 +784,46 @@ class TabbedBoxMaker(inkex.Effect):
                 (s, x, y, z) = aa[ix]
                 aa[ix] = (s - 1, x - dx, y - dy, z - dz)
 
+        def add_xdividers():
+            if settings.div_x > 0:
+                divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z  # root y co-ord for piece
+                for n in range(0, settings.div_x):  # generate X dividers
+                    p = PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.DividerX, settings)
+                    # remove tabs from dividers if not required
+                    if not settings.keydiv_floor:
+                        p.sides[0].is_male = p.sides[2].is_male = True # sides A and C
+                        p.sides[0].has_tabs = p.sides[2].has_tabs = False
+                    if not settings.keydiv_walls:
+                        p.sides[1].is_male = p.sides[3].is_male = True # sides B and D
+                        p.sides[1].has_tabs = p.sides[3].has_tabs = False
+
+                    p.sides[1].num_dividers = settings.div_y * (settings.div_x > 0)
+
+                    divider_x = n * (settings.spacing + settings.X)  # root x co-ord for piece
+                    p.base = (divider_x, divider_y)
+                    pieces_list.append(p)
+
+        def add_ydividers():
+            if settings.div_y > 0:
+                divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z  # root y co-ord for piece
+                for n in range(0, settings.div_y):  # generate Y dividers
+
+                    p = PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.DividerY, settings)
+
+                    # remove tabs from dividers if not required
+                    if not settings.keydiv_walls:
+                        p.sides[0].is_male = p.sides[2].is_male = True # sides A and C
+                        p.sides[0].has_tabs = p.sides[2].has_tabs = False
+                    if not settings.keydiv_floor:
+                        p.sides[1].is_male = p.sides[3].is_male = True # sides B and D
+                        p.sides[1].has_tabs = p.sides[3].has_tabs = False
+
+                    p.sides[0].num_dividers = settings.div_x * (settings.div_x > 0)
+
+                    divider_x = n * (settings.spacing + settings.Z)  # root x co-ord for piece
+                    p.base = (divider_x, divider_y)
+                    pieces_list.append(p)
+
         # note first two pieces in each set are the X-divider template and
         # Y-divider template respectively
         pieces_list : list[PieceSettings] = []
@@ -797,28 +837,32 @@ class TabbedBoxMaker(inkex.Effect):
             if not hasRt:
                 reduceOffsets(cc, 2, 0, 0, 1)
             if hasBk:
-                pieces_list.append(PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back))
+                pieces_list.append(PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back, settings))
+            add_xdividers()
             if hasLt:
-                pieces_list.append(PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left))
+                pieces_list.append(PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left, settings))
+            add_ydividers()
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom))
+                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom, settings))
             if hasRt:
-                pieces_list.append(PieceSettings(cc[2], rr[1], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace), rtFace, PieceType.Right))
+                pieces_list.append(PieceSettings(cc[2], rr[1], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace), rtFace, PieceType.Right, settings))
             if hasTp:
-                pieces_list.append(PieceSettings(cc[3], rr[1], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace), tpFace, PieceType.Top))
+                pieces_list.append(PieceSettings(cc[3], rr[1], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace), tpFace, PieceType.Top, settings))
             if hasFt:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace), ftFace, PieceType.Front))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace), ftFace, PieceType.Front, settings))
         elif settings.layout == Layout.THREE_PIECE:  # 3 Piece Layout
-            rr = deepcopy([row0, row1y])
+            rr = deepcopy([row0, row1y, row2])
             cc = deepcopy([col0, col1z])
             if hasBk:
-                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back))
+                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back, settings))
+            add_xdividers()
             if hasLt:
-                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left))
+                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left, settings))
+            add_ydividers()
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom, settings))
         elif settings.layout == Layout.INLINE_COMPACT:  # Inline(compact) Layout
-            rr = deepcopy([row0])
+            rr = deepcopy([row0, row1y, row2])
             cc = deepcopy([col0, col1x, col2xx, col3xxz, col4, col5])
             if not hasTp:
                 # remove col0, shift others left by X
@@ -832,17 +876,19 @@ class TabbedBoxMaker(inkex.Effect):
             if not hasBk:
                 reduceOffsets(cc, 4, 1, 0, 0)
             if hasBk:
-                pieces_list.append(PieceSettings(cc[4], rr[0], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back))
+                pieces_list.append(PieceSettings(cc[4], rr[0], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back, settings))
+            add_xdividers()
             if hasLt:
-                pieces_list.append(PieceSettings(cc[2], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left))
+                pieces_list.append(PieceSettings(cc[2], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left, settings))
+            add_ydividers()
             if hasTp:
-                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace), tpFace, PieceType.Top))
+                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace), tpFace, PieceType.Top, settings))
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom, settings))
             if hasRt:
-                pieces_list.append(PieceSettings(cc[3], rr[0], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace), rtFace, PieceType.Right))
+                pieces_list.append(PieceSettings(cc[3], rr[0], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace), rtFace, PieceType.Right, settings))
             if hasFt:
-                pieces_list.append(PieceSettings(cc[5], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace), ftFace, PieceType.Front))
+                pieces_list.append(PieceSettings(cc[5], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace), ftFace, PieceType.Front, settings))
 
         # Handle Schroff settings if needed
         schroff_settings = None
@@ -867,21 +913,7 @@ class TabbedBoxMaker(inkex.Effect):
     def generate_pieces(self, config: BoxConfiguration, settings: BoxSettings) -> None:
         """Generate and draw all pieces based on the configuration"""
 
-        groups = []
-
-        # For divider intersections: X dividers need holes for Y dividers, Y dividers need holes for X dividers
-        divider_x_holes = settings.div_y > 0  # X dividers need holes if there are Y dividers
-        divider_y_holes = settings.div_x > 0  # Y dividers need holes if there are X dividers
-
         for piece in config.pieces:  # generate and draw each piece of the box
-            (xs, xx, xy, xz) = piece.rootx
-            (ys, yx, yy, yz) = piece.rooty
-            x = (
-                xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
-            )  # root x co-ord for piece
-            y = (
-                ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
-            )  # root y co-ord for piece
             # Use new sides list
             sides = piece.sides
             # Sides: [A, B, C, D]
@@ -894,13 +926,15 @@ class TabbedBoxMaker(inkex.Effect):
             wall = faceType != FaceType.XY
             floor = faceType == FaceType.XY
 
-            railholes = faceType == FaceType.ZY
+            name = "xdivider" if piece.pieceType == PieceType.DividerX else ("ydivider" if piece.pieceType == PieceType.DividerY else "piece")
 
-            group = self.makeGroup("piece")
-            self.svg.get_current_layer().add(group)
-            groups = [group]
+            railholes = faceType == FaceType.ZY and name == "piece"
+
+            group = self.makeGroup(name)
 
             if settings.schroff and railholes and config.schroff_settings:
+                (x, y) = piece.base
+
                 schroff = config.schroff_settings
                 dx = piece.dx
                 dy = piece.dy
@@ -949,134 +983,39 @@ class TabbedBoxMaker(inkex.Effect):
             # Side A
             self.render_side(
                 group,
-                (x, y),
+                piece,
                 aSide,
-                False,
-                ((self.keydivfloor or wall) and (self.keydivwalls or floor) and aSide.has_tabs and yholes)
+                ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and aSide.has_tabs and yholes)
                 * settings.div_x,
             )
             # Side B
             self.render_side(
                 group,
-                (x, y),
+                piece,
                 bSide,
-                False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bSide.has_tabs and xholes)
                 * settings.div_y,
             )
             # Side C
             self.render_side(
                 group,
-                (x, y),
+                piece,
                 cSide,
-                False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aSide.has_tabs and cSide.has_tabs and yholes)
                 * settings.div_x,
             )
             # Side D
             self.render_side(
                 group,
-                (x, y),
+                piece,
                 dSide,
-                False,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bSide.has_tabs and dSide.has_tabs and xholes)
                 * settings.div_y,
             )
 
-            if piece.pieceType == PieceType.Back:
-                # remove tabs from dividers if not required
-                aSideX, bSideX, cSideX, dSideX = deepcopy([aSide, bSide, cSide, dSide])
-                if not self.keydivfloor:
-                    aSideX.is_male = cSideX.is_male = 1
-                    aSideX.has_tabs = cSideX.has_tabs = 0
-                if not self.keydivwalls:
-                    bSideX.is_male = dSideX.is_male = 1
-                    bSideX.has_tabs = dSideX.has_tabs = 0
-
-                divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z  # root y co-ord for piece
-                for n in range(0, settings.div_x):  # generate X dividers
-                    subGroup = self.makeGroup('xdivider')
-                    groups.append(subGroup)
-                    divider_x = n * (settings.spacing + settings.X)  # root x co-ord for piece
-
-                    # Side A
-                    self.render_side(
-                        subGroup,
-                        (divider_x, divider_y),
-                        aSideX,
-                        True
-                    )
-                    # Side B
-                    self.render_side(
-                        subGroup,
-                        (divider_x, divider_y),
-                        bSideX,
-                        True,
-                        settings.div_y * divider_x_holes,
-                    )
-                    # Side C
-                    self.render_side(
-                        subGroup,
-                        (divider_x, divider_y),
-                        cSideX,
-                        True,
-                    )
-                    # Side D
-                    self.render_side(
-                        subGroup,
-                        (divider_x, divider_y),
-                        dSideX,
-                        True
-                    )
-            elif piece.pieceType == PieceType.Left:
-                # remove tabs from dividers if not required
-                aSideX, bSideX, cSideX, dSideX = deepcopy([aSide, bSide, cSide, dSide])
-                if not self.keydivwalls:
-                    aSideX.is_male = cSideX.is_male = 1
-                    aSideX.has_tabs = cSideX.has_tabs = 0
-                if not self.keydivfloor:
-                    bSideX.is_male = dSideX.is_male = 1
-                    bSideX.has_tabs = dSideX.has_tabs = 0
-
-                divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z  # root y co-ord for piece
-                for n in range(0, settings.div_y):  # generate Y dividers
-                    subGroup = self.makeGroup("ydivider")
-                    self.svg.get_current_layer().add(subGroup)
-                    groups.append(subGroup)
-                    divider_x = n * (settings.spacing + settings.Z)  # root x co-ord for piece
-                    # Side A
-                    self.render_side(
-                        subGroup,
-                        (divider_x, divider_y),
-                        aSideX,
-                        True,
-                        settings.div_x * divider_y_holes,
-                    )
-                    # Side B
-                    self.render_side(
-                        subGroup,
-                        (divider_x, divider_y),
-                        bSideX,
-                        True
-                    )
-                    # Side C
-                    self.render_side(
-                        subGroup,
-                        (divider_x, divider_y),
-                        cSideX,
-                        True
-                    )
-                    # Side D
-                    self.render_side(
-                        subGroup,
-                        (divider_x, divider_y),
-                        dSideX,
-                        True
-                    )
-
             # All pieces drawn, now optimize the paths if required
             if self.options.optimize:
-                self.optimizePieces(groups)
+                self.optimizePiece(group)
 
     def _run_effect(self) -> None:
 
@@ -1106,146 +1045,140 @@ class TabbedBoxMaker(inkex.Effect):
         # Step 3: Generate and draw all pieces
         self.generate_pieces(config, settings)
 
-    def optimizePieces(self, groups) -> None:
+    def optimizePiece(self, group : inkex.Group) -> None:
         # Step 1: Combine paths to form the outer boundary
         skip_elements = []
-        for group in groups:
-            paths = [child for child in group if isinstance(child, inkex.PathElement)]
+        paths = [child for child in group if isinstance(child, inkex.PathElement)]
 
-            for path_element in paths:
-                path = path_element.path
-                path_last = path[-1]
+        for path_element in paths:
+            path = path_element.path
+            path_last = path[-1]
 
-                if isinstance(path_last, inkex.paths.ZoneClose):
-                    continue  # Path is already closed
+            if isinstance(path_last, inkex.paths.ZoneClose):
+                continue  # Path is already closed
 
-                skip_elements.append(path_element)
+            skip_elements.append(path_element)
 
-                for other_element in paths:
-                    if other_element in skip_elements:
-                        continue
-
-                    other_path = other_element.path
-
-                    if isinstance(other_path[-1], inkex.paths.ZoneClose):
-                        continue  # Path is already closed
-
-                    other_first = other_path[0]
-
-                    if (other_first.x == path_last.x and other_first.y == path_last.y):
-                        new_id = min(path_element.get_id(), other_element.get_id())
-                        path_element.path = path + other_path[1:]
-                        group.remove(other_element)
-                        path_element.set_id(new_id)
-                        skip_elements.append(other_element)
-
-                        # Update step for next iteration
-                        path = path_element.path
-                        path_last = path[-1]
-
-            # List updated, refresh
-            paths = [child for child in group if isinstance(child, inkex.PathElement)]
-
-            # Step 2: Close the the paths, if not already closed
-            for path_element in paths:
-                if path[-1].letter in "zZ":
+            for other_element in paths:
+                if other_element in skip_elements:
                     continue
 
-                path = path_element.path.reverse()
-                path.close()
-                path_element.path = path
+                other_path = other_element.path
 
-            # Step 3: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
-            for path_element in paths:
-                path = path_element.path
+                if isinstance(other_path[-1], inkex.paths.ZoneClose):
+                    continue  # Path is already closed
 
-                simplified_path = []
-                prev = None  # Previous point
-                current_dir = None  # Current direction
+                other_first = other_path[0]
 
-                for segment in path:
-                    if isinstance(segment, inkex.paths.ZoneClose):
-                        simplified_path.append(segment)
-                    elif isinstance(segment, inkex.paths.Line):
-                        if isinstance(prev, inkex.paths.Line):
+                if (other_first.x == path_last.x and other_first.y == path_last.y):
+                    new_id = min(path_element.get_id(), other_element.get_id())
+                    path_element.path = path + other_path[1:]
+                    group.remove(other_element)
+                    path_element.set_id(new_id)
+                    skip_elements.append(other_element)
+
+                    # Update step for next iteration
+                    path = path_element.path
+                    path_last = path[-1]
+
+        # List updated, refresh
+        paths = [child for child in group if isinstance(child, inkex.PathElement)]
+
+        # Step 2: Close the the paths, if not already closed
+        for path_element in paths:
+            if path[-1].letter in "zZ":
+                continue
+
+            path = path_element.path.reverse()
+            path.close()
+            path_element.path = path
+
+        # Step 3: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
+        for path_element in paths:
+            path = path_element.path
+
+            simplified_path = []
+            prev = None  # Previous point
+            current_dir = None  # Current direction
+
+            for segment in path:
+                if isinstance(segment, inkex.paths.ZoneClose):
+                    simplified_path.append(segment)
+                elif isinstance(segment, inkex.paths.Line):
+                    if isinstance(prev, inkex.paths.Line):
+                        dx = round(segment.x - prev.x, 8)
+                        dy = round(segment.y - prev.y, 8)
+                        if dx == 0 and dy == 0:
+                            continue  # Skip node
+                        # Determine the direction
+                        direction = (
+                            0 if dx == 0 else math.copysign(1, dx),
+                            0 if dy == 0 else math.copysign(1, dy),
+                        )
+                        if (dx == 0 or dy == 0) and direction == current_dir:
+                            # Skip redundant points on straight lines
+                            # Replace the last point with the current point
+                            simplified_path[-1] = segment
+                        else:
+                            simplified_path.append(segment)
+                        current_dir = direction
+                    else:
+                        if prev is not None:
                             dx = round(segment.x - prev.x, 8)
                             dy = round(segment.y - prev.y, 8)
-
                             if dx == 0 and dy == 0:
                                 continue  # Skip node
-
                             # Determine the direction
                             direction = (
                                 0 if dx == 0 else math.copysign(1, dx),
                                 0 if dy == 0 else math.copysign(1, dy),
                             )
-
-                            if (dx == 0 or dy == 0) and direction == current_dir:
-                                # Skip redundant points on straight lines
-                                # Replace the last point with the current point
-                                simplified_path[-1] = segment
-                            else:
-                                simplified_path.append(segment)
                             current_dir = direction
                         else:
-                            if prev is not None:
-                                dx = round(segment.x - prev.x, 8)
-                                dy = round(segment.y - prev.y, 8)
-
-                                if dx == 0 and dy == 0:
-                                    continue  # Skip node
-
-                                # Determine the direction
-                                direction = (
-                                    0 if dx == 0 else math.copysign(1, dx),
-                                    0 if dy == 0 else math.copysign(1, dy),
-                                )
-                                current_dir = direction
-                            else:
-                                current_dir = None
-                            simplified_path.append(segment)
-                        prev = segment
-                    elif isinstance(segment, inkex.paths.Move):
+                            current_dir = None
                         simplified_path.append(segment)
-                        prev = segment
-                        current_dir = None
-                        direction = None
-                    else:
-                        simplified_path.append(segment)
-                        prev = None
-                        current_dir = None
-                        direction = None
+                    prev = segment
+                elif isinstance(segment, inkex.paths.Move):
+                    simplified_path.append(segment)
+                    prev = segment
+                    current_dir = None
+                    direction = None
+                else:
+                    simplified_path.append(segment)
+                    prev = None
+                    current_dir = None
+                    direction = None
 
-                path_element.path = simplified_path
+            path_element.path = simplified_path
 
-            # Step 4: Include gaps in the panel outline by removing them from the panel path
-            if len(paths) > 1:
-                panel = paths[0]
-                panel_poly = path_to_polygon(panel.path)
+        # Step 4: Include gaps in the panel outline by removing them from the panel path
+        if len(paths) > 1:
+            panel = paths[0]
+            panel_poly = path_to_polygon(panel.path)
 
-                if panel_poly is not None:
-                    # Collect all holes as polygons
-                    holes = []
-                    for candidate in paths[1:]:
-                        poly = path_to_polygon(candidate.path)
-                        if poly is not None:
-                            group.remove(candidate)
-                            holes.append(poly)
+            if panel_poly is not None:
+                # Collect all holes as polygons
+                holes = []
+                for candidate in paths[1:]:
+                    poly = path_to_polygon(candidate.path)
+                    if poly is not None:
+                        group.remove(candidate)
+                        holes.append(poly)
 
-                    # Subtract holes from panel
-                    result = panel_poly.difference(unary_union(holes))
+                # Subtract holes from panel
+                result = panel_poly.difference(unary_union(holes))
 
-                    # Replace panel path with result
-                    panel.path = polygon_to_path(result)
+                # Replace panel path with result
+                panel.path = polygon_to_path(result)
 
-            # Last step: If the group now just contains one path, remove
-            # the group around this path
-            if len(group) == 1:
-                parent = group.getparent()
-                group_id = group.get_id()
-                item = group[0]
-                parent.replace(group, item)
-                item.set_id(group_id)
+        # Last step: If the group now just contains one path, remove
+        # the group around this path
+        if len(group) == 1:
+            parent = group.getparent()
+            group_id = group.get_id()
+            item = group[0]
+            parent.replace(group, item)
+            item.set_id(group_id)
 
     def dimpleStr(
         self,
@@ -1286,12 +1219,15 @@ class TabbedBoxMaker(inkex.Effect):
     def render_side(
         self,
         group: inkex.Group,
-        root: tuple[float, float],
+        piece: PieceSettings,
         side: Side,
-        isDivider: bool = False,
         numDividers: int = 0
     ) -> None:
         """Draw one side of a piece, with tabs or holes as required. Returns result in group"""
+
+        root = piece.base
+        isDivider = piece.pieceType in (PieceType.DividerX, PieceType.DividerY)
+        numDividers = side.num_dividers if side.num_dividers else numDividers
 
         for i in self.render_side_side(root, side) + \
                 self.render_side_slots(root, side, isDivider, numDividers) + \
@@ -1480,7 +1416,7 @@ class TabbedBoxMaker(inkex.Effect):
     ) -> list[inkex.PathElement]:
         """Draw tabs or holes as required"""
 
-        if numDividers == 0 or not isDivider:
+        if (numDividers == 0 or not isDivider) or side.name not in (SideEnum.A, SideEnum.B):
             return []
 
         dividerSpacings = side.divider_spacings
@@ -1523,19 +1459,15 @@ class TabbedBoxMaker(inkex.Effect):
             vectorX = (startOffsetX if startOffsetX else dirX) * thickness
             vectorY = (startOffsetY if startOffsetY else dirY) * thickness
         else:
-            vectorX = startOffsetX * thickness
-            vectorY = startOffsetY * thickness
+            vectorX = (startOffsetX * thickness) if notDirX else 0
+            vectorY = (startOffsetY * thickness) if notDirY else 0
 
             dividerEdgeOffsetX = dirY * thickness
             dividerEdgeOffsetY = dirX * thickness
-            if notDirX:
-                vectorY = 0  # set correct line start for tab generation
-            if notDirY:
-                vectorX = 0
 
-        for dividerNumber in range(1, int(numDividers) + 1):
+        for dividerNumber in range(numDividers):
             base_pos = (vectorX, vectorY)
-            cumulative_position = self.calculate_cumulative_position(dividerNumber, dividerSpacings, thickness)
+            cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, dividerSpacings, thickness)
             divider_offset = (-dirY * cumulative_position, dirX * cumulative_position)
             edge_offset = (-dividerEdgeOffsetX, -dividerEdgeOffsetY)
             kerf_offset = (notDirX * halfkerf, notDirY * halfkerf)
@@ -1603,7 +1535,6 @@ class TabbedBoxMaker(inkex.Effect):
         notMale = not isMale
         thickness = side.thickness
 
-
         if side.has_tabs:
             # Calculate direction
             tabVec = thickness if (direction == (1, 0) or direction == (0, -1)) != isMale else -thickness
@@ -1640,11 +1571,11 @@ class TabbedBoxMaker(inkex.Effect):
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
         firstHole = True
-        for tabDivision in range(1, divisions+1):
+        for tabDivision in range(divisions):
             # draw holes for divider tabs to key into side walls
-            if (((tabDivision % 2) > 0) != (not isMale)) and numDividers > 0 and not isDivider:
+            if (((tabDivision % 2) == 0) != (not isMale)) and numDividers > 0 and not isDivider:
                 w = gapWidth if isMale else tabWidth
-                if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+                if tabDivision == 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                     w -= startOffsetX * thickness
                 holeLenX = dirX * (w + first) + (firstVec if notDirX else 0)
                 holeLenY = dirY * (w + first) + (firstVec if notDirY else 0)
@@ -1652,12 +1583,12 @@ class TabbedBoxMaker(inkex.Effect):
                     firstHoleLenX = holeLenX
                     firstHoleLenY = holeLenY
                     firstHole = False
-                if (tabDivision == 1 or tabDivision >= divisions) and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+                if (tabDivision == 0 or tabDivision == (divisions - 1)) and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                     holeLenX = firstHoleLenX
                     holeLenY = firstHoleLenY
-                for dividerNumber in range(1, int(numDividers) + 1):
+                for dividerNumber in range(numDividers):
                     base_pos = (vectorX, vectorY)
-                    cumulative_position = self.calculate_cumulative_position(dividerNumber, dividerSpacings, thickness)
+                    cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, dividerSpacings, thickness)
                     divider_offset = (-dirY * cumulative_position, dirX * cumulative_position)
                     kerf_offset = (halfkerf if notDirX else 0, -(halfkerf if notDirY else 0))
                     dogbone_offset = ((dirX * halfkerf - first * dirX) if dogbone else 0,
@@ -1666,7 +1597,7 @@ class TabbedBoxMaker(inkex.Effect):
                     start_pos = self._point_add(base_pos, self._point_add(divider_offset,
                                               self._point_add(kerf_offset, dogbone_offset)))
 
-                    if tabDivision == 1 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+                    if tabDivision == 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                         start_pos = self._point_add(start_pos, (startOffsetX * thickness, 0))
 
                     h = []
@@ -1685,7 +1616,7 @@ class TabbedBoxMaker(inkex.Effect):
                     h.append(Line(*final_pos))
                     h.append(ZoneClose())
                     nodes.append(self.makeLine(h, "hole"))
-            if tabDivision % 2:
+            if (tabDivision % 2) == 0:
                 # draw the gap
                 vectorX += (
                     dirX

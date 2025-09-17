@@ -86,6 +86,10 @@ class PieceType(Enum):
     Top = 5,
     Front = 6
 
+    DividerX = 101,
+    DividerY = 102,
+
+
     
 class SideEnum(Enum):
     A = 'A'

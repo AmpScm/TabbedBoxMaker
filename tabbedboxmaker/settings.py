@@ -102,6 +102,7 @@ class Side:
     next: "Side" = None
     dogbone: bool = False
     divider_spacings: list[float] = None  # Pre-calculated divider spacings (partition widths)
+    num_dividers: int = 0  # Number of dividers (partitions) on this side
 
     def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, tab_info: int, tabbed: int, length: float):
         self.name = name
@@ -169,8 +170,9 @@ class PieceSettings:
     sides: list[Side]
     faceType: FaceType
     pieceType: PieceType
+    base: tuple[float, float]  # (x,y) base co-ordinates for piece
 
-    def __init__(self, rootx: tuple[int, int, int, int], rooty: tuple[int, int, int, int], sides: list[Side], faceType: FaceType, pieceType: PieceType):
+    def __init__(self, rootx: tuple[int, int, int, int], rooty: tuple[int, int, int, int], sides: list[Side], faceType: FaceType, pieceType: PieceType, settings: BoxSettings):
         self.rootx = rootx
         self.rooty = rooty
         self.sides = sides
@@ -187,6 +189,14 @@ class PieceSettings:
         sides[1].prev = sides[0]
         sides[2].prev = sides[1]
         sides[3].prev = sides[2]
+
+        (xs, xx, xy, xz) = rootx
+        (ys, yx, yy, yz) = rooty
+
+        x = xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
+        y = ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
+
+        self.base = (x, y)
 
 
 @dataclass
