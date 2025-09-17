@@ -78,6 +78,15 @@ class FaceType(Enum):
     XZ = 2
     ZY = 3
 
+class PieceType(Enum):
+    Back = 1,
+    Left = 2,
+    Bottom = 3,
+    Right = 4,
+    Top = 5,
+    Front = 6
+
+    
 class SideEnum(Enum):
     A = 'A'
     B = 'B'
