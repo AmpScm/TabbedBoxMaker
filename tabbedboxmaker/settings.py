@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, FaceType, SideEnum
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, FaceType, SideEnum, PieceType
 
 
 @dataclass
@@ -168,12 +168,14 @@ class PieceSettings:
     dy: float  # Y dimension
     sides: list[Side]
     faceType: FaceType
+    pieceType: PieceType
 
-    def __init__(self, rootx: tuple[int, int, int, int], rooty: tuple[int, int, int, int], sides: list[Side], faceType: FaceType):
+    def __init__(self, rootx: tuple[int, int, int, int], rooty: tuple[int, int, int, int], sides: list[Side], faceType: FaceType, pieceType: PieceType):
         self.rootx = rootx
         self.rooty = rooty
         self.sides = sides
         self.faceType = faceType
+        self.pieceType = pieceType
         self.dx = sides[0].length
         self.dy = sides[1].length
 
