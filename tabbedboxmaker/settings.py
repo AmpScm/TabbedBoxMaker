@@ -8,6 +8,9 @@ class BoxSettings:
     X: float
     Y: float
     Z: float
+    inside_X: float
+    inside_Y: float
+    inside_Z: float
     thickness: float
     tab_width: float
     equal_tabs: bool
@@ -26,7 +29,6 @@ class BoxSettings:
     keydiv_floor: bool
     initOffsetX: float
     initOffsetY: float
-    inside: bool
     hairline: bool
     schroff: bool
     kerf: float
