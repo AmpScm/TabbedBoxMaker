@@ -27,7 +27,7 @@ from tabbedboxmaker.enums import BoxType, TabSymmetry, TabType, Layout, TabWidth
 
 
 def main(cli=False, schroff=False):
-    effect = BoxMaker()
+    effect = BoxMaker(cli=cli, schroff=schroff)
     effect.run()
 
 
