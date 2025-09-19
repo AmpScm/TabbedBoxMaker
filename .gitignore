@@ -124,6 +124,7 @@ tests/actual/
 actual/
 *.orig
 *.r.svg
+expected/v/
 
 # IDE
 .vscode/
