@@ -21,7 +21,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from tabbedboxmaker import BoxMaker
-from tabbedboxmaker.enums import BoxType, TabSymmetry, TabType, Layout, TabWidth, DividerKeying
 
 # Create effect instance and apply it.
 
@@ -31,34 +30,11 @@ def main(cli=False, schroff=False):
     effect.run()
 
 
-def print_enum_help():
-    print("\nAvailable enum options:")
-    print("BoxType:")
-    for e in BoxType:
-        print(f"  {e.value}: {e.name}")
-    print("TabSymmetry:")
-    for e in TabSymmetry:
-        print(f"  {e.value}: {e.name}")
-    print("TabType:")
-    for e in TabType:
-        print(f"  {e.value}: {e.name}")
-    print("Layout:")
-    for e in Layout:
-        print(f"  {e.value}: {e.name}")
-    print("TabWidth:")
-    for e in TabWidth:
-        print(f"  {e.value}: {e.name}")
-    print("DividerKeying:")
-    for e in DividerKeying:
-        print(f"  {e.value}: {e.name}")
 
 
 def main_cli():
     """Entry point for command-line boxmaker."""
     import sys
-    if '--enums' in sys.argv:
-        print_enum_help()
-        return
     main(cli=True, schroff=False)
 
 
