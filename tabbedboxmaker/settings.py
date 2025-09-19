@@ -177,15 +177,13 @@ class Side:
 
 
 @dataclass
-class PieceSettings:
-    """Settings for a single piece"""
-    rootx: tuple[int, int, int, int]  # (spacing,X,Y,Z) multipliers
-    rooty: tuple[int, int, int, int]  # (spacing,X,Y,Z) multipliers
-    dx: float  # X dimension (outside - for backward compatibility)
-    dy: float  # Y dimension (outside - for backward compatibility)
+class Piece:
+    """A piece of the box with its sides and positioning"""
     sides: list[Side]
-    faceType: FaceType
     pieceType: PieceType
+    faceType: FaceType
+    dx: float  # outside dimension
+    dy: float  # outside dimension
     base: tuple[float, float]  # (x,y) base co-ordinates for piece
 
     @property
@@ -194,23 +192,24 @@ class PieceSettings:
         return self.sides[0].outside_length
     
     @property
-    def inside_dx(self) -> float:
-        """Inside X dimension"""
-        return self.sides[0].inside_length
-    
-    @property
     def outside_dy(self) -> float:
         """Outside Y dimension"""
         return self.sides[1].outside_length
+    
+    @property
+    def inside_dx(self) -> float:
+        """Inside X dimension"""
+        return self.sides[0].inside_length
     
     @property
     def inside_dy(self) -> float:
         """Inside Y dimension"""
         return self.sides[1].inside_length
 
+
     @staticmethod
     def calculate_face_type(piece_type: PieceType) -> FaceType:
-        """Calculate FaceType from PieceType"""
+        """Calculate face type from piece type"""
         face_type_mapping = {
             PieceType.Top: FaceType.XY,
             PieceType.Bottom: FaceType.XY,
@@ -218,14 +217,12 @@ class PieceSettings:
             PieceType.Back: FaceType.XZ,
             PieceType.Left: FaceType.ZY,
             PieceType.Right: FaceType.ZY,
-            PieceType.DividerX: FaceType.XZ,  # X dividers have same orientation as Back face
-            PieceType.DividerY: FaceType.ZY,  # Y dividers have same orientation as Left face
+            PieceType.DividerX: FaceType.XZ,
+            PieceType.DividerY: FaceType.ZY,
         }
         return face_type_mapping.get(piece_type, FaceType.XY)
 
-    def __init__(self, rootx: tuple[int, int, int, int], rooty: tuple[int, int, int, int], sides: list[Side], pieceType: PieceType, settings: BoxSettings):
-        self.rootx = rootx
-        self.rooty = rooty
+    def __init__(self, sides: list[Side], pieceType: PieceType):
         self.sides = sides
         self.faceType = self.calculate_face_type(pieceType)
         self.pieceType = pieceType
@@ -234,6 +231,7 @@ class PieceSettings:
         self.dx = sides[0].outside_length  # Same as sides[0].length
         self.dy = sides[1].outside_length  # Same as sides[1].length
 
+        # Link sides together
         sides[0].next = sides[1]
         sides[1].next = sides[2]
         sides[2].next = sides[3]
@@ -243,13 +241,8 @@ class PieceSettings:
         sides[2].prev = sides[1]
         sides[3].prev = sides[2]
 
-        (xs, xx, xy, xz) = rootx
-        (ys, yx, yy, yz) = rooty
-
-        x = xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
-        y = ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
-
-        self.base = (x, y)
+        # Initialize at (0,0) - positioning happens in layout phase
+        self.base = (0, 0)
 
 
 @dataclass
@@ -258,4 +251,4 @@ class BoxConfiguration:
     schroff_settings: Optional[SchroffSettings]
     faces: BoxFaces
     tabs: TabConfiguration
-    pieces: list[PieceSettings]
+    pieces: list[Piece]

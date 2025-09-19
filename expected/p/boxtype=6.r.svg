@@ -4,18 +4,18 @@
   <defs id="defs2"/>
   <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
     <metadata text="createArgs=['--unit=mm', '--inside=1', '--length=80', '--width=100', '--depth=40', '--equal=0', '--tab=6', '--tabtype=0', '--tabsymmetry=0', '--dimpleheight=0', '--dimplelength=0', '--hairline=1', '--thickness=3', '--kerf=0', '--style=1', '--div_l=1', '--div_w=1', '--keydiv=0', '--spacing=2', '--boxtype=6']"/>
-    <g id="xdivider_001">
-      <path id="side_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 0 197 l 6.71429 0 l 0 0 l 6.00001 0 l 0 0 l 6.7143 0 l 0 0 l 6 0 l 0 0 l 6.7143 0 l 0 0 l 6 0 l 0 0 l 6.7142 0 l 0 0 l 6 0 l 0 0 l 6.7143 0 l 0 0 l 6 0 l 0 0 l 6.7143 0 l 0 0 l 6 0 l 0 0 l 6.7143 0"/>
-      <path id="side_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 83 197 l 0 3.25 l 0 0 l 0 6 l 0 0 l 0 6.25 l 0 0 l 0 6 l 0 0 l 0 6.25 l 0 0 l 0 6 l 0 0 l 0 6.25"/>
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 40 194 l 0 21.5 l 3 0 l 0 -21.5 l -3 0 z"/>
-      <path id="side_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 83 237 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7142 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0"/>
-      <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 0 237 l 0 -6.25 l 0 0 l 0 -6 l 0 0 l 0 -6.25 l 0 0 l 0 -6 l 0 0 l 0 -6.25 l 0 0 l 0 -6 l 0 0 l 0 -3.25"/>
-    </g>
     <g id="piece_001">
-      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 2 l 6.25 0 l 0 0 l 6 0 l 0 0 l 6.25 0 l 0 0 l 6 0 l 0 0 l 6.25 0 l 0 0 l 6 0 l 0 0 l 3.25 0"/>
-      <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 42 2 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25"/>
-      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 42 102 l -3.25 0 l 0 0 l -6 0 l 0 0 l -6.25 0 l 0 0 l -6 0 l 0 0 l -6.25 0 l 0 0 l -6 0 l 0 0 l -6.25 0"/>
-      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 102 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25"/>
+      <path id="side_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 2 l 6.25 0 l 0 0 l 6 0 l 0 0 l 6.25 0 l 0 0 l 6 0 l 0 0 l 6.25 0 l 0 0 l 6 0 l 0 0 l 3.25 0"/>
+      <path id="side_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 42 2 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25 l 3 0 l 0 6 l -3 0 l 0 7.25"/>
+      <path id="side_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 42 102 l -3.25 0 l 0 0 l -6 0 l 0 0 l -6.25 0 l 0 0 l -6 0 l 0 0 l -6.25 0 l 0 0 l -6 0 l 0 0 l -6.25 0"/>
+      <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 102 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25"/>
+    </g>
+    <g id="xdivider_001">
+      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 0 197 l 6.71429 0 l 0 0 l 6.00001 0 l 0 0 l 6.7143 0 l 0 0 l 6 0 l 0 0 l 6.7143 0 l 0 0 l 6 0 l 0 0 l 6.7142 0 l 0 0 l 6 0 l 0 0 l 6.7143 0 l 0 0 l 6 0 l 0 0 l 6.7143 0 l 0 0 l 6 0 l 0 0 l 6.7143 0"/>
+      <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 83 197 l 0 3.25 l 0 0 l 0 6 l 0 0 l 0 6.25 l 0 0 l 0 6 l 0 0 l 0 6.25 l 0 0 l 0 6 l 0 0 l 0 6.25"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 40 194 l 0 21.5 l 3 0 l 0 -21.5 l -3 0 z"/>
+      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 83 237 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7142 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0"/>
+      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 0 237 l 0 -6.25 l 0 0 l 0 -6 l 0 0 l 0 -6.25 l 0 0 l 0 -6 l 0 0 l 0 -6.25 l 0 0 l 0 -6 l 0 0 l 0 -3.25"/>
     </g>
     <g id="ydivider_001">
       <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 0 239 l 6.25 0 l 0 0 l 6 0 l 0 0 l 6.25 0 l 0 0 l 6 0 l 0 0 l 6.25 0 l 0 0 l 6 0 l 0 0 l 3.25 0"/>
