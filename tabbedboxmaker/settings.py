@@ -21,6 +21,7 @@ class BoxSettings:
     layout: Layout
     spacing: float
     boxtype: BoxType
+    piece_types: list[PieceType]  # Which pieces this box includes
     div_x: float
     div_y: float
     div_x_spacing: list[float]  # Custom spacing for X-axis dividers (partition widths)

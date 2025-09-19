@@ -80,6 +80,24 @@ class TabbedBoxMaker(inkex.Effect):
     version = BOXMAKER_VERSION
     settings : BoxSettings
 
+    @staticmethod
+    def should_create_piece(piece_type: PieceType, settings: BoxSettings) -> bool:
+        """Determine if a piece should be created based on settings.piece_types.
+        
+        Uses the piece_types list instead of boolean faces for cleaner architecture.
+        """
+        # Check main faces
+        if piece_type in [PieceType.Top, PieceType.Bottom, PieceType.Front, PieceType.Back, PieceType.Left, PieceType.Right]:
+            return piece_type in settings.piece_types
+        
+        # Check dividers
+        if piece_type == PieceType.DividerX:
+            return PieceType.DividerX in settings.piece_types and settings.div_x > 0
+        
+        if piece_type == PieceType.DividerY:
+            return PieceType.DividerY in settings.piece_types and settings.div_y > 0
+        
+        return False
 
     def __init__(self, cli=True, schroff=False, inkscape=False):
         # Call the base class constructor.
@@ -561,6 +579,12 @@ class TabbedBoxMaker(inkex.Effect):
         elif box_type == BoxType.TWO_PANELS_ONLY:
             pieceTypes = [PieceType.Left, PieceType.Bottom]
 
+        # Add divider piece types if dividers are required
+        if div_x > 0:
+            pieceTypes.append(PieceType.DividerX)
+        if div_y > 0:
+            pieceTypes.append(PieceType.DividerY)
+
         if inside:  # if inside dimension selected correct values to outside dimension
             inside_X, inside_Y, inside_Z = X, Y, Z
 
@@ -587,7 +611,7 @@ class TabbedBoxMaker(inkex.Effect):
             thickness=thickness, tab_width=tab_width, equal_tabs=equal_tabs,
             tab_symmetry=tabSymmetry, dimple_height=dimpleHeight, dimple_length=dimpleLength,
             dogbone=dogbone, layout=layout, spacing=spacing, boxtype=box_type,
-            div_x=div_x, div_y=div_y, div_x_spacing=div_x_spacing, div_y_spacing=div_y_spacing,
+            piece_types=pieceTypes, div_x=div_x, div_y=div_y, div_x_spacing=div_x_spacing, div_y_spacing=div_y_spacing,
             keydiv_walls=keydivwalls, keydiv_floor=keydivfloor,
             initOffsetX=initOffsetX, initOffsetY=initOffsetY,
             hairline=hairline, schroff=schroff, kerf=kerf, line_thickness=line_thickness, unit=unit, rows=rows,
@@ -880,31 +904,102 @@ class TabbedBoxMaker(inkex.Effect):
                 reduceOffsets(cc, 0, 0, 0, 1)
             if not hasRt:
                 reduceOffsets(cc, 2, 0, 0, 1)
-            if hasBk:
-                pieces_list.append(PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, bkTabInfo, bkTabbed, PieceType.Back), PieceType.Back, settings))
-            add_xdividers()
-            if hasLt:
-                pieces_list.append(PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, ltTabInfo, ltTabbed, PieceType.Left), PieceType.Left, settings))
-            add_ydividers()
-            if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, bmTabInfo, bmTabbed, PieceType.Bottom), PieceType.Bottom, settings))
-            if hasRt:
-                pieces_list.append(PieceSettings(cc[2], rr[1], make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, rtTabInfo, rtTabbed, PieceType.Right), PieceType.Right, settings))
-            if hasTp:
-                pieces_list.append(PieceSettings(cc[3], rr[1], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, tpTabInfo, tpTabbed, PieceType.Top), PieceType.Top, settings))
-            if hasFt:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, ftTabInfo, ftTabbed, PieceType.Front), PieceType.Front, settings))
+            
+            # Create all pieces first with dummy coordinates
+            created_pieces = self.create_pieces(settings, faces, tabs)
+            
+            # Create lookup dict for efficient piece finding
+            piece_lookup = {piece.pieceType: piece for piece in created_pieces}
+            
+            # Position pieces in the exact original order: Back -> X dividers -> Left -> Y dividers -> Bottom -> Right -> Top -> Front
+            
+            # 1. Back piece
+            if PieceType.Back in piece_lookup and hasBk:
+                piece = piece_lookup[PieceType.Back]
+                positioned_piece = PieceSettings(cc[1], rr[2], piece.sides, piece.pieceType, settings)
+                pieces_list.append(positioned_piece)
+            
+            # 2. X dividers (placed right after Back)
+            if PieceType.DividerX in piece_lookup:
+                piece = piece_lookup[PieceType.DividerX]
+                divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z
+                for n in range(int(settings.div_x)):
+                    divider_x = n * (settings.spacing + settings.X)
+                    positioned_piece = PieceSettings(cc[1], rr[2], piece.sides, piece.pieceType, settings)
+                    positioned_piece.base = (divider_x, divider_y)
+                    pieces_list.append(positioned_piece)
+            
+            # 3. Left piece
+            if PieceType.Left in piece_lookup and hasLt:
+                piece = piece_lookup[PieceType.Left]
+                positioned_piece = PieceSettings(cc[0], rr[1], piece.sides, piece.pieceType, settings)
+                pieces_list.append(positioned_piece)
+            
+            # 4. Y dividers (placed right after Left)
+            if PieceType.DividerY in piece_lookup:
+                piece = piece_lookup[PieceType.DividerY]
+                divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z
+                for n in range(int(settings.div_y)):
+                    divider_x = n * (settings.spacing + settings.Z)
+                    positioned_piece = PieceSettings(cc[0], rr[1], piece.sides, piece.pieceType, settings)
+                    positioned_piece.base = (divider_x, divider_y)
+                    pieces_list.append(positioned_piece)
+            
+            # 5. Remaining pieces: Bottom, Right, Top, Front
+            if PieceType.Bottom in piece_lookup and hasBm:
+                piece = piece_lookup[PieceType.Bottom]
+                positioned_piece = PieceSettings(cc[1], rr[1], piece.sides, piece.pieceType, settings)
+                pieces_list.append(positioned_piece)
+            
+            if PieceType.Right in piece_lookup and hasRt:
+                piece = piece_lookup[PieceType.Right]
+                positioned_piece = PieceSettings(cc[2], rr[1], piece.sides, piece.pieceType, settings)
+                pieces_list.append(positioned_piece)
+            
+            if PieceType.Top in piece_lookup and hasTp:
+                piece = piece_lookup[PieceType.Top]
+                positioned_piece = PieceSettings(cc[3], rr[1], piece.sides, piece.pieceType, settings)
+                pieces_list.append(positioned_piece)
+            
+            if PieceType.Front in piece_lookup and hasFt:
+                piece = piece_lookup[PieceType.Front]
+                positioned_piece = PieceSettings(cc[1], rr[0], piece.sides, piece.pieceType, settings)
+                pieces_list.append(positioned_piece)
         elif settings.layout == Layout.THREE_PIECE:  # 3 Piece Layout
             rr = deepcopy([row0, row1y, row2])
             cc = deepcopy([col0, col1z])
-            if hasBk:
-                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, bkTabInfo, bkTabbed, PieceType.Back), PieceType.Back, settings))
-            add_xdividers()
-            if hasLt:
-                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, ltTabInfo, ltTabbed, PieceType.Left), PieceType.Left, settings))
-            add_ydividers()
-            if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, bmTabInfo, bmTabbed, PieceType.Bottom), PieceType.Bottom, settings))
+            
+            # Create all pieces first with dummy coordinates
+            created_pieces = self.create_pieces(settings, faces, tabs)
+            
+            # Now position them according to layout
+            for piece in created_pieces:
+                if piece.pieceType == PieceType.Back and hasBk:
+                    # Create new piece with correct positioning
+                    positioned_piece = PieceSettings(cc[1], rr[1], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.Left and hasLt:
+                    positioned_piece = PieceSettings(cc[0], rr[0], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.Bottom and hasBm:
+                    positioned_piece = PieceSettings(cc[1], rr[0], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.DividerX:
+                    # Handle X divider positioning
+                    divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z
+                    for n in range(int(settings.div_x)):
+                        divider_x = n * (settings.spacing + settings.X)
+                        positioned_piece = PieceSettings(cc[1], rr[2], piece.sides, piece.pieceType, settings)
+                        positioned_piece.base = (divider_x, divider_y)
+                        pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.DividerY:
+                    # Handle Y divider positioning 
+                    divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z
+                    for n in range(int(settings.div_y)):
+                        divider_x = n * (settings.spacing + settings.Z)
+                        positioned_piece = PieceSettings(cc[0], rr[1], piece.sides, piece.pieceType, settings)
+                        positioned_piece.base = (divider_x, divider_y)
+                        pieces_list.append(positioned_piece)
         elif settings.layout == Layout.INLINE_COMPACT:  # Inline(compact) Layout
             rr = deepcopy([row0, row1y, row2])
             cc = deepcopy([col0, col1x, col2xx, col3xxz, col4, col5])
@@ -919,20 +1014,46 @@ class TabbedBoxMaker(inkex.Effect):
                 reduceOffsets(cc, 3, 0, 0, 1)
             if not hasBk:
                 reduceOffsets(cc, 4, 1, 0, 0)
-            if hasBk:
-                pieces_list.append(PieceSettings(cc[4], rr[0], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, bkTabInfo, bkTabbed, PieceType.Back), PieceType.Back, settings))
-            add_xdividers()
-            if hasLt:
-                pieces_list.append(PieceSettings(cc[2], rr[0], make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, ltTabInfo, ltTabbed, PieceType.Left), PieceType.Left, settings))
-            add_ydividers()
-            if hasTp:
-                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, tpTabInfo, tpTabbed, PieceType.Top), PieceType.Top, settings))
-            if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, bmTabInfo, bmTabbed, PieceType.Bottom), PieceType.Bottom, settings))
-            if hasRt:
-                pieces_list.append(PieceSettings(cc[3], rr[0], make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, rtTabInfo, rtTabbed, PieceType.Right), PieceType.Right, settings))
-            if hasFt:
-                pieces_list.append(PieceSettings(cc[5], rr[0], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, ftTabInfo, ftTabbed, PieceType.Front), PieceType.Front, settings))
+            
+            # Create all pieces first with dummy coordinates
+            created_pieces = self.create_pieces(settings, faces, tabs)
+            
+            # Now position them according to layout
+            for piece in created_pieces:
+                if piece.pieceType == PieceType.Back and hasBk:
+                    positioned_piece = PieceSettings(cc[4], rr[0], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.Left and hasLt:
+                    positioned_piece = PieceSettings(cc[2], rr[0], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.Top and hasTp:
+                    positioned_piece = PieceSettings(cc[0], rr[0], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.Bottom and hasBm:
+                    positioned_piece = PieceSettings(cc[1], rr[0], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.Right and hasRt:
+                    positioned_piece = PieceSettings(cc[3], rr[0], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.Front and hasFt:
+                    positioned_piece = PieceSettings(cc[5], rr[0], piece.sides, piece.pieceType, settings)
+                    pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.DividerX:
+                    # Handle X divider positioning - all on same row
+                    divider_y = 0
+                    for n in range(int(settings.div_x)):
+                        divider_x = n * (settings.spacing + settings.Z)
+                        positioned_piece = PieceSettings(cc[4], rr[0], piece.sides, piece.pieceType, settings)
+                        positioned_piece.base = (divider_x, divider_y)
+                        pieces_list.append(positioned_piece)
+                elif piece.pieceType == PieceType.DividerY:
+                    # Handle Y divider positioning - all on same row
+                    divider_y = 0
+                    for n in range(int(settings.div_y)):
+                        divider_x = n * (settings.spacing + settings.Y)
+                        positioned_piece = PieceSettings(cc[2], rr[0], piece.sides, piece.pieceType, settings)
+                        positioned_piece.base = (divider_x, divider_y)
+                        pieces_list.append(positioned_piece)
 
         # Handle Schroff settings if needed
         schroff_settings = None
@@ -953,6 +1074,132 @@ class TabbedBoxMaker(inkex.Effect):
             tabs=tabs,
             pieces=pieces_list
         )
+
+    def create_pieces(self, settings: BoxSettings, faces: BoxFaces, tabs: TabConfiguration) -> list[PieceSettings]:
+        """Generate all pieces needed for the box without layout positioning"""
+        
+        def make_sides(settings : BoxSettings, dx : float, dy : float, inside_dx : float, inside_dy : float, tabInfo : int, tabbed : int, pieceType: PieceType) -> list[Side]:
+            # Calculate face type from piece type
+            face_type_mapping = {
+                PieceType.Top: FaceType.XY,
+                PieceType.Bottom: FaceType.XY,
+                PieceType.Front: FaceType.XZ,
+                PieceType.Back: FaceType.XZ,
+                PieceType.Left: FaceType.ZY,
+                PieceType.Right: FaceType.ZY,
+                PieceType.DividerX: FaceType.XZ,  # X dividers have same orientation as Back face
+                PieceType.DividerY: FaceType.ZY,  # Y dividers have same orientation as Left face
+            }
+            faceType = face_type_mapping.get(pieceType, FaceType.XY)
+            
+            # Determine which divider spacings to use based on face type
+            # X-axis dividers run along the Y direction, so they need Y spacing
+            # Y-axis dividers run along the X direction, so they need X spacing
+
+            def calculate_even_spacing(num_dividers: int, available_width: float, thickness: float) -> list[float]:
+                """Calculate even spacing for dividers when no custom spacing is provided"""
+                if num_dividers <= 0:
+                    return []
+                # Original calculation: equal spacing between and around dividers
+                partition_width = (available_width - thickness) / (num_dividers + 1)
+                return [partition_width] * num_dividers
+
+            if faceType == FaceType.XY:  # Top/Bottom faces
+                # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
+                # Side B/D (vertical) gets X-axis divider spacing (div_y)"
+                horizontal_spacing = settings.div_x_spacing if settings.div_x_spacing else calculate_even_spacing(int(settings.div_x), settings.Y, settings.thickness)
+                vertical_spacing = settings.div_y_spacing if settings.div_y_spacing else calculate_even_spacing(int(settings.div_y), settings.X, settings.thickness)
+            elif faceType == FaceType.XZ:  # Front/Back faces
+                # Side A/C (horizontal) gets no dividers (Z direction)
+                # Side B/D (vertical) gets X-axis divider spacing (div_y)
+                horizontal_spacing = []
+                vertical_spacing = settings.div_y_spacing if settings.div_y_spacing else calculate_even_spacing(int(settings.div_y), settings.X, settings.thickness)
+            elif faceType == FaceType.ZY:  # Left/Right faces"
+                # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
+                # Side B/D (vertical) gets no dividers (Z direction)
+                horizontal_spacing = settings.div_x_spacing if settings.div_x_spacing else calculate_even_spacing(int(settings.div_x), settings.Y, settings.thickness)
+                vertical_spacing = []
+            else:
+                horizontal_spacing = []
+                vertical_spacing = []
+
+            # Sides: A=top, B=right, C=bottom, D=left
+            sides = [
+                Side(settings, SideEnum.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), dx, inside_dx),
+                Side(settings, SideEnum.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), dy, inside_dy),
+                Side(settings, SideEnum.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), dx, inside_dx),
+                Side(settings, SideEnum.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), dy, inside_dy)
+            ]
+
+            # Assign divider spacings to appropriate sides
+            sides[0].divider_spacings = horizontal_spacing  # A (top)
+            sides[1].divider_spacings = vertical_spacing    # B (right)
+            sides[2].divider_spacings = horizontal_spacing  # C (bottom)
+            sides[3].divider_spacings = vertical_spacing    # D (left)
+
+            return sides
+
+        pieces = []
+        
+        # Create main box faces using piece-driven approach
+        if self.should_create_piece(PieceType.Back, settings):
+            sides = make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, tabs.bkTabInfo, tabs.bkTabbed, PieceType.Back)
+            pieces.append(PieceSettings((0,0,0,0), (0,0,0,0), sides, PieceType.Back, settings))
+            
+        if self.should_create_piece(PieceType.Left, settings):
+            sides = make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, tabs.ltTabInfo, tabs.ltTabbed, PieceType.Left)
+            pieces.append(PieceSettings((0,0,0,0), (0,0,0,0), sides, PieceType.Left, settings))
+            
+        if self.should_create_piece(PieceType.Bottom, settings):
+            sides = make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, tabs.bmTabInfo, tabs.bmTabbed, PieceType.Bottom)
+            pieces.append(PieceSettings((0,0,0,0), (0,0,0,0), sides, PieceType.Bottom, settings))
+            
+        if self.should_create_piece(PieceType.Right, settings):
+            sides = make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, tabs.rtTabInfo, tabs.rtTabbed, PieceType.Right)
+            pieces.append(PieceSettings((0,0,0,0), (0,0,0,0), sides, PieceType.Right, settings))
+            
+        if self.should_create_piece(PieceType.Top, settings):
+            sides = make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, tabs.tpTabInfo, tabs.tpTabbed, PieceType.Top)
+            pieces.append(PieceSettings((0,0,0,0), (0,0,0,0), sides, PieceType.Top, settings))
+            
+        if self.should_create_piece(PieceType.Front, settings):
+            sides = make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, tabs.ftTabInfo, tabs.ftTabbed, PieceType.Front)
+            pieces.append(PieceSettings((0,0,0,0), (0,0,0,0), sides, PieceType.Front, settings))
+        
+        # Create dividers using piece-driven approach
+        if self.should_create_piece(PieceType.DividerX, settings):
+            for n in range(int(settings.div_x)):
+                sides = make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, tabs.bkTabInfo, tabs.bkTabbed, PieceType.DividerX)
+                piece = PieceSettings((0,0,0,0), (0,0,0,0), sides, PieceType.DividerX, settings)
+                
+                # Remove tabs from dividers if not required
+                if not settings.keydiv_floor:
+                    piece.sides[0].is_male = piece.sides[2].is_male = True # sides A and C
+                    piece.sides[0].has_tabs = piece.sides[2].has_tabs = False
+                if not settings.keydiv_walls:
+                    piece.sides[1].is_male = piece.sides[3].is_male = True # sides B and D
+                    piece.sides[1].has_tabs = piece.sides[3].has_tabs = False
+                    
+                piece.sides[1].num_dividers = settings.div_y * (settings.div_x > 0)
+                pieces.append(piece)
+                
+        if self.should_create_piece(PieceType.DividerY, settings):
+            for n in range(int(settings.div_y)):
+                sides = make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, tabs.ltTabInfo, tabs.ltTabbed, PieceType.DividerY)
+                piece = PieceSettings((0,0,0,0), (0,0,0,0), sides, PieceType.DividerY, settings)
+                
+                # Remove tabs from dividers if not required
+                if not settings.keydiv_walls:
+                    piece.sides[0].is_male = piece.sides[2].is_male = True # sides A and C
+                    piece.sides[0].has_tabs = piece.sides[2].has_tabs = False
+                if not settings.keydiv_floor:
+                    piece.sides[1].is_male = piece.sides[3].is_male = True # sides B and D
+                    piece.sides[1].has_tabs = piece.sides[3].has_tabs = False
+                    
+                piece.sides[0].num_dividers = settings.div_x * (settings.div_x > 0)
+                pieces.append(piece)
+        
+        return pieces
 
     def generate_pieces(self, config: BoxConfiguration, settings: BoxSettings) -> None:
         """Generate and draw all pieces based on the configuration"""
@@ -983,7 +1230,7 @@ class TabbedBoxMaker(inkex.Effect):
                 dx = piece.dx
                 dy = piece.dy
 
-                log(f"rail holes enabled on piece {idx} at ({x + settings.thickness}, {y + settings.thickness})")
+                log(f"rail holes enabled on piece at ({x + settings.thickness}, {y + settings.thickness})")
                 log(f"abcd = ({aSide.is_male},{bSide.is_male},{cSide.is_male},{dSide.is_male})")
                 log(f"dxdy = ({dx},{dy})")
                 rhxoffset = schroff.rail_mount_depth + settings.thickness
