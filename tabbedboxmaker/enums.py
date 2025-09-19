@@ -28,7 +28,7 @@ class TabSymmetry(IntEnum):
     ANTISYMMETRIC = 2  # Deprecated - antisymmetric style
 
 
-class TabType(IntEnum):
+class TabTypeOld(IntEnum):
     """Tab type enumeration."""
 
     REGULAR = 0  # Regular tabs for laser cutting
@@ -96,3 +96,10 @@ class SideEnum(Enum):
     B = 'B'
     C = 'C'
     D = 'D'
+
+
+class SideTabbing(Enum):
+    """Side tabbing configuration - defines whether a side has tabs, holes, or neither."""
+    NONE = "none"      # No tabs or holes on this side
+    MALE = "male"      # Protruding tabs (tabs stick out)
+    FEMALE = "female"  # Receiving tabs (slots for tabs to fit into)

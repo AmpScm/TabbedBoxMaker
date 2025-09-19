@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, FaceType, SideEnum, PieceType
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, FaceType, SideEnum, PieceType, SideTabbing
 
 
 @dataclass
@@ -89,9 +89,7 @@ class Side:
     name: SideEnum
     is_male: bool
     has_tabs: bool
-    tab_info: int
-    tabbed: int
-    length: float
+    length: float  # Current length (for backward compatibility)
     direction: tuple[int, int]
     tab_symmetry: TabSymmetry
     divisions: int
@@ -99,21 +97,28 @@ class Side:
     gap_width: float
     thickness: float
     kerf: float
+    inside_length: float = 0.0  # Inside dimension
+    outside_length: float = 0.0  # Outside dimension
     line_thickness: float = 0.1  # default line thickness
     prev: "Side" = None
     next: "Side" = None
     dogbone: bool = False
     divider_spacings: list[float] = None  # Pre-calculated divider spacings (partition widths)
     num_dividers: int = 0  # Number of dividers (partitions) on this side
+    tabbing: SideTabbing = None  # Clean enum representation of tabbing type
 
-    def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, tab_info: int, tabbed: int, length: float):
+    def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, length: float, inside_length: float):
         self.name = name
         self.is_male = is_male
         self.has_tabs = has_tabs
-        self.tab_info = tab_info
-        self.tabbed = tabbed
+        # Current length parameter (outside dimension for backward compatibility)
         self.length = length
+        self.outside_length = length  # Outside dimension
+        self.inside_length = inside_length  # Inside dimension passed explicitly
         self.divider_spacings = []
+
+        # Calculate clean tabbing enum from the boolean flags
+        self.tabbing = self._calculate_tabbing(is_male, has_tabs)
 
         dir_cases = {
             SideEnum.A: (1, 0),
@@ -160,6 +165,14 @@ class Side:
             self.tab_width -= settings.kerf
             self.first = -halfkerf
 
+    def _calculate_tabbing(self, is_male: bool, has_tabs: bool) -> SideTabbing:
+        """Calculate the clean tabbing enum from boolean flags."""
+        if not has_tabs:
+            return SideTabbing.NONE
+        elif is_male:
+            return SideTabbing.MALE
+        else:
+            return SideTabbing.FEMALE
 
 
 @dataclass
@@ -167,21 +180,58 @@ class PieceSettings:
     """Settings for a single piece"""
     rootx: tuple[int, int, int, int]  # (spacing,X,Y,Z) multipliers
     rooty: tuple[int, int, int, int]  # (spacing,X,Y,Z) multipliers
-    dx: float  # X dimension
-    dy: float  # Y dimension
+    dx: float  # X dimension (outside - for backward compatibility)
+    dy: float  # Y dimension (outside - for backward compatibility)
     sides: list[Side]
     faceType: FaceType
     pieceType: PieceType
     base: tuple[float, float]  # (x,y) base co-ordinates for piece
 
-    def __init__(self, rootx: tuple[int, int, int, int], rooty: tuple[int, int, int, int], sides: list[Side], faceType: FaceType, pieceType: PieceType, settings: BoxSettings):
+    @property
+    def outside_dx(self) -> float:
+        """Outside X dimension"""
+        return self.sides[0].outside_length
+    
+    @property
+    def inside_dx(self) -> float:
+        """Inside X dimension"""
+        return self.sides[0].inside_length
+    
+    @property
+    def outside_dy(self) -> float:
+        """Outside Y dimension"""
+        return self.sides[1].outside_length
+    
+    @property
+    def inside_dy(self) -> float:
+        """Inside Y dimension"""
+        return self.sides[1].inside_length
+
+    @staticmethod
+    def calculate_face_type(piece_type: PieceType) -> FaceType:
+        """Calculate FaceType from PieceType"""
+        face_type_mapping = {
+            PieceType.Top: FaceType.XY,
+            PieceType.Bottom: FaceType.XY,
+            PieceType.Front: FaceType.XZ,
+            PieceType.Back: FaceType.XZ,
+            PieceType.Left: FaceType.ZY,
+            PieceType.Right: FaceType.ZY,
+            PieceType.DividerX: FaceType.XZ,  # X dividers have same orientation as Back face
+            PieceType.DividerY: FaceType.ZY,  # Y dividers have same orientation as Left face
+        }
+        return face_type_mapping.get(piece_type, FaceType.XY)
+
+    def __init__(self, rootx: tuple[int, int, int, int], rooty: tuple[int, int, int, int], sides: list[Side], pieceType: PieceType, settings: BoxSettings):
         self.rootx = rootx
         self.rooty = rooty
         self.sides = sides
-        self.faceType = faceType
+        self.faceType = self.calculate_face_type(pieceType)
         self.pieceType = pieceType
-        self.dx = sides[0].length
-        self.dy = sides[1].length
+        
+        # For backward compatibility, dx and dy continue to represent outside dimensions
+        self.dx = sides[0].outside_length  # Same as sides[0].length
+        self.dy = sides[1].outside_length  # Same as sides[1].length
 
         sides[0].next = sides[1]
         sides[1].next = sides[2]

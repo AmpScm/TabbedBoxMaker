@@ -761,14 +761,21 @@ class TabbedBoxMaker(inkex.Effect):
         # tabbed= <abcd> 0=no tabs 1=tabs on this side
         # (sides: a=top, b=right, c=bottom, d=left)
         # pieceType: 1=XY, 2=XZ, 3=ZY
-        tpFace = FaceType.XY
-        bmFace = FaceType.XY
-        ftFace = FaceType.XZ
-        bkFace = FaceType.XZ
-        ltFace = FaceType.ZY
-        rtFace = FaceType.ZY
 
-        def make_sides(settings : BoxSettings, dx : float, dy : float, tabInfo : int, tabbed : int, faceType: FaceType) -> list[Side]:
+        def make_sides(settings : BoxSettings, dx : float, dy : float, inside_dx : float, inside_dy : float, tabInfo : int, tabbed : int, pieceType: PieceType) -> list[Side]:
+            # Calculate face type from piece type
+            face_type_mapping = {
+                PieceType.Top: FaceType.XY,
+                PieceType.Bottom: FaceType.XY,
+                PieceType.Front: FaceType.XZ,
+                PieceType.Back: FaceType.XZ,
+                PieceType.Left: FaceType.ZY,
+                PieceType.Right: FaceType.ZY,
+                PieceType.DividerX: FaceType.XZ,  # X dividers have same orientation as Back face
+                PieceType.DividerY: FaceType.ZY,  # Y dividers have same orientation as Left face
+            }
+            faceType = face_type_mapping.get(pieceType, FaceType.XY)
+            
             # Determine which divider spacings to use based on face type
             # X-axis dividers run along the Y direction, so they need Y spacing
             # Y-axis dividers run along the X direction, so they need X spacing
@@ -802,10 +809,10 @@ class TabbedBoxMaker(inkex.Effect):
 
             # Sides: A=top, B=right, C=bottom, D=left
             sides = [
-                Side(settings, SideEnum.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), (tabInfo >> 3) & 1, (tabbed >> 3) & 1, dx),
-                Side(settings, SideEnum.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), (tabInfo >> 2) & 1, (tabbed >> 2) & 1, dy),
-                Side(settings, SideEnum.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), (tabInfo >> 1) & 1, (tabbed >> 1) & 1, dx),
-                Side(settings, SideEnum.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), tabInfo & 1, tabbed & 1, dy)
+                Side(settings, SideEnum.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), dx, inside_dx),
+                Side(settings, SideEnum.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), dy, inside_dy),
+                Side(settings, SideEnum.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), dx, inside_dx),
+                Side(settings, SideEnum.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), dy, inside_dy)
             ]
 
             # Assign divider spacings to appropriate sides
@@ -825,7 +832,7 @@ class TabbedBoxMaker(inkex.Effect):
             if settings.div_x > 0:
                 divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z  # root y co-ord for piece
                 for n in range(0, settings.div_x):  # generate X dividers
-                    p = PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.DividerX, settings)
+                    p = PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, bkTabInfo, bkTabbed, PieceType.DividerX), PieceType.DividerX, settings)
                     # remove tabs from dividers if not required
                     if not settings.keydiv_floor:
                         p.sides[0].is_male = p.sides[2].is_male = True # sides A and C
@@ -845,7 +852,7 @@ class TabbedBoxMaker(inkex.Effect):
                 divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z  # root y co-ord for piece
                 for n in range(0, settings.div_y):  # generate Y dividers
 
-                    p = PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.DividerY, settings)
+                    p = PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, ltTabInfo, ltTabbed, PieceType.DividerY), PieceType.DividerY, settings)
 
                     # remove tabs from dividers if not required
                     if not settings.keydiv_walls:
@@ -874,30 +881,30 @@ class TabbedBoxMaker(inkex.Effect):
             if not hasRt:
                 reduceOffsets(cc, 2, 0, 0, 1)
             if hasBk:
-                pieces_list.append(PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back, settings))
+                pieces_list.append(PieceSettings(cc[1], rr[2], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, bkTabInfo, bkTabbed, PieceType.Back), PieceType.Back, settings))
             add_xdividers()
             if hasLt:
-                pieces_list.append(PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left, settings))
+                pieces_list.append(PieceSettings(cc[0], rr[1], make_sides(settings,settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, ltTabInfo, ltTabbed, PieceType.Left), PieceType.Left, settings))
             add_ydividers()
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom, settings))
+                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, bmTabInfo, bmTabbed, PieceType.Bottom), PieceType.Bottom, settings))
             if hasRt:
-                pieces_list.append(PieceSettings(cc[2], rr[1], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace), rtFace, PieceType.Right, settings))
+                pieces_list.append(PieceSettings(cc[2], rr[1], make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, rtTabInfo, rtTabbed, PieceType.Right), PieceType.Right, settings))
             if hasTp:
-                pieces_list.append(PieceSettings(cc[3], rr[1], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace), tpFace, PieceType.Top, settings))
+                pieces_list.append(PieceSettings(cc[3], rr[1], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, tpTabInfo, tpTabbed, PieceType.Top), PieceType.Top, settings))
             if hasFt:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace), ftFace, PieceType.Front, settings))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, ftTabInfo, ftTabbed, PieceType.Front), PieceType.Front, settings))
         elif settings.layout == Layout.THREE_PIECE:  # 3 Piece Layout
             rr = deepcopy([row0, row1y, row2])
             cc = deepcopy([col0, col1z])
             if hasBk:
-                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back, settings))
+                pieces_list.append(PieceSettings(cc[1], rr[1], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, bkTabInfo, bkTabbed, PieceType.Back), PieceType.Back, settings))
             add_xdividers()
             if hasLt:
-                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left, settings))
+                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, ltTabInfo, ltTabbed, PieceType.Left), PieceType.Left, settings))
             add_ydividers()
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom, settings))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, bmTabInfo, bmTabbed, PieceType.Bottom), PieceType.Bottom, settings))
         elif settings.layout == Layout.INLINE_COMPACT:  # Inline(compact) Layout
             rr = deepcopy([row0, row1y, row2])
             cc = deepcopy([col0, col1x, col2xx, col3xxz, col4, col5])
@@ -913,19 +920,19 @@ class TabbedBoxMaker(inkex.Effect):
             if not hasBk:
                 reduceOffsets(cc, 4, 1, 0, 0)
             if hasBk:
-                pieces_list.append(PieceSettings(cc[4], rr[0], make_sides(settings, settings.X, settings.Z, bkTabInfo, bkTabbed, bkFace), bkFace, PieceType.Back, settings))
+                pieces_list.append(PieceSettings(cc[4], rr[0], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, bkTabInfo, bkTabbed, PieceType.Back), PieceType.Back, settings))
             add_xdividers()
             if hasLt:
-                pieces_list.append(PieceSettings(cc[2], rr[0], make_sides(settings, settings.Z, settings.Y, ltTabInfo, ltTabbed, ltFace), ltFace, PieceType.Left, settings))
+                pieces_list.append(PieceSettings(cc[2], rr[0], make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, ltTabInfo, ltTabbed, PieceType.Left), PieceType.Left, settings))
             add_ydividers()
             if hasTp:
-                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.X, settings.Y, tpTabInfo, tpTabbed, tpFace), tpFace, PieceType.Top, settings))
+                pieces_list.append(PieceSettings(cc[0], rr[0], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, tpTabInfo, tpTabbed, PieceType.Top), PieceType.Top, settings))
             if hasBm:
-                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, bmTabInfo, bmTabbed, bmFace), bmFace, PieceType.Bottom, settings))
+                pieces_list.append(PieceSettings(cc[1], rr[0], make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, bmTabInfo, bmTabbed, PieceType.Bottom), PieceType.Bottom, settings))
             if hasRt:
-                pieces_list.append(PieceSettings(cc[3], rr[0], make_sides(settings, settings.Z, settings.Y, rtTabInfo, rtTabbed, rtFace), rtFace, PieceType.Right, settings))
+                pieces_list.append(PieceSettings(cc[3], rr[0], make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, rtTabInfo, rtTabbed, PieceType.Right), PieceType.Right, settings))
             if hasFt:
-                pieces_list.append(PieceSettings(cc[5], rr[0], make_sides(settings, settings.X, settings.Z, ftTabInfo, ftTabbed, ftFace), ftFace, PieceType.Front, settings))
+                pieces_list.append(PieceSettings(cc[5], rr[0], make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, ftTabInfo, ftTabbed, PieceType.Front), PieceType.Front, settings))
 
         # Handle Schroff settings if needed
         schroff_settings = None
