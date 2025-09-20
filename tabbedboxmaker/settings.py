@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, FaceType, SideEnum, PieceType, SideTabbing
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, FaceType, SideEnum, PieceType
 
 
 @dataclass
@@ -103,10 +103,51 @@ class Side:
     line_thickness: float = 0.1  # default line thickness
     prev: "Side" = None
     next: "Side" = None
-    dogbone: bool = False
-    divider_spacings: list[float] = None  # Pre-calculated divider spacings (partition widths)
-    num_dividers: int = 0  # Number of dividers (partitions) on this side
-    tabbing: SideTabbing = None  # Clean enum representation of tabbing type
+    
+    # Geometric offsets (calculated in _calculate_geometric_offsets)
+    root_offset: tuple[float, float] = (0, 0)
+    start_offset: tuple[float, float] = (0, 0)
+    
+    # Divider support
+    divider_spacings: list[float] = None
+    num_dividers: int = 0
+    
+    @property
+    def start_tab(self) -> bool:
+        """Calculate if this side starts with a tab
+        
+        This encapsulates the logic that was previously done with is_male,
+        but accounts for different tab symmetry modes.
+        
+        Returns True when the side should contribute a thickness offset,
+        False when it should not contribute an offset.
+        
+        For now, this exactly matches is_male behavior to maintain compatibility.
+        Future: Will be extended to handle ROTATE_SYMMETRIC and other modes properly.
+        """
+        # For now, exactly match existing is_male behavior
+        if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
+            return True # Always use offset for rotational symmetry (starts inside)
+        return self.is_male 
+
+    @property
+    def end_tab(self) -> bool:
+        """Calculate if this side starts with a tab
+        
+        This encapsulates the logic that was previously done with is_male,
+        but accounts for different tab symmetry modes.
+        
+        Returns True when the side should contribute a thickness offset,
+        False when it should not contribute an offset.
+        
+        For now, this exactly matches is_male behavior to maintain compatibility.
+        Future: Will be extended to handle ROTATE_SYMMETRIC and other modes properly.
+        """
+        # For now, exactly match existing is_male behavior
+        if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
+            return not self.has_tabs # Always use offset for rotational symmetry (starts inside)
+        return self.is_male 
+    # Note: end_offset removed - end point is start_offset of next side
 
     def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, length: float, inside_length: float):
         self.name = name
@@ -117,9 +158,6 @@ class Side:
         self.outside_length = length  # Outside dimension
         self.inside_length = inside_length  # Inside dimension passed explicitly
         self.divider_spacings = []
-
-        # Calculate clean tabbing enum from the boolean flags
-        self.tabbing = self._calculate_tabbing(is_male, has_tabs)
 
         dir_cases = {
             SideEnum.A: (1, 0),
@@ -165,15 +203,6 @@ class Side:
             self.gap_width += settings.kerf
             self.tab_width -= settings.kerf
             self.first = -halfkerf
-
-    def _calculate_tabbing(self, is_male: bool, has_tabs: bool) -> SideTabbing:
-        """Calculate the clean tabbing enum from boolean flags."""
-        if not has_tabs:
-            return SideTabbing.NONE
-        elif is_male:
-            return SideTabbing.MALE
-        else:
-            return SideTabbing.FEMALE
 
 
 @dataclass
@@ -243,8 +272,43 @@ class Piece:
 
         # Initialize at (0,0) - positioning happens in layout phase
         self.base = (0, 0)
+        
+        # Phase 2.1: Calculate geometric offsets for each side
+        # Keep alongside old system for verification before switching
+        self._calculate_geometric_offsets()
+    
+    def _calculate_geometric_offsets(self):
+        """Calculate geometric offsets for each side based on neighboring side properties.
+        
+        Phase 2.1: Pre-calculate the same offset values that are currently calculated
+        on-the-fly in render functions. This reduces coupling by moving the geometric
+        knowledge from render functions to side/piece creation.
+        
+        Key insight: Each side only needs its start point - the end point is the
+        start point of the next side. This creates a clean linked geometry.
+        
+        Calculates:
+        - root_offset: Base position for side's coordinate system 
+        - start_offset: Position adjustment based on prev/current side male/female
+        """
+        
+        for side in self.sides:
+            # These calculations mirror the offs_cases logic in render functions
+            if side.name == SideEnum.A:
+                side.root_offset = (0, 0)
+                side.start_offset = (side.prev.end_tab, side.start_tab)
+            elif side.name == SideEnum.B:
+                side.root_offset = (side.prev.length, 0)
+                side.start_offset = (-side.start_tab, side.prev.end_tab)
+            elif side.name == SideEnum.C:
+                side.root_offset = (side.length, side.prev.length)
+                side.start_offset = (-side.prev.end_tab, -side.start_tab)
+            elif side.name == SideEnum.D:
+                side.root_offset = (0, side.length)
+                side.start_offset = (side.start_tab, -side.prev.end_tab)
 
 
+@dataclass
 @dataclass
 class BoxConfiguration:
     """Complete box configuration including all computed settings"""

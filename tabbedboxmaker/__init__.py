@@ -83,20 +83,20 @@ class TabbedBoxMaker(inkex.Effect):
     @staticmethod
     def should_create_piece(piece_type: PieceType, settings: BoxSettings) -> bool:
         """Determine if a piece should be created based on settings.piece_types.
-        
+
         Uses the piece_types list instead of boolean faces for cleaner architecture.
         """
         # Check main faces
         if piece_type in [PieceType.Top, PieceType.Bottom, PieceType.Front, PieceType.Back, PieceType.Left, PieceType.Right]:
             return piece_type in settings.piece_types
-        
+
         # Check dividers
         if piece_type == PieceType.DividerX:
             return PieceType.DividerX in settings.piece_types and settings.div_x > 0
-        
+
         if piece_type == PieceType.DividerY:
             return PieceType.DividerY in settings.piece_types and settings.div_y > 0
-        
+
         return False
 
     def __init__(self, cli=True, schroff=False, inkscape=False):
@@ -606,7 +606,7 @@ class TabbedBoxMaker(inkex.Effect):
         ) if div_y > 0 else []
 
         return BoxSettings(
-            X=X, Y=Y, Z=Z, 
+            X=X, Y=Y, Z=Z,
             inside_X=inside_X, inside_Y=inside_Y, inside_Z=inside_Z,
             thickness=thickness, tab_width=tab_width, equal_tabs=equal_tabs,
             tab_symmetry=tabSymmetry, dimple_height=dimpleHeight, dimple_length=dimpleLength,
@@ -786,67 +786,6 @@ class TabbedBoxMaker(inkex.Effect):
         # (sides: a=top, b=right, c=bottom, d=left)
         # pieceType: 1=XY, 2=XZ, 3=ZY
 
-        def make_sides(settings : BoxSettings, dx : float, dy : float, inside_dx : float, inside_dy : float, tabInfo : int, tabbed : int, pieceType: PieceType) -> list[Side]:
-            # Calculate face type from piece type
-            face_type_mapping = {
-                PieceType.Top: FaceType.XY,
-                PieceType.Bottom: FaceType.XY,
-                PieceType.Front: FaceType.XZ,
-                PieceType.Back: FaceType.XZ,
-                PieceType.Left: FaceType.ZY,
-                PieceType.Right: FaceType.ZY,
-                PieceType.DividerX: FaceType.XZ,  # X dividers have same orientation as Back face
-                PieceType.DividerY: FaceType.ZY,  # Y dividers have same orientation as Left face
-            }
-            faceType = face_type_mapping.get(pieceType, FaceType.XY)
-            
-            # Determine which divider spacings to use based on face type
-            # X-axis dividers run along the Y direction, so they need Y spacing
-            # Y-axis dividers run along the X direction, so they need X spacing
-
-            def calculate_even_spacing(num_dividers: int, available_width: float, thickness: float) -> list[float]:
-                """Calculate even spacing for dividers when no custom spacing is provided"""
-                if num_dividers <= 0:
-                    return []
-                # Original calculation: equal spacing between and around dividers
-                partition_width = (available_width - thickness) / (num_dividers + 1)
-                return [partition_width] * num_dividers
-
-            if faceType == FaceType.XY:  # Top/Bottom faces
-                # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
-                # Side B/D (vertical) gets X-axis divider spacing (div_y)"
-                horizontal_spacing = settings.div_x_spacing if settings.div_x_spacing else calculate_even_spacing(int(settings.div_x), settings.Y, settings.thickness)
-                vertical_spacing = settings.div_y_spacing if settings.div_y_spacing else calculate_even_spacing(int(settings.div_y), settings.X, settings.thickness)
-            elif faceType == FaceType.XZ:  # Front/Back faces
-                # Side A/C (horizontal) gets no dividers (Z direction)
-                # Side B/D (vertical) gets X-axis divider spacing (div_y)
-                horizontal_spacing = []
-                vertical_spacing = settings.div_y_spacing if settings.div_y_spacing else calculate_even_spacing(int(settings.div_y), settings.X, settings.thickness)
-            elif faceType == FaceType.ZY:  # Left/Right faces"
-                # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
-                # Side B/D (vertical) gets no dividers (Z direction)
-                horizontal_spacing = settings.div_x_spacing if settings.div_x_spacing else calculate_even_spacing(int(settings.div_x), settings.Y, settings.thickness)
-                vertical_spacing = []
-            else:
-                horizontal_spacing = []
-                vertical_spacing = []
-
-            # Sides: A=top, B=right, C=bottom, D=left
-            sides = [
-                Side(settings, SideEnum.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), dx, inside_dx),
-                Side(settings, SideEnum.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), dy, inside_dy),
-                Side(settings, SideEnum.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), dx, inside_dx),
-                Side(settings, SideEnum.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), dy, inside_dy)
-            ]
-
-            # Assign divider spacings to appropriate sides
-            sides[0].divider_spacings = horizontal_spacing  # A (top)
-            sides[1].divider_spacings = vertical_spacing    # B (right)
-            sides[2].divider_spacings = horizontal_spacing  # C (bottom)
-            sides[3].divider_spacings = vertical_spacing    # D (left)
-
-            return sides
-
         def reduceOffsets(aa : list, start : int, dx : int, dy : int, dz : int):
             for ix in range(start + 1, len(aa)):
                 (s, x, y, z) = aa[ix]
@@ -864,40 +803,40 @@ class TabbedBoxMaker(inkex.Effect):
                 reduceOffsets(cc, 0, 0, 0, 1)
             if not hasRt:
                 reduceOffsets(cc, 2, 0, 0, 1)
-            
+
             # Create all pieces first at origin
             created_pieces = self.create_pieces(settings, faces, tabs)
-            
+
             # Position pieces using original coordinate calculation
             def calculate_position(col_tuple, row_tuple):
                 # Formula: x = xs * spacing + xx * X + xy * Y + xz * Z + initOffsetX
                 # col_tuple = (xs, xx, xy, xz), row_tuple = (ys, yx, yy, yz)
                 xs, xx, xy, xz = col_tuple
                 ys, yx, yy, yz = row_tuple
-                
+
                 x = xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
                 y = ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
-                
+
                 return (x, y)
-            
+
             # Create pieces in the correct order as original DIAGRAMMATIC layout
             divider_x_counter = 0
             divider_y_counter = 0
-            
+
             # Separate dividers from other pieces to avoid double processing
             main_pieces = [p for p in created_pieces if p.pieceType not in [PieceType.DividerX, PieceType.DividerY]]
             x_dividers = [p for p in created_pieces if p.pieceType == PieceType.DividerX]
             y_dividers = [p for p in created_pieces if p.pieceType == PieceType.DividerY]
-            
+
             # Track if dividers have been added
             x_dividers_added = False
             y_dividers_added = False
-            
+
             for piece in main_pieces:
                 if piece.pieceType == PieceType.Back and hasBk:
                     piece.base = calculate_position(cc[1], rr[2])  # cc[1], rr[2] - Back piece
                     pieces_list.append(piece)
-                    
+
                     # Add X dividers after Back piece (as in original)
                     for divider in x_dividers:
                         # Original divider positioning from working code:
@@ -909,11 +848,11 @@ class TabbedBoxMaker(inkex.Effect):
                         pieces_list.append(divider)
                         divider_x_counter += 1
                     x_dividers_added = True
-                        
+
                 elif piece.pieceType == PieceType.Left and hasLt:
                     piece.base = calculate_position(cc[0], rr[1])  # cc[0], rr[1] - Left piece
                     pieces_list.append(piece)
-                    
+
                     # Add X dividers after Left piece if Back piece doesn't exist (fallback)
                     if not x_dividers_added:
                         for divider in x_dividers:
@@ -923,7 +862,7 @@ class TabbedBoxMaker(inkex.Effect):
                             pieces_list.append(divider)
                             divider_x_counter += 1
                         x_dividers_added = True
-                    
+
                     # Add Y dividers after Left piece (as in original)
                     for divider in y_dividers:
                         # Original divider positioning from working code:
@@ -935,11 +874,11 @@ class TabbedBoxMaker(inkex.Effect):
                         pieces_list.append(divider)
                         divider_y_counter += 1
                     y_dividers_added = True
-                        
+
                 elif piece.pieceType == PieceType.Bottom and hasBm:
                     piece.base = calculate_position(cc[1], rr[1])  # cc[1], rr[1] - Bottom piece
                     pieces_list.append(piece)
-                    
+
                     # Add any remaining dividers after Bottom piece if neither Back nor Left exist (fallback)
                     if not x_dividers_added:
                         for divider in x_dividers:
@@ -949,7 +888,7 @@ class TabbedBoxMaker(inkex.Effect):
                             pieces_list.append(divider)
                             divider_x_counter += 1
                         x_dividers_added = True
-                    
+
                     if not y_dividers_added:
                         for divider in y_dividers:
                             divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z
@@ -973,42 +912,42 @@ class TabbedBoxMaker(inkex.Effect):
             row0 = (1, 0, 0, 0)  # top row
             row1y = (2, 0, 1, 0)  # second row, offset by Y
             row2 = (3, 0, 1, 1)  # third row, always offset by Y+Z
-            
+
             col0 = (1, 0, 0, 0)  # left column
             col1z = (2, 0, 0, 1)  # second column, offset by Z
-            
+
             rr = [row0, row1y, row2]
             cc = [col0, col1z]
-            
+
             # Create all pieces first at origin
             created_pieces = self.create_pieces(settings, faces, tabs)
-            
+
             # Position pieces using original coordinate calculation
             def calculate_position(col_tuple, row_tuple):
                 # Formula: x = xs * spacing + xx * X + xy * Y + xz * Z + initOffsetX
                 # col_tuple = (xs, xx, xy, xz), row_tuple = (ys, yx, yy, yz)
                 xs, xx, xy, xz = col_tuple
                 ys, yx, yy, yz = row_tuple
-                
+
                 x = xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
                 y = ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
-                
+
                 return (x, y)
-            
+
             # Create pieces in the correct order as original THREE_PIECE layout
             divider_x_counter = 0
             divider_y_counter = 0
-            
+
             # Separate dividers from other pieces to avoid double processing
             main_pieces = [p for p in created_pieces if p.pieceType not in [PieceType.DividerX, PieceType.DividerY]]
             x_dividers = [p for p in created_pieces if p.pieceType == PieceType.DividerX]
             y_dividers = [p for p in created_pieces if p.pieceType == PieceType.DividerY]
-            
+
             for piece in main_pieces:
                 if piece.pieceType == PieceType.Back and hasBk:
                     piece.base = calculate_position(cc[1], rr[1])  # cc[1], rr[1] - Back piece
                     pieces_list.append(piece)
-                    
+
                     # Add X dividers after Back piece (as in original)
                     for divider in x_dividers:
                         # Original divider positioning: divider_y = 4 * spacing + 1 * Y + 2 * Z
@@ -1017,11 +956,11 @@ class TabbedBoxMaker(inkex.Effect):
                         divider.base = (divider_x, divider_y)
                         pieces_list.append(divider)
                         divider_x_counter += 1
-                        
+
                 elif piece.pieceType == PieceType.Left and hasLt:
                     piece.base = calculate_position(cc[0], rr[0])  # cc[0], rr[0] - Left piece
                     pieces_list.append(piece)
-                    
+
                     # Add Y dividers after Left piece (as in original)
                     for divider in y_dividers:
                         # Original divider positioning: divider_y = 5 * spacing + 1 * Y + 3 * Z
@@ -1030,7 +969,7 @@ class TabbedBoxMaker(inkex.Effect):
                         divider.base = (divider_x, divider_y)
                         pieces_list.append(divider)
                         divider_y_counter += 1
-                        
+
                 elif piece.pieceType == PieceType.Bottom and hasBm:
                     piece.base = calculate_position(cc[1], rr[0])  # cc[1], rr[0] - Bottom piece
                     pieces_list.append(piece)
@@ -1040,23 +979,23 @@ class TabbedBoxMaker(inkex.Effect):
             row0 = (1, 0, 0, 0)  # top row
             row1y = (2, 0, 1, 0)  # second row, offset by Y
             row2 = (3, 0, 1, 1)  # third row, always offset by Y+Z
-            
+
             col0 = (1, 0, 0, 0)  # left column
             col1x = (2, 1, 0, 0)  # second column, offset by X
             col2xx = (3, 2, 0, 0)  # third column, offset by 2*X
             col3xxz = (4, 2, 0, 1)  # fourth column, offset by 2*X+Z
             col4 = (5, 2, 0, 2)  # fifth column, always offset by 2*X+2*Z
             col5 = (6, 3, 0, 2)  # sixth column, always offset by 3*X+2*Z
-            
+
             rr = [row0, row1y, row2]
             cc = [col0, col1x, col2xx, col3xxz, col4, col5]
-            
+
             # Apply reductions based on missing pieces (from original code)
             def reduceOffsets(aa, start, dx, dy, dz):
                 for ix in range(start + 1, len(aa)):
                     (s, x, y, z) = aa[ix]
                     aa[ix] = (s - 1, x - dx, y - dy, z - dz)
-            
+
             if not hasTp:
                 # remove col0, shift others left by X
                 reduceOffsets(cc, 0, 1, 0, 0)
@@ -1068,37 +1007,37 @@ class TabbedBoxMaker(inkex.Effect):
                 reduceOffsets(cc, 3, 0, 0, 1)
             if not hasBk:
                 reduceOffsets(cc, 4, 1, 0, 0)
-            
+
             # Create all pieces first at origin
             created_pieces = self.create_pieces(settings, faces, tabs)
-            
+
             # Position pieces using original coordinate calculation
             def calculate_position(col_tuple, row_tuple):
                 # Formula: x = xs * spacing + xx * X + xy * Y + xz * Z + initOffsetX
                 # col_tuple = (xs, xx, xy, xz), row_tuple = (ys, yx, yy, yz)
                 xs, xx, xy, xz = col_tuple
                 ys, yx, yy, yz = row_tuple
-                
+
                 x = xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
                 y = ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
-                
+
                 return (x, y)
-            
+
             # Create pieces in the correct order as original INLINE_COMPACT layout
             divider_x_counter = 0
             divider_y_counter = 0
-            
+
             # Separate pieces by type for proper ordering
             pieces_by_type = {}
             for piece in created_pieces:
                 pieces_by_type[piece.pieceType] = piece
-            
+
             # Follow exact original INLINE_COMPACT order: Back -> X dividers -> Left -> Y dividers -> Top -> Bottom -> Right -> Front
             if hasBk and PieceType.Back in pieces_by_type:
                 piece = pieces_by_type[PieceType.Back]
                 piece.base = calculate_position(cc[4], rr[0])  # cc[4], rr[0] - Back piece
                 pieces_list.append(piece)
-                
+
             # Add X dividers after Back piece (as in original)
             if PieceType.DividerX in pieces_by_type:
                 divider = pieces_by_type[PieceType.DividerX]
@@ -1107,12 +1046,12 @@ class TabbedBoxMaker(inkex.Effect):
                 divider_x = divider_x_counter * (settings.spacing + settings.X)
                 divider.base = (divider_x, divider_y)
                 pieces_list.append(divider)
-                        
+
             if hasLt and PieceType.Left in pieces_by_type:
                 piece = pieces_by_type[PieceType.Left]
                 piece.base = calculate_position(cc[2], rr[0])  # cc[2], rr[0] - Left piece
                 pieces_list.append(piece)
-                    
+
             # Add Y dividers after Left piece (as in original)
             if PieceType.DividerY in pieces_by_type:
                 divider = pieces_by_type[PieceType.DividerY]
@@ -1121,22 +1060,22 @@ class TabbedBoxMaker(inkex.Effect):
                 divider_x = divider_y_counter * (settings.spacing + settings.Z)
                 divider.base = (divider_x, divider_y)
                 pieces_list.append(divider)
-                        
+
             if hasTp and PieceType.Top in pieces_by_type:
                 piece = pieces_by_type[PieceType.Top]
                 piece.base = calculate_position(cc[0], rr[0])  # cc[0], rr[0] - Top piece
                 pieces_list.append(piece)
-                
+
             if hasBm and PieceType.Bottom in pieces_by_type:
                 piece = pieces_by_type[PieceType.Bottom]
                 piece.base = calculate_position(cc[1], rr[0])  # cc[1], rr[0] - Bottom piece
                 pieces_list.append(piece)
-                
+
             if hasRt and PieceType.Right in pieces_by_type:
                 piece = pieces_by_type[PieceType.Right]
                 piece.base = calculate_position(cc[3], rr[0])  # cc[3], rr[0] - Right piece
                 pieces_list.append(piece)
-                
+
             if hasFt and PieceType.Front in pieces_by_type:
                 piece = pieces_by_type[PieceType.Front]
                 piece.base = calculate_position(cc[5], rr[0])  # cc[5], rr[0] - Front piece
@@ -1164,8 +1103,42 @@ class TabbedBoxMaker(inkex.Effect):
 
     def create_pieces(self, settings: BoxSettings, faces: BoxFaces, tabs: TabConfiguration) -> list[Piece]:
         """Generate all pieces needed for the box without layout positioning"""
-        
-        def make_sides(settings : BoxSettings, dx : float, dy : float, inside_dx : float, inside_dy : float, tabInfo : int, tabbed : int, pieceType: PieceType) -> list[Side]:
+
+        def get_piece_tab_config(tabs: TabConfiguration, pieceType: PieceType) -> tuple[int, int]:
+            """Get tab configuration for a specific piece type.
+            Returns: (tabInfo, tabbed)"""
+            tab_config_mapping = {
+                PieceType.Back: (tabs.bkTabInfo, tabs.bkTabbed),
+                PieceType.Front: (tabs.ftTabInfo, tabs.ftTabbed),
+                PieceType.Left: (tabs.ltTabInfo, tabs.ltTabbed),
+                PieceType.Right: (tabs.rtTabInfo, tabs.rtTabbed),
+                PieceType.Bottom: (tabs.bmTabInfo, tabs.bmTabbed),
+                PieceType.Top: (tabs.tpTabInfo, tabs.tpTabbed),
+                # Dividers use the same tab config as their corresponding face
+                PieceType.DividerX: (tabs.bkTabInfo, tabs.bkTabbed),  # Like Back face
+                PieceType.DividerY: (tabs.ltTabInfo, tabs.ltTabbed),  # Like Left face
+            }
+            return tab_config_mapping.get(pieceType, (0, 0))
+
+        def get_piece_dimensions(settings: BoxSettings, pieceType: PieceType) -> tuple[float, float, float, float]:
+            """Calculate outside and inside dimensions for a piece type.
+            Returns: (dx, dy, inside_dx, inside_dy)"""
+            dimension_mapping = {
+                PieceType.Back: (settings.X, settings.Z, settings.inside_X, settings.inside_Z),
+                PieceType.Front: (settings.X, settings.Z, settings.inside_X, settings.inside_Z),
+                PieceType.Left: (settings.Z, settings.Y, settings.inside_Z, settings.inside_Y),
+                PieceType.Right: (settings.Z, settings.Y, settings.inside_Z, settings.inside_Y),
+                PieceType.Bottom: (settings.X, settings.Y, settings.inside_X, settings.inside_Y),
+                PieceType.Top: (settings.X, settings.Y, settings.inside_X, settings.inside_Y),
+                PieceType.DividerX: (settings.X, settings.Z, settings.inside_X, settings.inside_Z),
+                PieceType.DividerY: (settings.Z, settings.Y, settings.inside_Z, settings.inside_Y),
+            }
+            return dimension_mapping.get(pieceType, (0, 0, 0, 0))
+
+        def make_sides(settings : BoxSettings, tabs: TabConfiguration, pieceType: PieceType) -> list[Side]:
+            """Create sides for a piece using dimensions and tab config from settings."""
+            dx, dy, inside_dx, inside_dy = get_piece_dimensions(settings, pieceType)
+            tabInfo, tabbed = get_piece_tab_config(tabs, pieceType)
             # Calculate face type from piece type
             face_type_mapping = {
                 PieceType.Top: FaceType.XY,
@@ -1178,7 +1151,7 @@ class TabbedBoxMaker(inkex.Effect):
                 PieceType.DividerY: FaceType.ZY,  # Y dividers have same orientation as Left face
             }
             faceType = face_type_mapping.get(pieceType, FaceType.XY)
-            
+
             # Determine which divider spacings to use based on face type
             # X-axis dividers run along the Y direction, so they need Y spacing
             # Y-axis dividers run along the X direction, so they need X spacing
@@ -1227,65 +1200,69 @@ class TabbedBoxMaker(inkex.Effect):
             return sides
 
         pieces = []
-        
+
         # Create main box faces using piece-driven approach
         if self.should_create_piece(PieceType.Back, settings):
-            sides = make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, tabs.bkTabInfo, tabs.bkTabbed, PieceType.Back)
+            sides = make_sides(settings, tabs, PieceType.Back)
             pieces.append(Piece(sides, PieceType.Back))
-            
+
         if self.should_create_piece(PieceType.Left, settings):
-            sides = make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, tabs.ltTabInfo, tabs.ltTabbed, PieceType.Left)
+            sides = make_sides(settings, tabs, PieceType.Left)
             pieces.append(Piece(sides, PieceType.Left))
-            
+
         if self.should_create_piece(PieceType.Bottom, settings):
-            sides = make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, tabs.bmTabInfo, tabs.bmTabbed, PieceType.Bottom)
+            sides = make_sides(settings, tabs, PieceType.Bottom)
             pieces.append(Piece(sides, PieceType.Bottom))
-            
+
         if self.should_create_piece(PieceType.Right, settings):
-            sides = make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, tabs.rtTabInfo, tabs.rtTabbed, PieceType.Right)
+            sides = make_sides(settings, tabs, PieceType.Right)
             pieces.append(Piece(sides, PieceType.Right))
-            
+
         if self.should_create_piece(PieceType.Top, settings):
-            sides = make_sides(settings, settings.X, settings.Y, settings.inside_X, settings.inside_Y, tabs.tpTabInfo, tabs.tpTabbed, PieceType.Top)
+            sides = make_sides(settings, tabs, PieceType.Top)
             pieces.append(Piece(sides, PieceType.Top))
-            
+
         if self.should_create_piece(PieceType.Front, settings):
-            sides = make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, tabs.ftTabInfo, tabs.ftTabbed, PieceType.Front)
+            sides = make_sides(settings, tabs, PieceType.Front)
             pieces.append(Piece(sides, PieceType.Front))
-        
+
         # Create dividers using piece-driven approach
         if self.should_create_piece(PieceType.DividerX, settings):
             for n in range(int(settings.div_x)):
-                sides = make_sides(settings, settings.X, settings.Z, settings.inside_X, settings.inside_Z, tabs.bkTabInfo, tabs.bkTabbed, PieceType.DividerX)
-                piece = Piece(sides, PieceType.DividerX)
-                
+                sides = make_sides(settings, tabs, PieceType.DividerX)
+
                 # Remove tabs from dividers if not required
+                # NOTE: Setting is_male=True is a workaround for geometric offset calculation
+                # when has_tabs=False. This coupling should be cleaned up in future refactoring.
                 if not settings.keydiv_floor:
-                    piece.sides[0].is_male = piece.sides[2].is_male = True # sides A and C
-                    piece.sides[0].has_tabs = piece.sides[2].has_tabs = False
+                    sides[0].is_male = sides[2].is_male = True # sides A and C
+                    sides[0].has_tabs = sides[2].has_tabs = False
                 if not settings.keydiv_walls:
-                    piece.sides[1].is_male = piece.sides[3].is_male = True # sides B and D
-                    piece.sides[1].has_tabs = piece.sides[3].has_tabs = False
-                    
-                piece.sides[1].num_dividers = settings.div_y * (settings.div_x > 0)
+                    sides[1].is_male = sides[3].is_male = True # sides B and D
+                    sides[1].has_tabs = sides[3].has_tabs = False
+
+                sides[1].num_dividers = settings.div_y * (settings.div_x > 0)
+                piece = Piece(sides, PieceType.DividerX)
+
                 pieces.append(piece)
-                
+
         if self.should_create_piece(PieceType.DividerY, settings):
             for n in range(int(settings.div_y)):
-                sides = make_sides(settings, settings.Z, settings.Y, settings.inside_Z, settings.inside_Y, tabs.ltTabInfo, tabs.ltTabbed, PieceType.DividerY)
-                piece = Piece(sides, PieceType.DividerY)
-                
+                sides = make_sides(settings, tabs, PieceType.DividerY)
+
                 # Remove tabs from dividers if not required
+                # NOTE: Setting is_male=True is a workaround for geometric offset calculation
+                # when has_tabs=False. This coupling should be cleaned up in future refactoring.
                 if not settings.keydiv_walls:
-                    piece.sides[0].is_male = piece.sides[2].is_male = True # sides A and C
-                    piece.sides[0].has_tabs = piece.sides[2].has_tabs = False
+                    sides[0].is_male = sides[2].is_male = True # sides A and C
+                    sides[0].has_tabs = sides[2].has_tabs = False
                 if not settings.keydiv_floor:
-                    piece.sides[1].is_male = piece.sides[3].is_male = True # sides B and D
-                    piece.sides[1].has_tabs = piece.sides[3].has_tabs = False
-                    
-                piece.sides[0].num_dividers = settings.div_x * (settings.div_x > 0)
+                    sides[1].is_male = sides[3].is_male = True # sides B and D
+                    sides[1].has_tabs = sides[3].has_tabs = False
+                sides[0].num_dividers = settings.div_x * (settings.div_x > 0)
+                piece = Piece(sides, PieceType.DividerY)
                 pieces.append(piece)
-        
+
         return pieces
 
     def generate_pieces(self, config: BoxConfiguration, settings: BoxSettings) -> None:
@@ -1318,7 +1295,7 @@ class TabbedBoxMaker(inkex.Effect):
                 dy = piece.dy
 
                 log(f"rail holes enabled on piece at ({x + settings.thickness}, {y + settings.thickness})")
-                log(f"abcd = ({aSide.is_male},{bSide.is_male},{cSide.is_male},{dSide.is_male})")
+                log(f"abcd = ({aSide.has_tabs and aSide.is_male},{bSide.has_tabs and bSide.is_male},{cSide.has_tabs and cSide.is_male},{dSide.has_tabs and dSide.is_male})")
                 log(f"dxdy = ({dx},{dy})")
                 rhxoffset = schroff.rail_mount_depth + settings.thickness
                 if piece.pieceType == PieceType.Left:
@@ -1622,16 +1599,9 @@ class TabbedBoxMaker(inkex.Effect):
         direction = side.direction
         dirX, dirY = direction
 
-        # TODO: Use rotation matrix to simplify this logic
-        # All values are booleans so results will be -1, 0, or 1
-
-        offs_cases = {
-            SideEnum.A: [(0,0), (side.prev.is_male, side.is_male), (-side.next.is_male, side.is_male)],
-            SideEnum.B: [(side.prev.length, 0), (-side.is_male, side.prev.is_male), (-side.is_male, -side.next.is_male)],
-            SideEnum.C: [(side.length, side.prev.length), (-side.prev.is_male, -side.is_male), (side.next.is_male, -side.is_male)],
-            SideEnum.D: [(0, side.length), (side.is_male, -side.prev.is_male), (side.is_male, side.next.is_male)],
-        }
-        root_offs, startOffset, endOffset = offs_cases[side.name]
+        root_offs = side.root_offset
+        startOffset = side.start_offset
+        endOffset = side.next.start_offset
 
         startOffsetX, startOffsetY = startOffset
         endOffsetX, endOffsetY = endOffset
@@ -1646,8 +1616,6 @@ class TabbedBoxMaker(inkex.Effect):
             tabVec = thickness if (direction == (1, 0) or direction == (0, -1)) != isMale else -thickness
         else:
             tabVec = 0
-
-        prevTab = side.prev.has_tabs
 
         kerf = side.kerf
         halfkerf = kerf / 2
@@ -1664,20 +1632,18 @@ class TabbedBoxMaker(inkex.Effect):
         secondVec = tabVec
         notDirX, notDirY = self._get_perpendicular_flags(direction)
         s = inkex.Path()
+        vectorX = startOffsetX * thickness
+        vectorY = startOffsetY * thickness
+
+        s.append(Move(vectorX, vectorY))
+
+        # Set vector for tab generation
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            vectorX = (0 if dirX and prevTab else startOffsetX * thickness)
-            vectorY = (0 if dirY and prevTab else startOffsetY * thickness)
-            s.append(Move(vectorX, vectorY))
             vectorX = (startOffsetX if startOffsetX else dirX) * thickness
             vectorY = (startOffsetY if startOffsetY else dirY) * thickness
-            if notDirX and tabVec:
-                endOffsetX = 0
-            if notDirY and tabVec:
-                endOffsetY = 0
         else:
             vectorX = startOffsetX * thickness
             vectorY = startOffsetY * thickness
-            s.append(Move(vectorX, vectorY))
             if notDirX:
                 vectorY = 0  # set correct line start for tab generation
             if notDirY:
@@ -1803,20 +1769,8 @@ class TabbedBoxMaker(inkex.Effect):
         direction = side.direction
         dirX, dirY = direction
 
-        # TODO: Use rotation matrix to simplify this logic
-        # All values are booleans so results will be -1, 0, or 1
-
-        offs_cases = {
-            SideEnum.A: [(0,0), (side.prev.is_male, side.is_male)],
-            SideEnum.B: [(side.prev.length, 0), (-side.is_male, side.prev.is_male)],
-            SideEnum.C: [(side.length, side.prev.length), (-side.prev.is_male, -side.is_male)],
-            SideEnum.D: [(0, side.length), (side.is_male, -side.prev.is_male)],
-        }
-        root_offs, startOffset = offs_cases[side.name]
-
-        #if not side.has_tabs and side.is_male:
-        #if not side.has_tabs and side.is_male:
-        #    startOffset = (0, 0)
+        root_offs = side.root_offset
+        startOffset = side.start_offset
 
         startOffsetX, startOffsetY = startOffset
         length = side.length
@@ -1837,11 +1791,14 @@ class TabbedBoxMaker(inkex.Effect):
             vectorX = (startOffsetX if startOffsetX else dirX) * thickness
             vectorY = (startOffsetY if startOffsetY else dirY) * thickness
         else:
-            vectorX = (startOffsetX * thickness) if notDirX else 0
-            vectorY = (startOffsetY * thickness) if notDirY else 0
-
             dividerEdgeOffsetX = dirY * thickness #* side.prev.has_tabs
             dividerEdgeOffsetY = dirX * thickness #* side.prev.has_tabs
+            vectorX = startOffsetX * thickness
+            vectorY = startOffsetY * thickness
+            if notDirX:
+                vectorY = 0  # set correct line start for tab generation
+            if notDirY:
+                vectorX = 0
 
         for dividerNumber in range(numDividers):
             base_pos = (vectorX, vectorY)
@@ -1896,16 +1853,8 @@ class TabbedBoxMaker(inkex.Effect):
         direction = side.direction
         dirX, dirY = direction
 
-        # TODO: Use rotation matrix to simplify this logic
-        # All values are booleans so results will be -1, 0, or 1
-
-        offs_cases = {
-            SideEnum.A: [(0,0), (side.prev.is_male, side.is_male)],
-            SideEnum.B: [(side.prev.length, 0), (-side.is_male, side.prev.is_male)],
-            SideEnum.C: [(side.length, side.prev.length), (-side.prev.is_male, -side.is_male)],
-            SideEnum.D: [(0, side.length), (side.is_male, -side.prev.is_male)],
-        }
-        root_offs, startOffset = offs_cases[side.name]
+        root_offs = side.root_offset
+        startOffset = side.start_offset
 
         startOffsetX, startOffsetY = startOffset
 
@@ -1938,8 +1887,12 @@ class TabbedBoxMaker(inkex.Effect):
             vectorX = (startOffsetX if startOffsetX else dirX) * thickness
             vectorY = (startOffsetY if startOffsetY else dirY) * thickness
         else:
-            vectorX = (startOffsetX * thickness) if notDirX else 0
-            vectorY = (startOffsetY * thickness) if notDirY else 0
+            vectorX = startOffsetX * thickness
+            vectorY = startOffsetY * thickness
+            if notDirX:
+                vectorY = 0  # set correct line start for tab generation
+            if notDirY:
+                vectorX = 0
 
         w = gapWidth if isMale else tabWidth
         if side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
