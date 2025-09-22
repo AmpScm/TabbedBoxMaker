@@ -409,7 +409,6 @@ class TabbedBoxMaker(inkex.Effect):
         )
 
 
-
     def parse_arguments(self, args: list[str]) -> None:
         """Parse the given arguments and set 'self.options'"""
 
@@ -1342,6 +1341,7 @@ class TabbedBoxMaker(inkex.Effect):
                 aSide,
                 ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and aSide.has_tabs and yholes)
                 * settings.div_x,
+                settings
             )
             # Side B
             self.render_side(
@@ -1350,6 +1350,7 @@ class TabbedBoxMaker(inkex.Effect):
                 bSide,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and bSide.has_tabs and xholes)
                 * settings.div_y,
+                settings
             )
             # Side C
             self.render_side(
@@ -1358,6 +1359,7 @@ class TabbedBoxMaker(inkex.Effect):
                 cSide,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not aSide.has_tabs and cSide.has_tabs and yholes)
                 * settings.div_x,
+                settings
             )
             # Side D
             self.render_side(
@@ -1366,6 +1368,7 @@ class TabbedBoxMaker(inkex.Effect):
                 dSide,
                 ((self.keydivfloor or wall) and (self.keydivwalls or floor) and not bSide.has_tabs and dSide.has_tabs and xholes)
                 * settings.div_y,
+                settings
             )
 
             # All pieces drawn, now optimize the paths if required
@@ -1576,23 +1579,23 @@ class TabbedBoxMaker(inkex.Effect):
         group: inkex.Group,
         piece: Piece,
         side: Side,
-        numDividers: int = 0
+        numDividers: int = 0,
+        settings: BoxSettings = None
     ) -> None:
         """Draw one side of a piece, with tabs or holes as required. Returns result in group"""
 
         root = piece.base
-        isDivider = piece.pieceType in (PieceType.DividerX, PieceType.DividerY)
         numDividers = side.num_dividers if side.num_dividers else numDividers
 
-        for i in self.render_side_side(root, side) + \
-                self.render_side_slots(root, side, isDivider, numDividers) + \
-                self.render_side_holes(root, side, isDivider, numDividers):
+        for i in self.render_side_side(root, side, settings) + \
+                ( self.render_side_slots(root, side, numDividers, settings) if piece.pieceType in [PieceType.DividerY, PieceType.DividerX] else self.render_side_holes(root, side, numDividers, settings)):
             group.add(i)
 
     def render_side_side(
         self,
         root: tuple[float, float],
-        side: Side
+        side: Side,
+        settings: BoxSettings = None
     ) -> list[inkex.PathElement]:
         """Draw one side of a piece"""
 
@@ -1617,7 +1620,7 @@ class TabbedBoxMaker(inkex.Effect):
         else:
             tabVec = 0
 
-        kerf = side.kerf
+        kerf = settings.kerf
         halfkerf = kerf / 2
         dogbone = side.dogbone
 
@@ -1626,7 +1629,16 @@ class TabbedBoxMaker(inkex.Effect):
         divisions = side.divisions
         gapWidth = side.gap_width
         tabWidth = side.tab_width
-        first = side.first
+
+        
+        if isMale:  # self.kerf correction
+            gapWidth -= settings.kerf
+            tabWidth += settings.kerf
+            first = halfkerf
+        else:
+            gapWidth += settings.kerf
+            tabWidth -= settings.kerf
+            first = -halfkerf
 
         firstVec = 0
         secondVec = tabVec
@@ -1754,13 +1766,12 @@ class TabbedBoxMaker(inkex.Effect):
         self,
         root: tuple[float, float],
         side: Side,
-        isDivider: bool = False,
         numDividers: int = 0,
-        dividerSpacings: list[float] = None,
+        settings: BoxSettings = None
     ) -> list[inkex.PathElement]:
         """Draw tabs or holes as required"""
 
-        if (numDividers == 0 or not isDivider) or side.name not in (SideEnum.A, SideEnum.B):
+        if numDividers == 0 or side.name not in (SideEnum.A, SideEnum.B):
             return []
 
         dividerSpacings = side.divider_spacings
@@ -1777,12 +1788,15 @@ class TabbedBoxMaker(inkex.Effect):
 
         thickness = side.thickness
 
-        kerf = side.kerf
+        kerf = settings.kerf
         halfkerf = kerf / 2
 
         nodes = []
 
-        first = side.first
+        if side.is_male:  # self.kerf correction
+            first = halfkerf
+        else:
+            first = -halfkerf
 
         notDirX, notDirY = self._get_perpendicular_flags(direction)
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
@@ -1839,12 +1853,12 @@ class TabbedBoxMaker(inkex.Effect):
         self,
         root: tuple[float, float],
         side: Side,
-        isDivider: bool = False,
         numDividers: int = 0,
+        settings: BoxSettings = None
     ) -> list[inkex.PathElement]:
         """Draw tabs or holes as required"""
 
-        if numDividers == 0 and not isDivider:
+        if numDividers == 0:
             return []
 
         dividerSpacings = side.divider_spacings
@@ -1868,7 +1882,7 @@ class TabbedBoxMaker(inkex.Effect):
         else:
             tabVec = 0
 
-        kerf = side.kerf
+        kerf = settings.kerf
         halfkerf = kerf / 2
         dogbone = side.dogbone
 
@@ -1877,7 +1891,15 @@ class TabbedBoxMaker(inkex.Effect):
         divisions = side.divisions
         gapWidth = side.gap_width
         tabWidth = side.tab_width
-        first = side.first
+        
+        if isMale:  # self.kerf correction
+            gapWidth -= settings.kerf
+            tabWidth += settings.kerf
+            first = halfkerf
+        else:
+            gapWidth += settings.kerf
+            tabWidth -= settings.kerf
+            first = -halfkerf
 
         firstVec = 0
         secondVec = tabVec
@@ -1904,7 +1926,7 @@ class TabbedBoxMaker(inkex.Effect):
         firstHole = True
         for tabDivision in range(divisions):
             # draw holes for divider tabs to key into side walls
-            if (((tabDivision % 2) == 0) != (not isMale)) and numDividers > 0 and not isDivider:
+            if ((tabDivision % 2) == 0) != (not isMale) and numDividers > 0:
                 w = gapWidth if isMale else tabWidth
                 if tabDivision == 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                     w -= startOffsetX * thickness

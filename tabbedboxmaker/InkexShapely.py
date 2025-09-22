@@ -18,8 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import inkex
 from inkex.paths.lines import Line, Move, ZoneClose
-from shapely.geometry import Polygon, LinearRing
-
+from shapely.geometry import Polygon, MultiPolygon, LinearRing
 
 def fstr(f: float) -> str:
     """Format float to string with minimal decimal places, avoiding scientific notation."""
@@ -36,7 +35,6 @@ def fstr(f: float) -> str:
 
 def path_to_polygon(path_obj : inkex.Path) -> Polygon | None:
     # Accepts inkex.Path object, only absolute Move/Line/Close
-    from shapely.geometry import Polygon
     coords = []
     for seg in path_obj:
         if seg.letter == 'M':
@@ -54,7 +52,6 @@ def path_to_polygon(path_obj : inkex.Path) -> Polygon | None:
 
 def polygon_to_path(poly) -> inkex.Path:
     # Accepts shapely Polygon or MultiPolygon, returns inkex.Path string
-    from shapely.geometry import Polygon, MultiPolygon, LinearRing
     
     path = inkex.Path()
     

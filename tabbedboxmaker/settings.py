@@ -97,7 +97,6 @@ class Side:
     tab_width: float
     gap_width: float
     thickness: float
-    kerf: float
     inside_length: float = 0.0  # Inside dimension
     outside_length: float = 0.0  # Outside dimension
     line_thickness: float = 0.1  # default line thickness
@@ -170,11 +169,8 @@ class Side:
         self.tab_symmetry = settings.tab_symmetry
         self.tab_width = settings.tab_width
         self.thickness = settings.thickness
-        self.kerf = settings.kerf
         self.line_thickness = settings.line_thickness
         self.dogbone = settings.dogbone
-
-        halfkerf = settings.kerf / 2
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             self.divisions = int((length - 2 * settings.thickness) / self.tab_width)
@@ -194,15 +190,6 @@ class Side:
         else:
             self.tab_width = self.tab_width
             self.gap_width = (length - tabs * self.tab_width) / (self.divisions - tabs)
-
-        if is_male:  # self.kerf correction
-            self.gap_width -= settings.kerf
-            self.tab_width += settings.kerf
-            self.first = halfkerf
-        else:
-            self.gap_width += settings.kerf
-            self.tab_width -= settings.kerf
-            self.first = -halfkerf
 
 
 @dataclass
