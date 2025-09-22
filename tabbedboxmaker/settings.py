@@ -22,8 +22,8 @@ class BoxSettings:
     spacing: float
     boxtype: BoxType
     piece_types: list[PieceType]  # Which pieces this box includes
-    div_x: float
-    div_y: float
+    div_x: int
+    div_y: int
     div_x_spacing: list[float]  # Custom spacing for X-axis dividers (partition widths)
     div_y_spacing: list[float]  # Custom spacing for Y-axis dividers (partition widths)
     keydiv_walls: bool
@@ -83,7 +83,48 @@ class TabConfiguration:
     ftTabbed: int
     bkTabbed: int
 
+class Vec(tuple):
+    """Simple 2D vector class for basic operations"""
+    x: float
+    y: float
 
+    def __new__(cls, x : float, y : float):
+        return super().__new__(cls, (x, y))
+
+    def __init__(self, x: float, y: float):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other: "Vec") -> "Vec":
+        return Vec(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other: "Vec") -> "Vec":
+        return Vec(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, scalar: float) -> "Vec":
+        return Vec(self.x * scalar, self.y * scalar)
+
+    def __truediv__(self, scalar: float) -> "Vec":
+        return Vec(self.x / scalar, self.y / scalar)
+
+    def as_tuple(self) -> tuple[float, float]:
+        return (self.x, self.y)
+    
+    def rotate_clockwise(self, count : int = 1) -> "Vec":
+        """Return a vector rotated 90 degrees clockwise"""
+
+        v = (self.x + self.y * 1j)
+        for _ in range(count):
+            v *= 1j
+        return Vec(v.real, v.imag)    
+
+    def rotate_counterclockwise(self, count : int = 1) -> "Vec":
+        """Return a vector rotated 90 degrees counter-clockwise"""
+
+        v = (self.x + self.y * 1j)
+        for _ in range(count):
+            v *= -1j
+        return Vec(v.real, v.imag)
 
 @dataclass
 class Side:
@@ -91,7 +132,7 @@ class Side:
     is_male: bool
     has_tabs: bool
     length: float  # Current length (for backward compatibility)
-    direction: tuple[int, int]
+    direction: Vec
     tab_symmetry: TabSymmetry
     divisions: int
     tab_width: float
@@ -104,25 +145,25 @@ class Side:
     next: "Side" = None
     
     # Geometric offsets (calculated in _calculate_geometric_offsets)
-    root_offset: tuple[float, float] = (0, 0)
-    start_offset: tuple[float, float] = (0, 0)
+    root_offset: Vec = Vec(0, 0)
+    start_offset: Vec = Vec(0, 0)
     
     # Divider support
     divider_spacings: list[float] = None
     num_dividers: int = 0
+
+    equal_tabs: bool = False
+    base_tab_width: float = 0.0
     
     @property
-    def start_tab(self) -> bool:
-        """Calculate if this side starts with a tab
+    def start_hole(self) -> bool:
+        """Calculate if this side starts with a hole
         
         This encapsulates the logic that was previously done with is_male,
         but accounts for different tab symmetry modes.
         
         Returns True when the side should contribute a thickness offset,
         False when it should not contribute an offset.
-        
-        For now, this exactly matches is_male behavior to maintain compatibility.
-        Future: Will be extended to handle ROTATE_SYMMETRIC and other modes properly.
         """
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
@@ -130,23 +171,19 @@ class Side:
         return self.is_male 
 
     @property
-    def end_tab(self) -> bool:
-        """Calculate if this side starts with a tab
+    def end_hole(self) -> bool:
+        """Calculate if this side ends with a hole
         
         This encapsulates the logic that was previously done with is_male,
         but accounts for different tab symmetry modes.
         
         Returns True when the side should contribute a thickness offset,
         False when it should not contribute an offset.
-        
-        For now, this exactly matches is_male behavior to maintain compatibility.
-        Future: Will be extended to handle ROTATE_SYMMETRIC and other modes properly.
         """
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             return not self.has_tabs # Always use offset for rotational symmetry (starts inside)
         return self.is_male 
-    # Note: end_offset removed - end point is start_offset of next side
 
     def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, length: float, inside_length: float):
         self.name = name
@@ -158,39 +195,39 @@ class Side:
         self.inside_length = inside_length  # Inside dimension passed explicitly
         self.divider_spacings = []
 
-        dir_cases = {
-            SideEnum.A: (1, 0),
-            SideEnum.B: (0, 1),
-            SideEnum.C: (-1, 0),
-            SideEnum.D: (0, -1),
-        }
+        baseDirection = Vec(1, 0)  # default direction
 
-        self.direction = dir_cases.get(name, (0, 0))
+        self.direction = baseDirection.rotate_clockwise(name - 1)  # Rotate direction based on side name (A=0°, B=90°, C=180°, D=270°)
         self.tab_symmetry = settings.tab_symmetry
-        self.tab_width = settings.tab_width
+        self.tab_width = self.base_tab_width = settings.tab_width
         self.thickness = settings.thickness
         self.line_thickness = settings.line_thickness
         self.dogbone = settings.dogbone
+        self.equal_tabs = settings.equal_tabs
+
+        self.recalc()
+
+    def recalc(self):
+        length = self.length
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            self.divisions = int((length - 2 * settings.thickness) / self.tab_width)
+            self.divisions = int((length - 2 * self.thickness) // self.base_tab_width)
             if self.divisions % 2:
                 self.divisions += 1  # make divs even
             tabs = self.divisions // 2  # tabs for side
         else:
-            self.divisions = int(length // self.tab_width)
+            self.divisions = int(length // self.base_tab_width)
             if not self.divisions % 2:
                 self.divisions -= 1  # make divs odd
             tabs = (self.divisions - 1) // 2  # tabs for side
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            self.gap_width = self.tab_width = (length - 2 * settings.thickness) / self.divisions
-        elif settings.equal_tabs:
+            self.gap_width = self.tab_width = (length - 2 * self.thickness) / self.divisions
+        elif self.equal_tabs:
             self.gap_width = self.tab_width = length / self.divisions
         else:
-            self.tab_width = self.tab_width
+            self.tab_width = self.base_tab_width
             self.gap_width = (length - tabs * self.tab_width) / (self.divisions - tabs)
-
 
 @dataclass
 class Piece:
@@ -200,7 +237,7 @@ class Piece:
     faceType: FaceType
     dx: float  # outside dimension
     dy: float  # outside dimension
-    base: tuple[float, float]  # (x,y) base co-ordinates for piece
+    base: Vec  # (x,y) base co-ordinates for piece
 
     @property
     def outside_dx(self) -> float:
@@ -258,7 +295,7 @@ class Piece:
         sides[3].prev = sides[2]
 
         # Initialize at (0,0) - positioning happens in layout phase
-        self.base = (0, 0)
+        self.base = Vec(0, 0)
         
         # Phase 2.1: Calculate geometric offsets for each side
         # Keep alongside old system for verification before switching
@@ -278,28 +315,28 @@ class Piece:
         - root_offset: Base position for side's coordinate system 
         - start_offset: Position adjustment based on prev/current side male/female
         """
+
+        for side in self.sides:
+            side.recalc()  # Ensure side parameters are up to date
         
         for side in self.sides:
             # These calculations mirror the offs_cases logic in render functions
             if side.name == SideEnum.A:
-                side.root_offset = (0, 0)
-                side.start_offset = (side.prev.end_tab, side.start_tab)
+                side.root_offset = Vec(0, 0)
             elif side.name == SideEnum.B:
-                side.root_offset = (side.prev.length, 0)
-                side.start_offset = (-side.start_tab, side.prev.end_tab)
+                side.root_offset = Vec(side.prev.length, 0)
             elif side.name == SideEnum.C:
-                side.root_offset = (side.length, side.prev.length)
-                side.start_offset = (-side.prev.end_tab, -side.start_tab)
+                side.root_offset = Vec(side.length, side.prev.length)
             elif side.name == SideEnum.D:
-                side.root_offset = (0, side.length)
-                side.start_offset = (side.start_tab, -side.prev.end_tab)
+                side.root_offset = Vec(0, side.length)
+
+            side.start_offset = Vec(side.prev.end_hole, side.start_hole).rotate_clockwise(side.name - 1)
 
 
-@dataclass
 @dataclass
 class BoxConfiguration:
     """Complete box configuration including all computed settings"""
     schroff_settings: Optional[SchroffSettings]
-    faces: BoxFaces
+    piece_types: list[PieceType]
     tabs: TabConfiguration
-    pieces: list[Piece]
+    
