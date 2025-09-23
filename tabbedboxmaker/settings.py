@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, SideEnum, PieceType
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, Sides, PieceType
 
 
 @dataclass
@@ -128,7 +128,7 @@ class Vec(tuple):
 
 @dataclass
 class Side:
-    name: SideEnum
+    name: Sides
     is_male: bool
     has_tabs: bool
     length: float  # Current length (for backward compatibility)
@@ -185,7 +185,7 @@ class Side:
             return not self.has_tabs # Always use offset for rotational symmetry (starts inside)
         return self.is_male
 
-    def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, length: float, inside_length: float):
+    def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, length: float, inside_length: float):
         self.name = name
         self.is_male = is_male
         self.has_tabs = has_tabs
@@ -303,13 +303,13 @@ class Piece:
 
         for side in self.sides:
             # These calculations mirror the offs_cases logic in render functions
-            if side.name == SideEnum.A:
+            if side.name == Sides.A:
                 side.root_offset = Vec(0, 0)
-            elif side.name == SideEnum.B:
+            elif side.name == Sides.B:
                 side.root_offset = Vec(side.prev.length, 0)
-            elif side.name == SideEnum.C:
+            elif side.name == Sides.C:
                 side.root_offset = Vec(side.length, side.prev.length)
-            elif side.name == SideEnum.D:
+            elif side.name == Sides.D:
                 side.root_offset = Vec(0, side.length)
 
             side.start_offset = Vec(side.prev.end_hole, side.start_hole).rotate_clockwise(side.name)

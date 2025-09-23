@@ -85,7 +85,7 @@ class PieceType(Enum):
     DividerY = 102,
 
    
-class SideEnum(IntEnum):
+class Sides(IntEnum):
     A = 0
     B = 1
     C = 2
