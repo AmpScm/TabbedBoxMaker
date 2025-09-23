@@ -33,7 +33,7 @@ from inkex.paths.lines import Line, Move, ZoneClose
 from copy import deepcopy
 from shapely.ops import unary_union
 
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying, SideEnum, PieceType
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying, Sides, PieceType
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
 from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, BoxFaces, TabConfiguration, Piece, SchroffSettings, Side, Vec
@@ -1098,31 +1098,38 @@ class TabbedBoxMaker(inkex.Effect):
                 horizontal_spacing = []
                 vertical_spacing = []
 
-
-            # Already extracted above from Side objects
-            xholes = pieceType not in [PieceType.Left, PieceType.Right, PieceType.DividerY]
-            yholes = pieceType not in [PieceType.Front, PieceType.Back, PieceType.DividerX]
-            wall = pieceType not in [PieceType.Top, PieceType.Bottom]
-            floor = pieceType in [PieceType.Bottom, PieceType.Top]
-
             # Sides: A=top, B=right, C=bottom, D=left
             sides = [
-                Side(settings, SideEnum.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), dx, inside_dx),
-                Side(settings, SideEnum.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), dy, inside_dy),
-                Side(settings, SideEnum.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), dx, inside_dx),
-                Side(settings, SideEnum.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), dy, inside_dy)
+                Side(settings, Sides.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), dx, inside_dx),
+                Side(settings, Sides.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), dy, inside_dy),
+                Side(settings, Sides.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), dx, inside_dx),
+                Side(settings, Sides.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), dy, inside_dy)
             ]
 
             # Assign divider spacings to appropriate sides
-            sides[SideEnum.A].divider_spacings = horizontal_spacing  # A (top)
-            sides[SideEnum.B].divider_spacings = vertical_spacing    # B (right)
-            sides[SideEnum.C].divider_spacings = horizontal_spacing  # C (bottom)
-            sides[SideEnum.D].divider_spacings = vertical_spacing    # D (left)
+            sides[Sides.A].divider_spacings = horizontal_spacing  # A (top)
+            sides[Sides.B].divider_spacings = vertical_spacing    # B (right)
+            sides[Sides.C].divider_spacings = horizontal_spacing  # C (bottom)
+            sides[Sides.D].divider_spacings = vertical_spacing    # D (left)
 
-            sides[SideEnum.A].num_dividers = settings.div_x if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and sides[SideEnum.A].has_tabs and yholes) else 0
-            sides[SideEnum.B].num_dividers = settings.div_y if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and sides[SideEnum.B].has_tabs and xholes) else 0
-            sides[SideEnum.C].num_dividers = settings.div_x if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and not sides[SideEnum.A].has_tabs and sides[SideEnum.C].has_tabs and yholes) else 0
-            sides[SideEnum.D].num_dividers = settings.div_y if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and not sides[SideEnum.B].has_tabs and sides[SideEnum.D].has_tabs and xholes) else 0
+
+            if pieceType not in [PieceType.DividerX, PieceType.DividerY]:
+                # Already extracted above from Side objects
+                wall = pieceType not in [PieceType.Top, PieceType.Bottom]
+                floor = pieceType in [PieceType.Bottom, PieceType.Top]
+
+                if pieceType not in [PieceType.Front, PieceType.Back] and (settings.keydiv_floor or wall) and (settings.keydiv_walls or floor):
+                    if sides[Sides.A].has_tabs:
+                        sides[Sides.A].num_dividers = settings.div_x
+                    elif sides[Sides.C].has_tabs:
+                        sides[Sides.C].num_dividers = settings.div_x
+
+
+                if pieceType not in [PieceType.Left, PieceType.Right] and ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor)):
+                    if sides[Sides.B].has_tabs:
+                        sides[Sides.B].num_dividers = settings.div_y
+                    elif sides[Sides.D].has_tabs:
+                        sides[Sides.D].num_dividers = settings.div_y
 
             return sides
 
@@ -1617,7 +1624,7 @@ class TabbedBoxMaker(inkex.Effect):
         """Draw tabs or holes as required"""
 
         numDividers = side.num_dividers
-        if numDividers == 0 or side.name not in (SideEnum.A, SideEnum.B):
+        if numDividers == 0 or side.name not in (Sides.A, Sides.B):
             return []
 
         dividerSpacings = side.divider_spacings
