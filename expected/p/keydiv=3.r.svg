@@ -1,5 +1,5 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="273mm" height="358mm" viewBox="0 0 273 358" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="273mm" height="355mm" viewBox="0 0 273 355" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
   <sodipodi:namedview id="namedview7" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:document-units="mm" showgrid="false" inkscape:zoom="0.64052329" inkscape:cx="397.33138" inkscape:cy="561.25984" inkscape:window-width="2086" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer1"/>
   <defs id="defs2"/>
   <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
@@ -11,11 +11,11 @@
       <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 50 201 l 0 -4 l 3 0 l 0 -6 l -3 0 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -4"/>
     </g>
     <g id="xdivider_001">
-      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 3 209 l 4.14286 0 l 0 0 l 6.00004 0 l 0 0 l 7.1428 0 l 0 0 l 6 0 l 0 0 l 7.1429 0 l 0 0 l 6 0 l 0 0 l 7.1428 0 l 0 0 l 6 0 l 0 0 l 7.1429 0 l 0 0 l 6 0 l 0 0 l 7.1428 0 l 0 0 l 6 0 l 0 0 l 4.1429 0"/>
-      <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 83 209 l 0 4 l 0 0 l 0 6 l 0 0 l 0 7 l 0 0 l 0 6 l 0 0 l 0 7 l 0 0 l 0 6 l 0 0 l 0 4"/>
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 38.5 206 l 0 23 l 3 0 l 0 -23 l -3 0 z"/>
-      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 83 249 l -4.1429 0 l 0 0 l -6 0 l 0 0 l -7.1428 0 l 0 0 l -6 0 l 0 0 l -7.1429 0 l 0 0 l -6 0 l 0 0 l -7.1428 0 l 0 0 l -6 0 l 0 0 l -7.1429 0 l 0 0 l -6 0 l 0 0 l -7.1428 0 l 0 0 l -6 0 l 0 0 l -4.1429 0"/>
-      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 3 249 l 0 -4 l 0 0 l 0 -6 l 0 0 l 0 -7 l 0 0 l 0 -6 l 0 0 l 0 -7 l 0 0 l 0 -6 l 0 0 l 0 -4"/>
+      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 206 l 6.28571 0 l 0 0 l 5.99999 0 l 0 0 l 6.2857 0 l 0 0 l 6 0 l 0 0 l 6.2857 0 l 0 0 l 6 0 l 0 0 l 6.2858 0 l 0 0 l 6 0 l 0 0 l 6.2857 0 l 0 0 l 6 0 l 0 0 l 6.2857 0 l 0 0 l 6 0 l 0 0 l 6.2857 0"/>
+      <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 82 206 l 0 9.333 l 0 0 l 0 6 l 0 0 l 0 9.334 l 0 0 l 0 6 l 0 0 l 0 9.333"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 37.5 206 l 0 20 l 3 0 l 0 -20 l -3 0 z"/>
+      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 82 246 l -6.2857 0 l 0 0 l -6 0 l 0 0 l -6.2857 0 l 0 0 l -6 0 l 0 0 l -6.2857 0 l 0 0 l -6 0 l 0 0 l -6.2858 0 l 0 0 l -6 0 l 0 0 l -6.2857 0 l 0 0 l -6 0 l 0 0 l -6.2857 0 l 0 0 l -6 0 l 0 0 l -6.2857 0"/>
+      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 246 l 0 -9.333 l 0 0 l 0 -6 l 0 0 l 0 -9.334 l 0 0 l 0 -6 l 0 0 l 0 -9.333"/>
     </g>
     <g id="piece_002">
       <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 5 53 l 4 0 l 0 -3 l 6 0 l 0 3 l 7 0 l 0 -3 l 6 0 l 0 3 l 7 0 l 0 -3 l 6 0 l 0 3 l 4 0"/>
@@ -24,11 +24,11 @@
       <path id="side_012" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 5 153 l 0 -3.444 l -3 0 l 0 -6 l 3 0 l 0 -6.445 l -3 0 l 0 -6 l 3 0 l 0 -6.444 l -3 0 l 0 -6 l 3 0 l 0 -6.445 l -3 0 l 0 -6 l 3 0 l 0 -6.4442 l -3 0 l 0 -6 l 3 0 l 0 -6.4445 l -3 0 l 0 -6 l 3 0 l 0 -6.4444 l -3 0 l 0 -6 l 3 0 l 0 -6.4445 l -3 0 l 0 -6 l 3 0 l 0 -3.4444"/>
     </g>
     <g id="ydivider_001">
-      <path id="side_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 3 257 l 4 0 l 0 0 l 6 0 l 0 0 l 7 0 l 0 0 l 6 0 l 0 0 l 7 0 l 0 0 l 6 0 l 0 0 l 4 0"/>
-      <path id="slot_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 0 305.5 l 23 0 l 0 3 l -23 0 l 0 -3 z"/>
-      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 43 257 l 0 3.444 l 0 0 l 0 6 l 0 0 l 0 6.445 l 0 0 l 0 6 l 0 0 l 0 6.444 l 0 0 l 0 6 l 0 0 l 0 6.445 l 0 0 l 0 6 l 0 0 l 0 6.444 l 0 0 l 0 6 l 0 0 l 0 6.445 l 0 0 l 0 6 l 0 0 l 0 6.444 l 0 0 l 0 6 l 0 0 l 0 6.445 l 0 0 l 0 6 l 0 0 l 0 3.444"/>
-      <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 43 357 l -4 0 l 0 0 l -6 0 l 0 0 l -7 0 l 0 0 l -6 0 l 0 0 l -7 0 l 0 0 l -6 0 l 0 0 l -4 0"/>
-      <path id="side_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 3 357 l 0 -3.444 l 0 0 l 0 -6 l 0 0 l 0 -6.445 l 0 0 l 0 -6 l 0 0 l 0 -6.444 l 0 0 l 0 -6 l 0 0 l 0 -6.445 l 0 0 l 0 -6 l 0 0 l 0 -6.444 l 0 0 l 0 -6 l 0 0 l 0 -6.445 l 0 0 l 0 -6 l 0 0 l 0 -6.444 l 0 0 l 0 -6 l 0 0 l 0 -6.445 l 0 0 l 0 -6 l 0 0 l 0 -3.444"/>
+      <path id="side_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 254 l 9.3333 0 l 0 0 l 6 0 l 0 0 l 9.3334 0 l 0 0 l 6 0 l 0 0 l 9.3333 0"/>
+      <path id="slot_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 302.5 l 20 0 l 0 3 l -20 0 l 0 -3 z"/>
+      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 42 254 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25"/>
+      <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 42 354 l -9.3333 0 l 0 0 l -6 0 l 0 0 l -9.3334 0 l 0 0 l -6 0 l 0 0 l -9.3333 0"/>
+      <path id="side_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 354 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25 l 0 0 l 0 -6 l 0 0 l 0 -7.25"/>
     </g>
     <g id="piece_003">
       <path id="side_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 50 50 l 7.1429 0 l 0 3 l 6 0 l 0 -3 l 7.1428 0 l 0 3 l 6 0 l 0 -3 l 7.1429 0 l 0 3 l 6 0 l 0 -3 l 7.1428 0 l 0 3 l 5.9996 0 l 0 -3 l 7.143 0 l 0 3 l 6 0 l 0 -3 l 7.143 0 l 0 3 l 6 0 l 0 -3 l 7.143 0"/>
