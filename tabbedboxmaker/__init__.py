@@ -250,7 +250,7 @@ class TabbedBoxMaker(inkex.Effect):
             action="store",
             type=float,
             dest="tab",
-            default=25,
+            default=5,
             help="Nominal Tab Width (float)",
         )
         self.arg_parser.add_argument(
@@ -322,7 +322,7 @@ class TabbedBoxMaker(inkex.Effect):
             action="store",
             type=int,
             dest="style",
-            default=25,
+            default=1,
             help="Layout/Style",
         )
         self.arg_parser.add_argument(
@@ -330,7 +330,7 @@ class TabbedBoxMaker(inkex.Effect):
             action="store",
             type=float,
             dest="spacing",
-            default=25,
+            default=3,
             help="Part Spacing",
         )
         self.arg_parser.add_argument(
@@ -338,7 +338,7 @@ class TabbedBoxMaker(inkex.Effect):
             action="store",
             type=int,
             dest="boxtype",
-            default=25,
+            default=1,
             help="Box type",
         )
         self.arg_parser.add_argument(
@@ -346,7 +346,7 @@ class TabbedBoxMaker(inkex.Effect):
             action="store",
             type=int,
             dest="div_x",
-            default=25,
+            default=0,
             help="Dividers (Length axis / X axis)",
         )
         self.arg_parser.add_argument(
@@ -354,7 +354,7 @@ class TabbedBoxMaker(inkex.Effect):
             action="store",
             type=int,
             dest="div_y",
-            default=25,
+            default=0,
             help="Dividers (Width axis / Y axis)",
         )
         self.arg_parser.add_argument(

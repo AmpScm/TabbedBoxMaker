@@ -754,3 +754,100 @@ def test_params_optimized(cp):
     assert (
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
+
+
+def test_inside_sizes_no_kerf():
+    output, expected = run_one(os.path.join('v', 'sizes-20-30-40'), [
+            "--unit=mm",
+            "--inside=1",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0",
+            "--thickness=2"], optimize=True)
+
+    sizes=[]
+
+    for i in re.findall(r'(?<=\bd=")M [^"]*(?=")', output):
+        bbox = Path(i).bounding_box()
+        w = bbox.width - 4
+        h = bbox.height - 4
+
+        sizes.append((round(min(w, h), 3), round(max(w, h), 3)))
+    
+    sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
+    assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
+
+def test_inside_sizes_kerf():
+    output, expected = run_one(os.path.join('v', 'sizes-20-30-40-kerf'), [
+            "--unit=mm",
+            "--inside=1",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0.5",
+            "--thickness=2"], optimize=True)
+
+    sizes=[]
+
+    for i in re.findall(r'(?<=\bd=")M [^"]*(?=")', output):
+        bbox = Path(i).bounding_box()
+        w = bbox.width - 4 - 0.5
+        h = bbox.height - 4 - 0.5
+
+        sizes.append((round(min(w, h), 3), round(max(w, h), 3)))
+    
+    sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
+    assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
+
+def test_outside_sizes_no_kerf():
+    output, expected = run_one(os.path.join('v', 'sizes-20-30-40-outside'), [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0",
+            "--thickness=2"], optimize=True)
+
+    sizes=[]
+
+    for i in re.findall(r'(?<=\bd=")M [^"]*(?=")', output):
+        bbox = Path(i).bounding_box()
+        w = bbox.width
+        h = bbox.height
+
+        sizes.append((round(min(w, h), 3), round(max(w, h), 3)))
+    
+    sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
+    assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
+
+def test_outside_sizes_kerf():
+    output, expected = run_one(os.path.join('v', 'sizes-20-30-40-outside-kerf'), [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0.5",
+            "--thickness=2"], optimize=True)
+
+    sizes=[]
+
+    for i in re.findall(r'(?<=\bd=")M [^"]*(?=")', output):
+        bbox = Path(i).bounding_box()
+        w = bbox.width - 0.5
+        h = bbox.height - 0.5
+
+        sizes.append((round(min(w, h), 3), round(max(w, h), 3)))
+    
+    sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
+    assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
