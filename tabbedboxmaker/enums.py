@@ -73,11 +73,6 @@ class BoxDimensions(IntEnum):
     INSIDE = 1  # Dimensions are inside measurements
 
 
-class FaceType(Enum):
-    XY = 1
-    XZ = 2
-    ZY = 3
-
 class PieceType(Enum):
     Back = 1,
     Left = 2,
@@ -89,10 +84,9 @@ class PieceType(Enum):
     DividerX = 101,
     DividerY = 102,
 
-
-    
+   
 class SideEnum(IntEnum):
-    A = 1
-    B = 2
-    C = 3
-    D = 4
+    A = 0
+    B = 1
+    C = 2
+    D = 3

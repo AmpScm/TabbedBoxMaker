@@ -33,7 +33,7 @@ from inkex.paths.lines import Line, Move, ZoneClose
 from copy import deepcopy
 from shapely.ops import unary_union
 
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying, FaceType, SideEnum, PieceType
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying, SideEnum, PieceType
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
 from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, BoxFaces, TabConfiguration, Piece, SchroffSettings, Side, Vec
@@ -530,10 +530,6 @@ class TabbedBoxMaker(inkex.Effect):
         initOffsetY = 0
 
 
-        # For code spacing consistency, we use two-character abbreviations for the six box faces,
-        # where each abbreviation is the first and last letter of the face name:
-        # tp=top, bm=bottom, ft=front, bk=back, lt=left, rt=right
-        # Determine which faces the box has based on the box type
         piece_types = [PieceType.Back, PieceType.Left, PieceType.Bottom, PieceType.Right, PieceType.Top, PieceType.Front]
         if box_type == BoxType.ONE_SIDE_OPEN:
             piece_types = [PieceType.Bottom, PieceType.Front, PieceType.Back, PieceType.Left, PieceType.Right]
@@ -1070,17 +1066,6 @@ class TabbedBoxMaker(inkex.Effect):
             dx, dy, inside_dx, inside_dy = get_piece_dimensions(settings, pieceType)
             tabInfo, tabbed = get_piece_tab_config(tabs, pieceType)
             # Calculate face type from piece type
-            face_type_mapping = {
-                PieceType.Top: FaceType.XY,
-                PieceType.Bottom: FaceType.XY,
-                PieceType.Front: FaceType.XZ,
-                PieceType.Back: FaceType.XZ,
-                PieceType.Left: FaceType.ZY,
-                PieceType.Right: FaceType.ZY,
-                PieceType.DividerX: FaceType.XZ,  # X dividers have same orientation as Back face
-                PieceType.DividerY: FaceType.ZY,  # Y dividers have same orientation as Left face
-            }
-            faceType = face_type_mapping.get(pieceType, FaceType.XY)
 
             # Determine which divider spacings to use based on face type
             # X-axis dividers run along the Y direction, so they need Y spacing
@@ -1094,17 +1079,17 @@ class TabbedBoxMaker(inkex.Effect):
                 partition_width = (available_width - thickness) / (num_dividers + 1)
                 return [partition_width] * num_dividers
 
-            if faceType == FaceType.XY:  # Top/Bottom faces
+            if pieceType in [PieceType.Top, PieceType.Bottom]:  # Top/Bottom faces
                 # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
                 # Side B/D (vertical) gets X-axis divider spacing (div_y)"
                 horizontal_spacing = settings.div_x_spacing if settings.div_x_spacing else calculate_even_spacing(settings.div_x, settings.Y, settings.thickness)
                 vertical_spacing = settings.div_y_spacing if settings.div_y_spacing else calculate_even_spacing(settings.div_y, settings.X, settings.thickness)
-            elif faceType == FaceType.XZ:  # Front/Back faces
+            elif pieceType in [PieceType.Front, PieceType.Back, PieceType.DividerX]:  # Front/Back faces
                 # Side A/C (horizontal) gets no dividers (Z direction)
                 # Side B/D (vertical) gets X-axis divider spacing (div_y)
                 horizontal_spacing = []
                 vertical_spacing = settings.div_y_spacing if settings.div_y_spacing else calculate_even_spacing(settings.div_y, settings.X, settings.thickness)
-            elif faceType == FaceType.ZY:  # Left/Right faces"
+            elif pieceType in [PieceType.Left, PieceType.Right, PieceType.DividerY]:  # Left/Right faces
                 # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
                 # Side B/D (vertical) gets no dividers (Z direction)
                 horizontal_spacing = settings.div_x_spacing if settings.div_x_spacing else calculate_even_spacing(settings.div_x, settings.Y, settings.thickness)
@@ -1112,6 +1097,13 @@ class TabbedBoxMaker(inkex.Effect):
             else:
                 horizontal_spacing = []
                 vertical_spacing = []
+
+
+            # Already extracted above from Side objects
+            xholes = pieceType not in [PieceType.Left, PieceType.Right, PieceType.DividerY]
+            yholes = pieceType not in [PieceType.Front, PieceType.Back, PieceType.DividerX]
+            wall = pieceType not in [PieceType.Top, PieceType.Bottom]
+            floor = pieceType in [PieceType.Bottom, PieceType.Top]
 
             # Sides: A=top, B=right, C=bottom, D=left
             sides = [
@@ -1122,10 +1114,15 @@ class TabbedBoxMaker(inkex.Effect):
             ]
 
             # Assign divider spacings to appropriate sides
-            sides[0].divider_spacings = horizontal_spacing  # A (top)
-            sides[1].divider_spacings = vertical_spacing    # B (right)
-            sides[2].divider_spacings = horizontal_spacing  # C (bottom)
-            sides[3].divider_spacings = vertical_spacing    # D (left)
+            sides[SideEnum.A].divider_spacings = horizontal_spacing  # A (top)
+            sides[SideEnum.B].divider_spacings = vertical_spacing    # B (right)
+            sides[SideEnum.C].divider_spacings = horizontal_spacing  # C (bottom)
+            sides[SideEnum.D].divider_spacings = vertical_spacing    # D (left)
+
+            sides[SideEnum.A].num_dividers = settings.div_x if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and sides[SideEnum.A].has_tabs and yholes) else 0
+            sides[SideEnum.B].num_dividers = settings.div_y if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and sides[SideEnum.B].has_tabs and xholes) else 0
+            sides[SideEnum.C].num_dividers = settings.div_x if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and not sides[SideEnum.A].has_tabs and sides[SideEnum.C].has_tabs and yholes) else 0
+            sides[SideEnum.D].num_dividers = settings.div_y if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and not sides[SideEnum.B].has_tabs and sides[SideEnum.D].has_tabs and xholes) else 0
 
             return sides
 
@@ -1203,25 +1200,12 @@ class TabbedBoxMaker(inkex.Effect):
         """Generate and draw all pieces based on the configuration"""
 
         for piece in pieces:  # generate and draw each piece of the box
-            # Use new sides list
-            sides = piece.sides
-            # Sides: [A, B, C, D]
-            aSide, bSide, cSide, dSide = sides
-            faceType = piece.faceType
+            pieceType = piece.pieceType
 
-            # Already extracted above from Side objects
-            xholes = faceType != FaceType.ZY
-            yholes = faceType != FaceType.XZ
-            wall = faceType != FaceType.XY
-            floor = faceType == FaceType.XY
+            group = self.makeGroup("xdivider" if pieceType == PieceType.DividerX else ("ydivider" if pieceType == PieceType.DividerY else "piece"))
 
-            name = "xdivider" if piece.pieceType == PieceType.DividerX else ("ydivider" if piece.pieceType == PieceType.DividerY else "piece")
-
-            railholes = faceType == FaceType.ZY and name == "piece"
-
-            group = self.makeGroup(name)
-
-            if settings.schroff and railholes and config.schroff_settings:
+            if settings.schroff and pieceType in [PieceType.Left, PieceType.Right] and config.schroff_settings:
+                aSide, bSide, cSide, dSide = piece.sides
                 (x, y) = piece.base
 
                 schroff = config.schroff_settings
@@ -1267,40 +1251,8 @@ class TabbedBoxMaker(inkex.Effect):
                         rystart += settings.schroff.row_centre_spacing + settings.schroff.row_spacing + settings.schroff.rail_height
 
             # generate and draw the sides of each piece
-            # Calculate average spacing for each side's dividers (for uniform spacing assumption in render functions)
-
-            # Side A
-            self.render_side(
-                group,
-                piece,
-                aSide,
-                settings.div_x if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and aSide.has_tabs and yholes) else 0,
-                settings
-            )
-            # Side B
-            self.render_side(
-                group,
-                piece,
-                bSide,
-                settings.div_y if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and bSide.has_tabs and xholes) else 0,
-                settings
-            )
-            # Side C
-            self.render_side(
-                group,
-                piece,
-                cSide,
-                settings.div_x if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and not aSide.has_tabs and cSide.has_tabs and yholes) else 0,
-                settings
-            )
-            # Side D
-            self.render_side(
-                group,
-                piece,
-                dSide,
-                settings.div_y if ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor) and not bSide.has_tabs and dSide.has_tabs and xholes) else 0,
-                settings
-            )
+            for side in piece.sides:
+                self.render_side(group, piece, side, settings)
 
             # All pieces drawn, now optimize the paths if required
             if self.options.optimize:
@@ -1506,21 +1458,16 @@ class TabbedBoxMaker(inkex.Effect):
         group: inkex.Group,
         piece: Piece,
         side: Side,
-        numDividers: int = 0,
         settings: BoxSettings = None
     ) -> None:
         """Draw one side of a piece, with tabs or holes as required. Returns result in group"""
 
         root = piece.base
-        numDividers = side.num_dividers if side.num_dividers else numDividers
-
-
-        #group.add(inkex.etree.Comment(f" {side} "))
 
         for i in self.render_side_side(root, side, settings) + \
-                ( self.render_side_slots(root, side, numDividers, settings)
+                ( self.render_side_slots(root, side, settings)
                     if piece.pieceType in [PieceType.DividerY, PieceType.DividerX]
-                    else self.render_side_holes(root, side, numDividers, settings)):
+                    else self.render_side_holes(root, side, settings)):
             group.add(i)
 
     def render_side_side(
@@ -1665,11 +1612,11 @@ class TabbedBoxMaker(inkex.Effect):
         self,
         root: Vec,
         side: Side,
-        numDividers: int = 0,
-        settings: BoxSettings = None
+        settings: BoxSettings
     ) -> list[inkex.PathElement]:
         """Draw tabs or holes as required"""
 
+        numDividers = side.num_dividers
         if numDividers == 0 or side.name not in (SideEnum.A, SideEnum.B):
             return []
 
@@ -1747,11 +1694,11 @@ class TabbedBoxMaker(inkex.Effect):
         self,
         root: Vec,
         side: Side,
-        numDividers: int = 0,
-        settings: BoxSettings = None
+        settings: BoxSettings
     ) -> list[inkex.PathElement]:
         """Draw tabs or holes as required"""
 
+        numDividers = side.num_dividers
         if numDividers == 0:
             return []
 
@@ -1853,6 +1800,7 @@ class TabbedBoxMaker(inkex.Effect):
                     h.append(Line(*pos))
                     h.append(ZoneClose())
                     nodes.append(self.makeLine(h, "hole"))
+
             if (tabDivision % 2) == 0:
                 # draw the gap
                 vector += direction * (

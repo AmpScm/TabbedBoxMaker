@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, FaceType, SideEnum, PieceType
+from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, SideEnum, PieceType
 
 
 @dataclass
@@ -109,14 +109,14 @@ class Vec(tuple):
 
     def as_tuple(self) -> tuple[float, float]:
         return (self.x, self.y)
-    
+
     def rotate_clockwise(self, count : int = 1) -> "Vec":
         """Return a vector rotated 90 degrees clockwise"""
 
         v = (self.x + self.y * 1j)
         for _ in range(count):
             v *= 1j
-        return Vec(v.real, v.imag)    
+        return Vec(v.real, v.imag)
 
     def rotate_counterclockwise(self, count : int = 1) -> "Vec":
         """Return a vector rotated 90 degrees counter-clockwise"""
@@ -143,47 +143,47 @@ class Side:
     line_thickness: float = 0.1  # default line thickness
     prev: "Side" = None
     next: "Side" = None
-    
+
     # Geometric offsets (calculated in _calculate_geometric_offsets)
     root_offset: Vec = Vec(0, 0)
     start_offset: Vec = Vec(0, 0)
-    
+
     # Divider support
     divider_spacings: list[float] = None
     num_dividers: int = 0
 
     equal_tabs: bool = False
     base_tab_width: float = 0.0
-    
+
     @property
     def start_hole(self) -> bool:
         """Calculate if this side starts with a hole
-        
+
         This encapsulates the logic that was previously done with is_male,
         but accounts for different tab symmetry modes.
-        
+
         Returns True when the side should contribute a thickness offset,
         False when it should not contribute an offset.
         """
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             return True # Always use offset for rotational symmetry (starts inside)
-        return self.is_male 
+        return self.is_male
 
     @property
     def end_hole(self) -> bool:
         """Calculate if this side ends with a hole
-        
+
         This encapsulates the logic that was previously done with is_male,
         but accounts for different tab symmetry modes.
-        
+
         Returns True when the side should contribute a thickness offset,
         False when it should not contribute an offset.
         """
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             return not self.has_tabs # Always use offset for rotational symmetry (starts inside)
-        return self.is_male 
+        return self.is_male
 
     def __init__(self, settings : BoxSettings, name: SideEnum, is_male: bool, has_tabs: bool, length: float, inside_length: float):
         self.name = name
@@ -197,7 +197,7 @@ class Side:
 
         baseDirection = Vec(1, 0)  # default direction
 
-        self.direction = baseDirection.rotate_clockwise(name - 1)  # Rotate direction based on side name (A=0°, B=90°, C=180°, D=270°)
+        self.direction = baseDirection.rotate_clockwise(name)  # Rotate direction based on side name (A=0°, B=90°, C=180°, D=270°)
         self.tab_symmetry = settings.tab_symmetry
         self.tab_width = self.base_tab_width = settings.tab_width
         self.thickness = settings.thickness
@@ -234,7 +234,6 @@ class Piece:
     """A piece of the box with its sides and positioning"""
     sides: list[Side]
     pieceType: PieceType
-    faceType: FaceType
     dx: float  # outside dimension
     dy: float  # outside dimension
     base: Vec  # (x,y) base co-ordinates for piece
@@ -243,43 +242,26 @@ class Piece:
     def outside_dx(self) -> float:
         """Outside X dimension"""
         return self.sides[0].outside_length
-    
+
     @property
     def outside_dy(self) -> float:
         """Outside Y dimension"""
         return self.sides[1].outside_length
-    
+
     @property
     def inside_dx(self) -> float:
         """Inside X dimension"""
         return self.sides[0].inside_length
-    
+
     @property
     def inside_dy(self) -> float:
         """Inside Y dimension"""
         return self.sides[1].inside_length
 
-
-    @staticmethod
-    def calculate_face_type(piece_type: PieceType) -> FaceType:
-        """Calculate face type from piece type"""
-        face_type_mapping = {
-            PieceType.Top: FaceType.XY,
-            PieceType.Bottom: FaceType.XY,
-            PieceType.Front: FaceType.XZ,
-            PieceType.Back: FaceType.XZ,
-            PieceType.Left: FaceType.ZY,
-            PieceType.Right: FaceType.ZY,
-            PieceType.DividerX: FaceType.XZ,
-            PieceType.DividerY: FaceType.ZY,
-        }
-        return face_type_mapping.get(piece_type, FaceType.XY)
-
     def __init__(self, sides: list[Side], pieceType: PieceType):
         self.sides = sides
-        self.faceType = self.calculate_face_type(pieceType)
         self.pieceType = pieceType
-        
+
         # For backward compatibility, dx and dy continue to represent outside dimensions
         self.dx = sides[0].outside_length  # Same as sides[0].length
         self.dy = sides[1].outside_length  # Same as sides[1].length
@@ -296,29 +278,29 @@ class Piece:
 
         # Initialize at (0,0) - positioning happens in layout phase
         self.base = Vec(0, 0)
-        
+
         # Phase 2.1: Calculate geometric offsets for each side
         # Keep alongside old system for verification before switching
         self._calculate_geometric_offsets()
-    
+
     def _calculate_geometric_offsets(self):
         """Calculate geometric offsets for each side based on neighboring side properties.
-        
+
         Phase 2.1: Pre-calculate the same offset values that are currently calculated
         on-the-fly in render functions. This reduces coupling by moving the geometric
         knowledge from render functions to side/piece creation.
-        
+
         Key insight: Each side only needs its start point - the end point is the
         start point of the next side. This creates a clean linked geometry.
-        
+
         Calculates:
-        - root_offset: Base position for side's coordinate system 
+        - root_offset: Base position for side's coordinate system
         - start_offset: Position adjustment based on prev/current side male/female
         """
 
         for side in self.sides:
             side.recalc()  # Ensure side parameters are up to date
-        
+
         for side in self.sides:
             # These calculations mirror the offs_cases logic in render functions
             if side.name == SideEnum.A:
@@ -330,7 +312,7 @@ class Piece:
             elif side.name == SideEnum.D:
                 side.root_offset = Vec(0, side.length)
 
-            side.start_offset = Vec(side.prev.end_hole, side.start_hole).rotate_clockwise(side.name - 1)
+            side.start_offset = Vec(side.prev.end_hole, side.start_hole).rotate_clockwise(side.name)
 
 
 @dataclass
@@ -339,4 +321,4 @@ class BoxConfiguration:
     schroff_settings: Optional[SchroffSettings]
     piece_types: list[PieceType]
     tabs: TabConfiguration
-    
+
