@@ -1,7 +1,8 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, Sides, PieceType
-
+from typing import Union
 
 @dataclass
 class BoxSettings:
@@ -101,8 +102,15 @@ class Vec(tuple):
     def __sub__(self, other: "Vec") -> "Vec":
         return Vec(self.x - other.x, self.y - other.y)
 
-    def __mul__(self, scalar: float) -> "Vec":
-        return Vec(self.x * scalar, self.y * scalar)
+    def __mul__(self, other: Union[float, "Vec"]) -> Union["Vec", float]:
+        if isinstance(other, Vec):
+            return Vec(self.x * other.x, self.y * other.y)
+        elif isinstance(other, (int, float)):
+            return Vec(self.x * other, self.y * other)
+        return NotImplemented
+    
+    def __neg__(self):
+        return Vec(-self.x, -self.y)
 
     def __truediv__(self, scalar: float) -> "Vec":
         return Vec(self.x / scalar, self.y / scalar)
@@ -168,7 +176,7 @@ class Side:
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             return True # Always use offset for rotational symmetry (starts inside)
-        return self.is_male
+        return self.is_male and self.has_tabs
 
     @property
     def end_hole(self) -> bool:
@@ -183,7 +191,7 @@ class Side:
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             return not self.has_tabs # Always use offset for rotational symmetry (starts inside)
-        return self.is_male
+        return self.is_male and self.has_tabs
 
     def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, length: float, inside_length: float):
         self.name = name

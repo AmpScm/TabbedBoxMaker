@@ -794,7 +794,7 @@ class TabbedBoxMaker(Effect):
                         # divider_y = 4 * spacing + 1 * Y + 2 * Z
                         # divider_x = n * (spacing + X)
                         divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z
-                        divider_x = divider_x_counter * (settings.spacing + settings.X)
+                        divider_x = divider_x_counter * (settings.spacing + settings.X) + settings.spacing
                         divider.base = Vec(divider_x, divider_y)
                         pieces_list.append(divider)
                         divider_x_counter += 1
@@ -808,7 +808,7 @@ class TabbedBoxMaker(Effect):
                     if not x_dividers_added:
                         for divider in x_dividers:
                             divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z
-                            divider_x = divider_x_counter * (settings.spacing + settings.X)
+                            divider_x = divider_x_counter * (settings.spacing + settings.X) + settings.spacing
                             divider.base = Vec(divider_x, divider_y)
                             pieces_list.append(divider)
                             divider_x_counter += 1
@@ -820,7 +820,7 @@ class TabbedBoxMaker(Effect):
                         # divider_y = 5 * spacing + 1 * Y + 3 * Z
                         # divider_x = n * (spacing + Z)
                         divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z
-                        divider_x = divider_y_counter * (settings.spacing + settings.Z)
+                        divider_x = divider_y_counter * (settings.spacing + settings.Z) + settings.spacing
                         divider.base = Vec(divider_x, divider_y)
                         pieces_list.append(divider)
                         divider_y_counter += 1
@@ -834,7 +834,7 @@ class TabbedBoxMaker(Effect):
                     if not x_dividers_added:
                         for divider in x_dividers:
                             divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z
-                            divider_x = divider_x_counter * (settings.spacing + settings.X)
+                            divider_x = divider_x_counter * (settings.spacing + settings.X) + settings.spacing
                             divider.base = Vec(divider_x, divider_y)
                             pieces_list.append(divider)
                             divider_x_counter += 1
@@ -843,7 +843,7 @@ class TabbedBoxMaker(Effect):
                     if not y_dividers_added:
                         for divider in y_dividers:
                             divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z
-                            divider_x = divider_y_counter * (settings.spacing + settings.Z)
+                            divider_x = divider_y_counter * (settings.spacing + settings.Z) + settings.spacing
                             divider.base = Vec(divider_x, divider_y)
                             pieces_list.append(divider)
                             divider_y_counter += 1
@@ -1168,14 +1168,14 @@ class TabbedBoxMaker(Effect):
                 sides = make_sides(settings, tabs, PieceType.DividerX)
 
                 # Remove tabs from dividers if not required
-                # NOTE: Setting is_male=True is a workaround for geometric offset calculation
-                # when has_tabs=False. This coupling should be cleaned up in future refactoring.
                 if not settings.keydiv_floor:
-                    sides[0].is_male = sides[2].is_male = True # sides A and C
-                    sides[0].has_tabs = sides[2].has_tabs = False
+                    sides[0].has_tabs = sides[2].has_tabs = False # sides A and C
+                    sides[0].is_male = sides[2].is_male = False
+                    sides[1].length = sides[3].length = sides[1].inside_length
                 if not settings.keydiv_walls:
-                    sides[1].is_male = sides[3].is_male = True # sides B and D
-                    sides[1].has_tabs = sides[3].has_tabs = False
+                    sides[1].has_tabs = sides[3].has_tabs = False # sides B and D
+                    sides[1].is_male = sides[3].is_male = False                     
+                    sides[0].length = sides[2].length = sides[0].inside_length
 
                 sides[1].num_dividers = settings.div_y * (settings.div_x > 0)
                 piece = Piece(sides, PieceType.DividerX)
@@ -1190,15 +1190,14 @@ class TabbedBoxMaker(Effect):
                 # NOTE: Setting is_male=True is a workaround for geometric offset calculation
                 # when has_tabs=False. This coupling should be cleaned up in future refactoring.
                 if not settings.keydiv_walls:
-                    #sides[1].length = sides[3].length = settings.inside_Y
-                    #sides[0].is_male = sides[2].is_male = False # sides A and C
-                    sides[0].is_male = sides[2].is_male = True # sides A and C
-                    sides[0].has_tabs = sides[2].has_tabs = False
+                    sides[0].has_tabs = sides[2].has_tabs = False # sides A and C
+                    sides[0].is_male = sides[2].is_male = False
+                    sides[1].length = sides[3].length = sides[1].inside_length
                 if not settings.keydiv_floor:
-                    #sides[0].length = sides[2].length = settings.inside_Z
-                    #sides[1].is_male = sides[3].is_male = False # sides B and D
-                    sides[1].is_male = sides[3].is_male = True # sides B and D
-                    sides[1].has_tabs = sides[3].has_tabs = False
+                    sides[1].has_tabs = sides[3].has_tabs = False # sides B and D
+                    sides[1].is_male = sides[3].is_male = False                     
+                    sides[0].length = sides[2].length = sides[0].inside_length
+
                 sides[0].num_dividers = settings.div_x * (settings.div_x > 0)
                 piece = Piece(sides, PieceType.DividerY)
                 pieces.append(piece)
@@ -1271,6 +1270,8 @@ class TabbedBoxMaker(Effect):
 
         # Step 1: Parse options into settings
         settings = self.parse_options_to_settings()
+
+        #print(settings)
 
         # Store values needed for other methods
         self.linethickness = settings.line_thickness
@@ -1473,15 +1474,16 @@ class TabbedBoxMaker(Effect):
 
         root = piece.base
 
-        for i in self.render_side_side(root, side, settings) + \
-                ( self.render_side_slots(root, side, settings)
+        for i in self.render_side_side(root, piece, side, settings) + \
+                ( self.render_side_slots(root, piece, side, settings)
                     if piece.pieceType in [PieceType.DividerY, PieceType.DividerX]
-                    else self.render_side_holes(root, side, settings)):
+                    else self.render_side_holes(root, piece,side, settings)):
             group.add(i)
 
     def render_side_side(
         self,
         root: Vec,
+        piece: Piece,
         side: Side,
         settings: BoxSettings = None
     ) -> list[PathElement]:
@@ -1620,6 +1622,7 @@ class TabbedBoxMaker(Effect):
     def render_side_slots(
         self,
         root: Vec,
+        piece: Piece,
         side: Side,
         settings: BoxSettings
     ) -> list[PathElement]:
@@ -1628,16 +1631,14 @@ class TabbedBoxMaker(Effect):
         numDividers = side.num_dividers
         if numDividers == 0 or side.name not in (Sides.A, Sides.B):
             return []
-
+        
         dividerSpacings = side.divider_spacings
 
         dirX, dirY = direction = side.direction
 
-        root_offs = side.root_offset
-        startOffset = side.start_offset
+        startOffsetX, startOffsetY = startOffset = side.start_offset
 
-        startOffsetX, startOffsetY = startOffset
-        length = side.length
+        startOffset
 
         thickness = side.thickness
 
@@ -1651,49 +1652,49 @@ class TabbedBoxMaker(Effect):
         else:
             first = -halfkerf
 
-        notDirX, notDirY = self._get_perpendicular_flags(direction)
+        notDirX, notDirY = notDirection = self._get_perpendicular_flags(direction)
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            dividerEdgeOffsetX = dirX * thickness
-            dividerEdgeOffsetY = thickness
-            vectorX = (startOffsetX if startOffsetX else dirX) * thickness
-            vectorY = (startOffsetY if startOffsetY else dirY) * thickness
+            dividerEdgeOffset = Vec(dirX, 1) * thickness
+            vector = Vec(startOffsetX if startOffsetX else dirX,
+                          startOffsetY if startOffsetY else dirY) * thickness
         else:
-            dividerEdgeOffsetX = dirY * thickness #* side.prev.has_tabs
-            dividerEdgeOffsetY = dirX * thickness #* side.prev.has_tabs
-            vectorX = startOffsetX * thickness
-            vectorY = startOffsetY * thickness
+            dividerEdgeOffset = Vec(dirY, dirX) * thickness
+            vector = startOffset * thickness
             if notDirX:
-                vectorY = 0  # set correct line start for tab generation
+                vector *= Vec(1, 0)  # set correct line start for tab generation
             if notDirY:
-                vectorX = 0
+                vector *= Vec(0, 1)
 
         for dividerNumber in range(numDividers):
-            base_pos = Vec(vectorX, vectorY)
             cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, dividerSpacings, thickness)
-            divider_offset = Vec(-dirY * cumulative_position, dirX * cumulative_position)
-            edge_offset = Vec(-dividerEdgeOffsetX, -dividerEdgeOffsetY)
-            kerf_offset = Vec(notDirX * halfkerf, notDirY * halfkerf)
+            divider_offset = side.next.direction * cumulative_position
+            kerf_offset = notDirection * halfkerf
 
-            start_pos = base_pos + divider_offset + edge_offset + kerf_offset
+            start_pos = vector + divider_offset - dividerEdgeOffset + kerf_offset
+            width = first + side.inside_length / 2
+
+            #if side.prev.has_tabs:
+            #    width += thickness
+            #else:
+            #    start_pos += direction * thickness
 
             h = Path()
             h.append(Move(*start_pos))
 
-            slot_end = start_pos + direction * (first + length / 2)
-            h.append(Line(*slot_end))
+            pos = start_pos + direction * width
+            h.append(Line(*pos))
 
-            side_offset = slot_end + Vec(notDirX * (thickness - kerf), notDirY * (thickness - kerf))
-            h.append(Line(*side_offset))
+            pos += notDirection * (thickness - kerf)
+            h.append(Line(*pos))
 
-            back_to_start = side_offset - direction * (first + length / 2)
-            h.append(Line(*back_to_start))
+            pos -= direction * width
+            h.append(Line(*pos))
 
-            final_pos = back_to_start - Vec(notDirX * (thickness - kerf), notDirY * (thickness - kerf))
-            h.append(Line(*final_pos))
+            h.append(Line(*start_pos))
             h.append(ZoneClose())
             nodes.append(self.makeLine(h, "slot"))
 
-        rootX, rootY = root + root_offs
+        rootX, rootY = root + side.root_offset
         for node in nodes:
              node.path = node.path.translate(rootX, rootY)
 
@@ -1702,6 +1703,7 @@ class TabbedBoxMaker(Effect):
     def render_side_holes(
         self,
         root: Vec,
+        piece: Piece,
         side: Side,
         settings: BoxSettings
     ) -> list[PathElement]:
@@ -1766,19 +1768,16 @@ class TabbedBoxMaker(Effect):
         # generate line as tab or hole using:
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
-        firstHole = True
         for tabDivision in range(divisions):
             # draw holes for divider tabs to key into side walls
             if ((tabDivision % 2) == 0) != (not isMale) and numDividers > 0:
                 w = gapWidth if isMale else tabWidth
-                if tabDivision == 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
-                    w -= startOffsetX * thickness
-                holeLen = direction * (w + first)
-                if firstHole:
-                    firstHoleLen = holeLen
-                    firstHole = False
                 if (tabDivision == 0 or tabDivision == (divisions - 1)) and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
-                    holeLen = firstHoleLen
+                    if tabDivision == 0 and side.prev.has_tabs:
+                        w -= thickness
+                    elif tabDivision > 0 and side.next.has_tabs:
+                        w -= thickness
+                holeLen = direction * (w + first)
                 for dividerNumber in range(numDividers):
                     base_pos = vector
                     cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, dividerSpacings, thickness)
