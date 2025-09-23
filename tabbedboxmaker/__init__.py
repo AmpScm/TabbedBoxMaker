@@ -20,13 +20,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from inkex.utils import filename_arg
 
+import inkex
 import math
 import os
-import inkex
 import gettext
 
+from inkex import Effect, Group, PathElement
 from inkex.paths import Path
 from inkex.paths.lines import Line, Move, ZoneClose
 
@@ -60,7 +60,8 @@ def fstr(f: float) -> str:
     else:
         return r
 
-class TabbedBoxMaker(inkex.Effect):
+
+class TabbedBoxMaker(Effect):
     nextId: dict[str, int]
     linethickness: float = 1
     nextId: dict[str, int]
@@ -71,10 +72,11 @@ class TabbedBoxMaker(inkex.Effect):
         # Call the base class constructor.
         super().__init__()
 
+        self.nextId = {}
         self.cli = cli
         self.schroff = schroff
 
-        self.nextId = {}
+
 
         self._setup_arguments()
 
@@ -91,19 +93,19 @@ class TabbedBoxMaker(inkex.Effect):
         return f"{prefix}_{id:03d}"
 
 
-    def makeGroup(self, id="piece") -> inkex.Group:
+    def makeGroup(self, id="piece") -> Group:
         # Create a new group and add element created from line string
-        group = inkex.Group(id=self.makeId(id))
+        group = Group(id=self.makeId(id))
 
         self.svg.get_current_layer().add(group)
         return group
 
 
 
-    def makeLine(self, path , id : str = "line") -> inkex.PathElement:
-        line = inkex.PathElement(id=self.makeId(id))
+    def makeLine(self, path , id : str = "line") -> PathElement:
+        line = PathElement(id=self.makeId(id))
         line.style = { "stroke": "#000000", "stroke-width"  : str(self.linethickness), "fill": "none" }
-        line.path = inkex.paths.Path(path)
+        line.path = Path(path)
         return line
 
 
@@ -111,7 +113,7 @@ class TabbedBoxMaker(inkex.Effect):
     def makeCircle(self,r, c, id : str = "circle"):
         (cx, cy) = c
         log("putting circle at (%d,%d)" % (cx,cy))
-        circle = inkex.PathElement.arc((cx, cy), r, id=self.makeId(id))
+        circle = PathElement.arc((cx, cy), r, id=self.makeId(id))
         circle.style = { "stroke": "#000000", "stroke-width": str(self.linethickness), "fill": "none" }
         return circle
 
@@ -130,7 +132,7 @@ class TabbedBoxMaker(inkex.Effect):
                 "--input-file",
                 dest="input_file",
                 metavar="INPUT_FILE",
-                type=filename_arg,
+                type=inkex.utils.filename_arg,
                 help="Filename of the input file",
                 default=None,
             )
@@ -1294,10 +1296,10 @@ class TabbedBoxMaker(inkex.Effect):
         # Step 3: Generate and draw all pieces
         self.generate_pieces(pieces, config, settings)
 
-    def optimizePiece(self, group : inkex.Group) -> None:
+    def optimizePiece(self, group : Group) -> None:
         # Step 1: Combine paths to form the outer boundary
         skip_elements = []
-        paths = [child for child in group if isinstance(child, inkex.PathElement)]
+        paths = [child for child in group if isinstance(child, PathElement)]
 
         for path_element in paths:
             path = path_element.path
@@ -1331,7 +1333,7 @@ class TabbedBoxMaker(inkex.Effect):
                     path_last = path[-1]
 
         # List updated, refresh
-        paths = [child for child in group if isinstance(child, inkex.PathElement)]
+        paths = [child for child in group if isinstance(child, PathElement)]
 
         # Step 2: Close the the paths, if not already closed
         for path_element in paths:
@@ -1462,7 +1464,7 @@ class TabbedBoxMaker(inkex.Effect):
 
     def render_side(
         self,
-        group: inkex.Group,
+        group: Group,
         piece: Piece,
         side: Side,
         settings: BoxSettings = None
@@ -1482,7 +1484,7 @@ class TabbedBoxMaker(inkex.Effect):
         root: Vec,
         side: Side,
         settings: BoxSettings = None
-    ) -> list[inkex.PathElement]:
+    ) -> list[PathElement]:
         """Draw one side of a piece"""
 
         dirX, dirY = direction = side.direction
@@ -1620,7 +1622,7 @@ class TabbedBoxMaker(inkex.Effect):
         root: Vec,
         side: Side,
         settings: BoxSettings
-    ) -> list[inkex.PathElement]:
+    ) -> list[PathElement]:
         """Draw tabs or holes as required"""
 
         numDividers = side.num_dividers
@@ -1702,7 +1704,7 @@ class TabbedBoxMaker(inkex.Effect):
         root: Vec,
         side: Side,
         settings: BoxSettings
-    ) -> list[inkex.PathElement]:
+    ) -> list[PathElement]:
         """Draw tabs or holes as required"""
 
         numDividers = side.num_dividers
