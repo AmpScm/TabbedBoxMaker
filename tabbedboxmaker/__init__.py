@@ -945,12 +945,10 @@ class TabbedBoxMaker(inkex.Effect):
                         for segment in path:
                             if isinstance(segment, inkex.paths.ZoneClose):
                                 simplified_path.append(segment)
-                                continue
-
-                            if isinstance(segment, inkex.paths.Line):
-                                if prev is not None:
-                                    dx = segment.x - prev.x
-                                    dy = segment.y - prev.y
+                            elif isinstance(segment, inkex.paths.Line):
+                                if isinstance(prev, inkex.paths.Line):
+                                    dx = round(segment.x - prev.x, 8)
+                                    dy = round(segment.y - prev.y, 8)
 
                                     if dx == 0 and dy == 0:
                                         continue  # Skip node
@@ -961,17 +959,36 @@ class TabbedBoxMaker(inkex.Effect):
                                         0 if dy == 0 else math.copysign(1, dy),
                                     )
 
-                                    # Skip redundant points on straight lines
                                     if (dx == 0 or dy == 0) and direction == current_dir:
-                                        # Replace the last point in
-                                        # simplified_path
+                                        # Skip redundant points on straight lines
+                                        # Replace the last point with the current point
                                         simplified_path[-1] = segment
                                     else:
                                         simplified_path.append(segment)
-                                        current_dir = direction
+                                    current_dir = direction
                                 else:
+                                    if prev is not None:
+                                        dx = round(segment.x - prev.x, 8)
+                                        dy = round(segment.y - prev.y, 8)
+
+                                        if dx == 0 and dy == 0:
+                                            continue  # Skip node
+
+                                        # Determine the direction
+                                        direction = (
+                                            0 if dx == 0 else math.copysign(1, dx),
+                                            0 if dy == 0 else math.copysign(1, dy),
+                                        )
+                                        current_dir = direction
+                                    else:
+                                        current_dir = None
                                     simplified_path.append(segment)
                                 prev = segment
+                            elif isinstance(segment, inkex.paths.Move):
+                                simplified_path.append(segment)
+                                prev = segment
+                                current_dir = None
+                                direction = None
                             else:
                                 simplified_path.append(segment)
                                 prev = None

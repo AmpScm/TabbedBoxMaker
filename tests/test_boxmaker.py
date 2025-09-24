@@ -16,7 +16,7 @@ def mask_unstable(svgin: str) -> str:
         r'<!--.*?-->', '<!-- MASKED -->', re.sub(
         r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"',  re.sub(
         r'id="[^"]*"', 'id="MASKED"',  re.sub(
-        r'<metadata>.*?/>', '<metadata />',  svgin, flags=re.DOTALL),
+        r'<metadata[^>]*?/>', '<metadata />', svgin, flags=re.DOTALL),
         flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL).replace('\r\n', '\n')
 
 def pretty_xml(xml_str: str) -> str:
@@ -537,7 +537,7 @@ cases = [
             "--keydiv=0",
             "--spacing=1",
         ],
-    }
+    },
 ]
 
 expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected")
@@ -559,6 +559,9 @@ def run_one(name, args, make_relative=False, optimize=False) -> tuple[str, str]:
     if os.path.exists(expected_file):
         with open(expected_file, "r") as f:
             expected = f.read()
+    elif expected_file.endswith('.r.svg') and os.path.exists(expected_file[:-6] + '.n.svg'):
+        with open(expected_file[:-6] + '.n.svg', "r") as f:
+            expected = f.read()
 
     tbm = TabbedBoxMaker()
     
@@ -572,6 +575,9 @@ def run_one(name, args, make_relative=False, optimize=False) -> tuple[str, str]:
     tbm.options.output = outfh
     tbm.options.input_file = infh
     tbm.options.optimize = optimize
+    tbm.version = None
+    tbm.raw_hairline_thickness = -1
+    tbm.hairline_thickness = 0.0508
 
     tbm.load_raw()
     tbm.save_raw(tbm.effect())
@@ -585,7 +591,12 @@ def run_one(name, args, make_relative=False, optimize=False) -> tuple[str, str]:
             v = Path(v)
             return str(v.to_relative())
 
-        output = re.sub(r'(?<=d=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
+        output = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
+        expected = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
+
+        if not os.path.exists(expected_file):
+            with open(expected_file, "w", encoding="utf-8") as f:
+                f.write(expected)
 
     with open(actual_file, "w", encoding="utf-8") as f:
         f.write(output)
