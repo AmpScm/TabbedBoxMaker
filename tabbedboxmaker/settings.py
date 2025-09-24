@@ -43,6 +43,7 @@ class BoxSettings:
     rail_mount_depth: float
     rail_mount_centre_offset: float
     rail_mount_radius: float
+    optimize: bool
 
 
 @dataclass
@@ -133,6 +134,14 @@ class Vec(tuple):
         for _ in range(count):
             v *= -1j
         return Vec(v.real, v.imag)
+    
+    def swap_xy(self) -> "Vec":
+        """Return a vector with x and y swapped"""
+        return Vec(self.y, self.x)
+
+    def is_zero(self) -> bool:
+        """Return True if both x and y are zero"""
+        return Vec(self.x == 0, self.y == 0)
 
 @dataclass
 class Side:
@@ -147,7 +156,6 @@ class Side:
     gap_width: float
     thickness: float
     inside_length: float = 0.0  # Inside dimension
-    outside_length: float = 0.0  # Outside dimension
     line_thickness: float = 0.1  # default line thickness
     prev: "Side" = None
     next: "Side" = None
@@ -199,7 +207,6 @@ class Side:
         self.has_tabs = has_tabs
         # Current length parameter (outside dimension for backward compatibility)
         self.length = length
-        self.outside_length = length  # Outside dimension
         self.inside_length = inside_length  # Inside dimension passed explicitly
         self.divider_spacings = []
 
@@ -215,8 +222,15 @@ class Side:
 
         self.recalc()
 
-    def recalc(self):
+    def recalc(self, pieceType: PieceType = None):
         length = self.length
+
+        if pieceType == PieceType.DividerY and self.name in (Sides.B, Sides.D):
+            # Special case for DividerX
+            length = self.inside_length + 2 * self.thickness # Same tabs as same piece with outside tabs
+        elif pieceType == PieceType.DividerX and self.name in (Sides.A, Sides.C):
+            # Special case for DividerX
+            length = self.inside_length + 2 * self.thickness # Same tabs as same piece with outside tabs
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             self.divisions = int((length - 2 * self.thickness) // self.base_tab_width)
@@ -246,33 +260,13 @@ class Piece:
     dy: float  # outside dimension
     base: Vec  # (x,y) base co-ordinates for piece
 
-    @property
-    def outside_dx(self) -> float:
-        """Outside X dimension"""
-        return self.sides[0].outside_length
-
-    @property
-    def outside_dy(self) -> float:
-        """Outside Y dimension"""
-        return self.sides[1].outside_length
-
-    @property
-    def inside_dx(self) -> float:
-        """Inside X dimension"""
-        return self.sides[0].inside_length
-
-    @property
-    def inside_dy(self) -> float:
-        """Inside Y dimension"""
-        return self.sides[1].inside_length
-
     def __init__(self, sides: list[Side], pieceType: PieceType):
         self.sides = sides
         self.pieceType = pieceType
 
         # For backward compatibility, dx and dy continue to represent outside dimensions
-        self.dx = sides[0].outside_length  # Same as sides[0].length
-        self.dy = sides[1].outside_length  # Same as sides[1].length
+        self.dx = sides[0].length  # Same as sides[0].length
+        self.dy = sides[1].length  # Same as sides[1].length
 
         # Link sides together
         sides[0].next = sides[1]
@@ -307,7 +301,7 @@ class Piece:
         """
 
         for side in self.sides:
-            side.recalc()  # Ensure side parameters are up to date
+            side.recalc(self.pieceType)  # Ensure side parameters are up to date
 
         for side in self.sides:
             # These calculations mirror the offs_cases logic in render functions

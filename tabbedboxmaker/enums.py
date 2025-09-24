@@ -25,7 +25,7 @@ class TabSymmetry(IntEnum):
     XY_SYMMETRIC = 0  # Each piece is symmetric in both X and Y axes
     # Each piece is symmetric under 180-degree rotation (waffle-block)
     ROTATE_SYMMETRIC = 1
-    ANTISYMMETRIC = 2  # Deprecated - antisymmetric style
+    ANTISYMMETRIC = 2  # Deprecated - antisymmetric style - = XY_SYMMETRIC but with different male/female positions
 
 
 class TabTypeOld(IntEnum):
@@ -75,14 +75,16 @@ class BoxDimensions(IntEnum):
 
 class PieceType(Enum):
     Back = 1,
-    Left = 2,
-    Bottom = 3,
-    Right = 4,
-    Top = 5,
-    Front = 6
+    Front = 2,
 
-    DividerX = 101,
-    DividerY = 102,
+    Left = 4,
+    Right = 8,
+
+    Bottom = 16,    
+    Top = 32,
+    
+    DividerX = 256 + 1 # Back + 256
+    DividerY = 256 + 4 # Left + 256
 
    
 class Sides(IntEnum):
