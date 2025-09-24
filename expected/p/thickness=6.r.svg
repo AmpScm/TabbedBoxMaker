@@ -1,5 +1,5 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="297mm" height="391mm" viewBox="0 0 297 391" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="351mm" height="277mm" viewBox="0 0 351 277" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
   <sodipodi:namedview id="namedview7" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:document-units="mm" showgrid="false" inkscape:zoom="0.64052329" inkscape:cx="397.33138" inkscape:cy="561.25984" inkscape:window-width="2086" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer1"/>
   <defs id="defs2"/>
   <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
@@ -14,11 +14,11 @@
       <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 56 216 l 0 -2.5 l 6 0 l 0 -6 l -6 0 l 0 -8.5 l 6 0 l 0 -6 l -6 0 l 0 -8.5 l 6 0 l 0 -6 l -6 0 l 0 -2.5"/>
     </g>
     <g id="xdivider_001">
-      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 230 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0"/>
-      <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 94 230 l 0 2.5 l -6 0 l 0 6 l 6 0 l 0 8.5 l -6 0 l 0 6 l 6 0 l 0 8.5 l -6 0 l 0 6 l 6 0 l 0 2.5"/>
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 45 224 l 0 20 l 6 0 l 0 -20 l -6 0 z"/>
-      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 94 270 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0"/>
-      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 270 l 0 -2.5 l 6 0 l 0 -6 l -6 0 l 0 -8.5 l 6 0 l 0 -6 l -6 0 l 0 -8.5 l 6 0 l 0 -6 l -6 0 l 0 -2.5"/>
+      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 56 230 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0 l 0 -6 l 6 0 l 0 6 l 6.25 0"/>
+      <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 148 230 l 0 2.5 l -6 0 l 0 6 l 6 0 l 0 8.5 l -6 0 l 0 6 l 6 0 l 0 8.5 l -6 0 l 0 6 l 6 0 l 0 2.5"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 99 224 l 0 26 l 6 0 l 0 -26 l -6 0 z"/>
+      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 148 270 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0 l 0 6 l -6 0 l 0 -6 l -6.25 0"/>
+      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 56 270 l 0 -2.5 l 6 0 l 0 -6 l -6 0 l 0 -8.5 l 6 0 l 0 -6 l -6 0 l 0 -8.5 l 6 0 l 0 -6 l -6 0 l 0 -2.5"/>
     </g>
     <g id="piece_002">
       <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 8 62 l 2.5 0 l 0 -6 l 6 0 l 0 6 l 8.5 0 l 0 -6 l 6 0 l 0 6 l 8.5 0 l 0 -6 l 6 0 l 0 6 l 2.5 0"/>
@@ -31,11 +31,11 @@
       <path id="side_012" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 8 162 l 0 -1.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.112 l -6 0 l 0 -6 l 6 0 l 0 -7.1107 l -6 0 l 0 -6 l 6 0 l 0 -7.1111 l -6 0 l 0 -6 l 6 0 l 0 -7.1111 l -6 0 l 0 -6.0001 l 6 0 l 0 -1.111"/>
     </g>
     <g id="ydivider_001">
-      <path id="side_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 8 284 l 2.5 0 l 0 -6 l 6 0 l 0 6 l 8.5 0 l 0 -6 l 6 0 l 0 6 l 8.5 0 l 0 -6 l 6 0 l 0 6 l 2.5 0"/>
-      <path id="slot_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 2 331 l 20 0 l 0 6 l -20 0 l 0 -6 z"/>
-      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 48 284 l 0 1.111 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 7.112 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 1.111"/>
-      <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 48 384 l -2.5 0 l 0 6 l -6 0 l 0 -6 l -8.5 0 l 0 6 l -6 0 l 0 -6 l -8.5 0 l 0 6 l -6 0 l 0 -6 l -2.5 0"/>
-      <path id="side_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 8 384 l 0 -1.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.112 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -1.111"/>
+      <path id="side_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 304 62 l 2.5 0 l 0 -6 l 6 0 l 0 6 l 8.5 0 l 0 -6 l 6 0 l 0 6 l 8.5 0 l 0 -6 l 6 0 l 0 6 l 2.5 0"/>
+      <path id="slot_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 298 109 l 26 0 l 0 6 l -26 0 l 0 -6 z"/>
+      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 344 62 l 0 1.1111 l 6 0 l 0 6 l -6 0 l 0 7.1111 l 6 0 l 0 6 l -6 0 l 0 7.1111 l 6 0 l 0 6 l -6 0 l 0 7.1107 l 6 0 l 0 6 l -6 0 l 0 7.112 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 7.111 l 6 0 l 0 6 l -6 0 l 0 1.111"/>
+      <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 344 162 l -2.5 0 l 0 6 l -6 0 l 0 -6 l -8.5 0 l 0 6 l -6 0 l 0 -6 l -8.5 0 l 0 6 l -6 0 l 0 -6 l -2.5 0"/>
+      <path id="side_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 304 162 l 0 -1.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.111 l -6 0 l 0 -6 l 6 0 l 0 -7.112 l -6 0 l 0 -6 l 6 0 l 0 -7.1107 l -6 0 l 0 -6 l 6 0 l 0 -7.1111 l -6 0 l 0 -6 l 6 0 l 0 -7.1111 l -6 0 l 0 -6.0001 l 6 0 l 0 -1.111"/>
     </g>
     <g id="piece_003">
       <path id="side_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 56 56 l 6.25 0 l 0 6 l 6 0 l 0 -6 l 6.25 0 l 0 6 l 6 0 l 0 -6 l 6.25 0 l 0 6 l 6 0 l 0 -6 l 6.25 0 l 0 6 l 6 0 l 0 -6 l 6.25 0 l 0 6 l 6 0 l 0 -6 l 6.25 0 l 0 6 l 6 0 l 0 -6 l 6.25 0 l 0 6 l 6 0 l 0 -6 l 6.25 0"/>
