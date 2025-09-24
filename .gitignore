@@ -120,7 +120,6 @@ dmypy.json
 .pyre/
 
 # Project specific
-tests/actual/
 actual/
 *.orig
 *.r.svg

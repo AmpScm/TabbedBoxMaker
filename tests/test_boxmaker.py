@@ -543,9 +543,9 @@ cases = [
         "args": [
             "--unit=mm",
             "--inside=1",
-            "--length=50",
-            "--width=50",
-            "--depth=22",
+            "--length=75",
+            "--width=75",
+            "--depth=20",
             "--thickness=2",
             "--style=1",
             "--boxtype=2",

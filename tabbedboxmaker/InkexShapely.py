@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import inkex
 from inkex.paths.lines import Line, Move, ZoneClose
-from shapely.geometry import Polygon, MultiPolygon, LinearRing
 
 def fstr(f: float) -> str:
     """Format float to string with minimal decimal places, avoiding scientific notation."""
@@ -33,7 +32,8 @@ def fstr(f: float) -> str:
         return r
 
 
-def path_to_polygon(path_obj : inkex.Path) -> Polygon | None:
+def path_to_polygon(path_obj : inkex.Path):
+    from shapely.geometry import Polygon, MultiPolygon, LinearRing
     # Accepts inkex.Path object, only absolute Move/Line/Close
     coords = []
     for seg in path_obj:
@@ -50,7 +50,8 @@ def path_to_polygon(path_obj : inkex.Path) -> Polygon | None:
     return None
 
 
-def polygon_to_path(poly) -> inkex.Path:
+def polygon_to_path(poly):
+    from shapely.geometry import Polygon, MultiPolygon, LinearRing
     # Accepts shapely Polygon or MultiPolygon, returns inkex.Path string
     
     path = inkex.Path()
@@ -108,6 +109,26 @@ def polygon_to_path(poly) -> inkex.Path:
 
     return path
 
+def try_combine_paths(paths: list[inkex.Path]):
+    from shapely.ops import unary_union
+    panel = paths[0]
+    group = panel.getparent()
+    panel_poly = path_to_polygon(panel.path)
+
+    if panel_poly is not None:
+        # Collect all holes as polygons
+        holes = []
+        for candidate in paths[1:]:
+            poly = path_to_polygon(candidate.path)
+            if poly is not None:
+                group.remove(candidate)
+                holes.append(poly)
+
+        # Subtract holes from panel
+        result = panel_poly.difference(unary_union(holes))
+
+        # Replace panel path with result
+        panel.path = polygon_to_path(result)
 
 def adjust_canvas(svg,
                   unit: str | None = None) -> None:
