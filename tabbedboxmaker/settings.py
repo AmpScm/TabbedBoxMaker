@@ -134,14 +134,6 @@ class Vec(tuple):
         for _ in range(count):
             v *= -1j
         return Vec(v.real, v.imag)
-    
-    def swap_xy(self) -> "Vec":
-        """Return a vector with x and y swapped"""
-        return Vec(self.y, self.x)
-
-    def is_zero(self) -> bool:
-        """Return True if both x and y are zero"""
-        return Vec(self.x == 0, self.y == 0)
 
 @dataclass
 class Side:
