@@ -1642,11 +1642,10 @@ class TabbedBoxMaker(Effect):
             first = -halfkerf
 
         vec = thickness
-        rDirection = direction.rotate_clockwise(1)
-        vector = rDirection * side.has_tabs * thickness
+        toInsideX, toInsideY = toInside = direction.rotate_clockwise()
+        vector = toInside * side.has_tabs * thickness
 
-        notDirX, notDirY = direction.is_zero()
-        kerf_offset = Vec(1 if notDirX else 0, -(1 if notDirY else 0)) * halfkerf
+        kerf_offset = Vec(1 if toInsideX else 0, -(1 if toInsideY else 0)) * halfkerf
 
         # generate line as tab or hole using:
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
@@ -1677,7 +1676,7 @@ class TabbedBoxMaker(Effect):
                     pos += holeLen
                     h.append(Line(*pos))
 
-                    thickVec = rDirection * (vec - math.copysign(1, vec) * kerf)
+                    thickVec = toInside * (vec - math.copysign(1, vec) * kerf)
                     pos += thickVec
                     h.append(Line(*pos))
 
@@ -1705,7 +1704,7 @@ class TabbedBoxMaker(Effect):
 
             if dogbone and notMale:
                 vector -= direction * halfkerf
-            vector += rDirection * vec
+            vector += toInside * vec
 
             vec = - vec  # swap tab direction
             first = 0
