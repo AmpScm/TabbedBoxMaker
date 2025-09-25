@@ -1408,7 +1408,7 @@ class TabbedBoxMaker(Effect):
 
         if side.has_tabs:
             # Calculate direction
-            tabDepth = thickness if (direction == (1, 0) or direction == (0, -1)) != isMale else -thickness
+            tabDepth = -thickness if isMale else thickness
         else:
             tabDepth = 0
 
@@ -1432,7 +1432,7 @@ class TabbedBoxMaker(Effect):
 
         firstVec = 0
         secondVec = tabDepth
-        notDirX, notDirY = notDir = direction.is_zero()
+        toInsideX, toInsideY = toInside = direction.rotate_clockwise(1)
         s = Path()
 
         startOffsetX, startOffsetY = startOffset = side.start_offset
@@ -1446,9 +1446,9 @@ class TabbedBoxMaker(Effect):
             if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
                 vector = Vec(startOffsetX if startOffsetX else dirX, startOffsetY if startOffsetY else dirY) * thickness
             else:
-                if notDirX:
+                if toInsideX:
                     vector = Vec(vector.x, 0) # set correct line start for tab generation
-                if notDirY:
+                if toInsideY:
                     vector = Vec(0, vector.y) # set correct line start for tab generation
 
             if piece.pieceType == PieceType.DividerY and side.name in (Sides.B, Sides.D) and not side.prev.has_tabs:
@@ -1480,10 +1480,10 @@ class TabbedBoxMaker(Effect):
                         s.append(Line(*vector))
                     # draw the starting edge of the tab
                     s.extend(self.dimpleStr(
-                        secondVec, vector, direction, notDir, 1, isMale,
+                        secondVec, vector, direction, toInside, 1, isMale,
                         settings.dimple_length, settings.dimple_height
                     ))
-                    vector += notDir * secondVec
+                    vector += toInside * secondVec
                     s.append(Line(*vector))
                     if dogbone and notMale:
                         vector -= vecHalfKerf
@@ -1498,10 +1498,10 @@ class TabbedBoxMaker(Effect):
                         s.append(Line(*vector))
                     # draw the ending edge of the tab
                     s.extend(self.dimpleStr(
-                        secondVec, vector, direction, notDir, -1, isMale,
+                        secondVec, vector, direction, toInside, -1, isMale,
                         settings.dimple_length, settings.dimple_height
                     ))
-                    vector += notDir * secondVec
+                    vector += toInside * secondVec
                     s.append(Line(*vector))
                     if dogbone and isMale:
                         vector -= vecHalfKerf
