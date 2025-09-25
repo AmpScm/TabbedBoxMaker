@@ -516,10 +516,10 @@ class TabbedBoxMaker(Effect):
             Y = row_height + row_spacing_total
         else:
             # boxmaker.inx
-            X = self.svg.unittouu(str(self.options.length + self.options.kerf) + unit)
-            Y = self.svg.unittouu(str(self.options.width + self.options.kerf) + unit)
+            X = self.svg.unittouu(str(self.options.length) + unit)
+            Y = self.svg.unittouu(str(self.options.width) + unit)
 
-        Z = self.svg.unittouu(str(self.options.height + self.options.kerf) + unit)
+        Z = self.svg.unittouu(str(self.options.height) + unit)
         thickness = self.svg.unittouu(str(self.options.thickness) + unit)
         tab_width = self.svg.unittouu(str(self.options.tab) + unit)
         equal_tabs = self.options.equal_tabs
@@ -739,6 +739,10 @@ class TabbedBoxMaker(Effect):
         col4 = (5, 2, 0, 2)  # fifth column, always offset by 2*X+2*Z
         col5 = (6, 3, 0, 2)  # sixth column, always offset by 3*X+2*Z
 
+        spacing = settings.spacing + settings.kerf
+        initOffsetX = settings.initOffsetX - settings.kerf / 2
+        initOffsetY = settings.initOffsetY - settings.kerf / 2
+
         # layout format:(rootx),(rooty),Xlength,Ylength,tabInfo,tabbed,pieceType
         # root= (spacing,X,Y,Z) * values in tuple
         # tabInfo= <abcd> 0=holes 1=tabs
@@ -771,8 +775,8 @@ class TabbedBoxMaker(Effect):
                 xs, xx, xy, xz = col_tuple
                 ys, yx, yy, yz = row_tuple
 
-                x = xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
-                y = ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
+                x = xs * spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + initOffsetX
+                y = ys * spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + initOffsetY
 
                 return Vec(x, y)
 
@@ -783,12 +787,12 @@ class TabbedBoxMaker(Effect):
             # Add X dividers after Back piece (as in original)
             divider_x_pos = calculate_position(cc[1], rr[2])  # cc[1], rr[2] - Back piece
             if PieceType.Back in piece_types:
-                divider_x_pos += Vec(0, settings.Z + settings.spacing)
+                divider_x_pos += Vec(0, settings.Z + spacing)
             if not settings.keydiv_walls:
                 divider_x_pos += Vec(settings.thickness, 0)
             for divider in get_pieces(PieceType.DividerX):
                 divider.base = divider_x_pos
-                divider_x_pos += Vec(0, settings.spacing + divider.dy)
+                divider_x_pos += Vec(0, spacing + divider.dy)
                 pieces_list.append(divider)
 
             for piece in get_pieces(PieceType.Left):
@@ -798,13 +802,13 @@ class TabbedBoxMaker(Effect):
 
             divider_y_pos = calculate_position(cc[3], rr[1])  # cc[3], rr[1] - Top piece
             if PieceType.Top in piece_types:
-                divider_y_pos += Vec(settings.X + settings.spacing, 0)
+                divider_y_pos += Vec(settings.X + spacing, 0)
             if not settings.keydiv_walls:
                 divider_y_pos += Vec(0, settings.thickness)
             # Add Y dividers after Left piece (as in original)
             for divider in get_pieces(PieceType.DividerY):
                 divider.base = divider_y_pos
-                divider_y_pos += Vec(settings.spacing + divider.dx, 0)
+                divider_y_pos += Vec(spacing + divider.dx, 0)
                 pieces_list.append(divider)
 
             for piece in get_pieces(PieceType.Bottom):
@@ -842,8 +846,8 @@ class TabbedBoxMaker(Effect):
                 xs, xx, xy, xz = col_tuple
                 ys, yx, yy, yz = row_tuple
 
-                x = xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
-                y = ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
+                x = xs * spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + initOffsetX
+                y = ys * spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + initOffsetY
 
                 return Vec(x, y)
 
@@ -856,8 +860,8 @@ class TabbedBoxMaker(Effect):
             # Add X dividers after Back piece (as in original)
             for idx, divider in enumerate(get_pieces(PieceType.DividerX)):
                 # Original divider positioning: divider_y = 4 * spacing + 1 * Y + 2 * Z
-                divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z
-                divider_x = idx * (settings.spacing + settings.X) + settings.spacing
+                divider_y = 4 * spacing + 1 * settings.Y + 2 * settings.Z
+                divider_x = idx * (spacing + settings.X) + spacing
                 divider.base = Vec(divider_x, divider_y)
                 pieces_list.append(divider)
 
@@ -868,8 +872,8 @@ class TabbedBoxMaker(Effect):
             # Add Y dividers after Left piece (as in original)
             for idx, divider in enumerate(get_pieces(PieceType.DividerY)):
                 # Original divider positioning: divider_y = 5 * spacing + 1 * Y + 3 * Z
-                divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z
-                divider_x = idx * (settings.spacing + settings.Z) + settings.spacing
+                divider_y = 5 * spacing + 1 * settings.Y + 3 * settings.Z
+                divider_x = idx * (spacing + settings.Z) + spacing
                 divider.base = Vec(divider_x, divider_y)
                 pieces_list.append(divider)
 
@@ -919,8 +923,8 @@ class TabbedBoxMaker(Effect):
                 xs, xx, xy, xz = col_tuple
                 ys, yx, yy, yz = row_tuple
 
-                x = xs * settings.spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + settings.initOffsetX
-                y = ys * settings.spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + settings.initOffsetY
+                x = xs * spacing + xx * settings.X + xy * settings.Y + xz * settings.Z + initOffsetX
+                y = ys * spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + initOffsetY
 
                 return Vec(x, y)
             
@@ -932,8 +936,8 @@ class TabbedBoxMaker(Effect):
 
             # Add X dividers after Back piece (as in original)
             for idx, divider in enumerate(get_pieces(PieceType.DividerX)):
-                divider_y = 4 * settings.spacing + 1 * settings.Y + 2 * settings.Z
-                divider_x = idx * (settings.spacing + settings.X) + settings.spacing
+                divider_y = 4 * spacing + 1 * settings.Y + 2 * settings.Z
+                divider_x = idx * (spacing + settings.X) + spacing
                 divider.base = Vec(divider_x, divider_y)
                 pieces_list.append(divider)
 
@@ -943,8 +947,8 @@ class TabbedBoxMaker(Effect):
 
             # Add Y dividers after Left piece (as in original)
             for idx, divider in enumerate(get_pieces(PieceType.DividerY)):
-                divider_y = 5 * settings.spacing + 1 * settings.Y + 3 * settings.Z
-                divider_x = idx * (settings.spacing + settings.Z)
+                divider_y = 5 * spacing + 1 * settings.Y + 3 * settings.Z
+                divider_x = idx * (spacing + settings.Z)
                 divider.base = Vec(divider_x, divider_y)
                 pieces_list.append(divider)
 
@@ -1424,12 +1428,13 @@ class TabbedBoxMaker(Effect):
         if isMale:  # kerf correction
             gapWidth -= settings.kerf
             tabWidth += settings.kerf
-            first = halfkerf
+            first = kerf
         else:
             gapWidth += settings.kerf
             tabWidth -= settings.kerf
-            first = -halfkerf
+            first = 0
 
+        #first = 0
         firstVec = 0
         secondVec = tabDepth
         toInsideX, toInsideY = toInside = direction.rotate_clockwise(1)
@@ -1509,9 +1514,9 @@ class TabbedBoxMaker(Effect):
                 (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
 
         # finish the line off
-        s.append(Line(*(side.next.start_offset * thickness + direction * length)))
+        s.append(Line(*(side.next.start_offset * thickness + direction * (length + kerf))))
 
-        rootX, rootY = root + side.root_offset
+        rootX, rootY = root + side.root_offset + direction * -halfkerf + toInside * -halfkerf
 
         # Drop some precision to avoid fp differences # Practially rounds floats to 4 decimals
         s = Path(str(s))
