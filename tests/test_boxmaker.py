@@ -916,18 +916,87 @@ def test_output_kerf():
         poly_kerf.normalize()
         pp = pp.reverse() # Somehow needed
 
-        with open('/tmp.svg', "w", encoding="utf-8") as f:
-            f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-                    '<path d="' + str(polygon_to_path(poly_kerf)) + '" fill="none" stroke="blue"/>\n' +
-                    '</svg>\n')
-            
-        with open('/tmp-pp.svg', "w", encoding="utf-8") as f:
-            f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-                    '<path d="' + str(polygon_to_path(pp)) + '" fill="none" stroke="blue"/>\n' +
-                    '</svg>\n')
-
         print(k)
         print(poly)
         print(poly_kerf)
         print(pp)
         assert pp == poly_kerf, f"Kerf output for {k} does not match expected"
+
+
+def test_output_kerf_dividers():
+    output, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside-d'), [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0",
+            "--div_l=1",
+            "--div_w=2",
+            "--thickness=2"], optimize=True, mask=False)
+    
+    output_kerf, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside-d-kerf'), [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0.5",
+            "--div_l=1",
+            "--div_w=2",
+            "--thickness=2"], optimize=True, mask=False)
+    
+    map = {}
+    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output):
+        map[i[0]] = i[2]
+
+    map_kerf = {}
+    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output_kerf):
+        map_kerf[i[0]] = i[2]
+
+
+    for k in map.keys():
+        if k not in map_kerf:
+            assert 0 == 1, f"Missing kerf output for {k}"
+
+        p = Path(map[k])
+        p_kerf = Path(map_kerf[k])
+
+        bb = p.bounding_box()
+        bb_kerf = p_kerf.bounding_box()
+
+        assert bb.width == bb_kerf.width - 0.5, f"Kerf output for {k} has different width ({bb.width} vs {bb_kerf.width})"
+
+        poly = path_to_polygon(p)
+        poly_kerf = path_to_polygon(p_kerf)
+
+        poly = translate(poly, xoff=-bb.left, yoff=-bb.top)
+        poly_kerf = translate(poly_kerf, xoff=-bb_kerf.left, yoff=-bb_kerf.top)
+
+        pp = poly.buffer(0.25, cap_style='square', join_style='mitre')
+        pp = translate(pp, xoff=0.25, yoff=0.25)
+
+        poly.normalize()
+        poly_kerf.normalize()
+        pp = pp.reverse() # Somehow needed
+
+        print(k)
+        print(poly)
+        print(poly_kerf)
+        print(pp)
+
+        #with open('/tmp.svg', "w", encoding="utf-8") as f:
+        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+        #            '<path d="' + str(polygon_to_path(poly_kerf)) + '" fill="none" stroke="blue"/>\n' +
+        #            '</svg>\n')
+        #    
+        #with open('/tmp-pp.svg', "w", encoding="utf-8") as f:
+        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+        #            '<path d="' + str(polygon_to_path(pp)) + '" fill="none" stroke="blue"/>\n' +
+        #            '</svg>\n')
+
+        assert pp == poly_kerf or pp.reverse() == poly_kerf, f"Kerf output for {k} does not match expected"
