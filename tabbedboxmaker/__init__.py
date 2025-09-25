@@ -1563,21 +1563,17 @@ class TabbedBoxMaker(Effect):
 
         nodes = []
 
-        if side.is_male:  # kerf correction
-            first = halfkerf
-        else:
-            first = -halfkerf
-
         rDirection = direction.rotate_clockwise(1)
         vector = rDirection * side.has_tabs * thickness        
+        kerf_offset = rDirection * halfkerf
+
 
         for dividerNumber in range(numDividers):
             cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, side.divider_spacings, thickness)
             divider_offset = direction.rotate_clockwise(1) * cumulative_position
-            kerf_offset = rDirection * halfkerf
 
-            start_pos = vector + divider_offset + kerf_offset
-            width = first + side.inside_length / 2
+            start_pos = vector + divider_offset + kerf_offset - direction * halfkerf
+            width = side.inside_length / 2
 
             if side.prev.has_tabs:
                 width += thickness
