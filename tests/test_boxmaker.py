@@ -6,9 +6,13 @@ import sys
 from inkex.paths import Path
 
 import xml.dom.minidom
+from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
 from collections.abc import Iterable
 
 from tabbedboxmaker import TabbedBoxMaker
+
+
+from shapely.affinity import translate
 
 def mask_unstable(svgin: str) -> str:
     """Mask out unstable parts of SVG output that may vary between runs."""
@@ -565,7 +569,7 @@ cases = [
 expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected")
 actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual")
 
-def run_one(name, args, make_relative=False, optimize=False) -> tuple[str, str]:
+def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple[str, str]:
     """Run one test case and return (output, expected) strings."""
 
     outfh = io.BytesIO()
@@ -623,7 +627,9 @@ def run_one(name, args, make_relative=False, optimize=False) -> tuple[str, str]:
     with open(actual_file, "w", encoding="utf-8") as f:
         f.write(output)
 
-    return (mask_unstable(output), mask_unstable(expected))
+    if mask:
+        output, expected = mask_unstable(output), mask_unstable(expected)
+    return (output, expected)
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_boxmaker(case):
@@ -851,3 +857,77 @@ def test_outside_sizes_kerf():
     
     sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
     assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
+
+
+def test_output_kerf():
+    output, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside'), [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0",
+            "--thickness=2"], optimize=True, mask=False)
+    
+    output_kerf, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside-kerf'), [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0.5",
+            "--thickness=2"], optimize=True, mask=False)
+    
+    map = {}
+    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output):
+        map[i[0]] = i[2]
+
+    map_kerf = {}
+    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output_kerf):
+        map_kerf[i[0]] = i[2]
+
+
+    for k in map.keys():
+        if k not in map_kerf:
+            assert 0 == 1, f"Missing kerf output for {k}"
+
+        p = Path(map[k])
+        p_kerf = Path(map_kerf[k])
+
+        bb = p.bounding_box()
+        bb_kerf = p_kerf.bounding_box()
+
+        assert bb.width == bb_kerf.width - 0.5, f"Kerf output for {k} has different width ({bb.width} vs {bb_kerf.width})"
+
+        poly = path_to_polygon(p)
+        poly_kerf = path_to_polygon(p_kerf)
+
+        poly = translate(poly, xoff=-bb.left, yoff=-bb.top)
+        poly_kerf = translate(poly_kerf, xoff=-bb_kerf.left, yoff=-bb_kerf.top)
+
+        pp = poly.buffer(0.25, cap_style='square', join_style='mitre')
+        pp = translate(pp, xoff=0.25, yoff=0.25)
+
+        poly.normalize()
+        poly_kerf.normalize()
+        pp = pp.reverse() # Somehow needed
+
+        with open('/tmp.svg', "w", encoding="utf-8") as f:
+            f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+                    '<path d="' + str(polygon_to_path(poly_kerf)) + '" fill="none" stroke="blue"/>\n' +
+                    '</svg>\n')
+            
+        with open('/tmp-pp.svg', "w", encoding="utf-8") as f:
+            f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+                    '<path d="' + str(polygon_to_path(pp)) + '" fill="none" stroke="blue"/>\n' +
+                    '</svg>\n')
+
+        print(k)
+        print(poly)
+        print(poly_kerf)
+        print(pp)
+        assert pp == poly_kerf, f"Kerf output for {k} does not match expected"
