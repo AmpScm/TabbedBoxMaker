@@ -61,8 +61,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=1",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -86,8 +86,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -111,8 +111,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=3",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -136,8 +136,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=4",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -161,8 +161,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=5",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -186,8 +186,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=6",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -211,8 +211,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -236,8 +236,8 @@ cases = [
             "--kerf=0.5",
             "--style=1",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -261,8 +261,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -286,8 +286,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -311,8 +311,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -332,12 +332,13 @@ cases = [
             "--dimpleheight=0",
             "--dimplelength=0",
             "--hairline=0",
+            "--line-thickness=1",
             "--thickness=3",
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -361,8 +362,8 @@ cases = [
             "--kerf=0.1",
             "--style=1",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -386,8 +387,8 @@ cases = [
             "--kerf=0",
             "--style=2",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -411,8 +412,8 @@ cases = [
             "--kerf=0",
             "--style=3",
             "--boxtype=2",
-            "--div_l=0",
-            "--div_w=0",
+            "--div-l=0",
+            "--div-w=0",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -436,8 +437,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=1",
-            "--div_w=1",
+            "--div-l=1",
+            "--div-w=1",
             "--keydiv=0",
             "--spacing=1",
         ],
@@ -461,8 +462,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=1",
-            "--div_w=1",
+            "--div-l=1",
+            "--div-w=1",
             "--keydiv=1",
             "--spacing=1",
         ],
@@ -486,8 +487,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=1",
-            "--div_w=1",
+            "--div-l=1",
+            "--div-w=1",
             "--keydiv=2",
             "--spacing=1",
         ],
@@ -511,8 +512,8 @@ cases = [
             "--kerf=0",
             "--style=1",
             "--boxtype=2",
-            "--div_l=1",
-            "--div_w=1",
+            "--div-l=1",
+            "--div-w=1",
             "--keydiv=3",
             "--spacing=1",
         ],
@@ -536,8 +537,8 @@ cases = [
             "--kerf=0.1",
             "--style=1",
             "--boxtype=1",
-            "--div_l=2",
-            "--div_w=3",
+            "--div-l=2",
+            "--div-w=3",
             "--keydiv=0",
             "--spacing=1",
         ],
@@ -554,10 +555,10 @@ cases = [
             "--style=1",
             "--boxtype=2",
             "--tab=3",
-            "--div_l=3",
-            "--div_w=4",
-            "--div_l_spacing=10;5;10",
-            "--div_w_spacing=10;5",
+            "--div-l=3",
+            "--div-w=4",
+            "--div-l-spacing=10;5;10",
+            "--div-w-spacing=10;5",
             "--spacing=1",
             "--keydiv=0",
             "--hairline=1",
@@ -681,7 +682,7 @@ gen_args = [
     ('kerf', [0, 0.1, 0.5]),
     ('style', [1, 2, 3]), # diagrammatic, three-piece, inline
     ('boxtype', [1, 2, 3, 4, 5, 6]), # fully enclosed, open top, two sides open, three sides open, opposite ends open, two panels only
-    (['div_l', 'div_w'], [[1, 1], [0, 0], [0, 1], [1, 0], [2, 3]]),
+    (['div-l', 'div-w'], [[1, 1], [0, 0], [0, 1], [1, 0], [2, 3]]),
     ('keydiv', [0, 1, 2, 3]), # all sides, floor/ceiling only, walls only, none
     ('spacing', [2, 1, 3]),
 ]
@@ -725,7 +726,7 @@ for i in range(len(gen_args)):
 def test_params(cp):
     prefix, suffix, name = cp
 
-    name = suffix.replace('-', '').replace(' ','')
+    name = suffix.replace('--', '').replace('-', '_').replace(' ','')
 
     output, expected = run_one(os.path.join('p', name + '.n'), list((prefix + '  ' + suffix).split()))
 
@@ -738,7 +739,7 @@ def test_params(cp):
 def test_params_relative(cp):
     prefix, suffix, name = cp
 
-    name = suffix.replace('-', '').replace(' ','')
+    name = suffix.replace('--', '').replace('-', '_').replace(' ','')
 
     output, expected = run_one(os.path.join('p', name + '.r'), list((prefix + '  ' + suffix).split()), make_relative=True)
 
@@ -752,7 +753,7 @@ def test_params_relative(cp):
 def test_params_optimized(cp):
     prefix, suffix, name = cp
 
-    name = suffix.replace('-', '').replace(' ','')
+    name = suffix.replace('--', '').replace('-', '_').replace(' ','')
 
     output, expected = run_one(os.path.join('p', name + '.o'), list((prefix + '  ' + suffix).split()), optimize=True)
 
@@ -912,15 +913,14 @@ def test_output_kerf():
         pp = poly.buffer(0.25, cap_style='square', join_style='mitre')
         pp = translate(pp, xoff=0.25, yoff=0.25)
 
-        poly.normalize()
-        poly_kerf.normalize()
-        pp = pp.reverse() # Somehow needed
+        poly = poly.normalize()
+        poly_kerf = poly_kerf.normalize()
 
         print(k)
         print(poly)
         print(poly_kerf)
         print(pp)
-        assert pp == poly_kerf, f"Kerf output for {k} does not match expected"
+        assert pp.equals(poly_kerf), f"Kerf output for {k} does not match expected"
 
 
 def test_output_kerf_dividers():
@@ -933,8 +933,8 @@ def test_output_kerf_dividers():
             "--tab=5",
             "--tabtype=0",
             "--kerf=0",
-            "--div_l=1",
-            "--div_w=2",
+            "--div-l=1",
+            "--div-w=2",
             "--thickness=2"], optimize=True, mask=False)
     
     output_kerf, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside-d-kerf'), [
@@ -946,8 +946,8 @@ def test_output_kerf_dividers():
             "--tab=5",
             "--tabtype=0",
             "--kerf=0.5",
-            "--div_l=1",
-            "--div_w=2",
+            "--div-l=1",
+            "--div-w=2",
             "--thickness=2"], optimize=True, mask=False)
     
     map = {}
@@ -980,26 +980,15 @@ def test_output_kerf_dividers():
         pp = poly.buffer(0.25, cap_style='square', join_style='mitre')
         pp = translate(pp, xoff=0.25, yoff=0.25)
 
-        poly.normalize()
-        poly_kerf.normalize()
-        pp = pp.reverse() # Somehow needed
+        poly = poly.normalize()
+        poly_kerf = poly_kerf.normalize()
 
         print(k)
         print(poly)
         print(poly_kerf)
         print(pp)
 
-        #with open('/tmp.svg', "w", encoding="utf-8") as f:
-        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-        #            '<path d="' + str(polygon_to_path(poly_kerf)) + '" fill="none" stroke="blue"/>\n' +
-        #            '</svg>\n')
-        #    
-        #with open('/tmp-pp.svg', "w", encoding="utf-8") as f:
-        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-        #            '<path d="' + str(polygon_to_path(pp)) + '" fill="none" stroke="blue"/>\n' +
-        #            '</svg>\n')
-
-        assert pp == poly_kerf or pp.reverse() == poly_kerf, f"Kerf output for {k} does not match expected"
+        assert pp.equals(poly_kerf), f"Kerf output for {k} does not match expected"
 
 
 def test_output_kerf_divider_holes():
@@ -1013,8 +1002,8 @@ def test_output_kerf_divider_holes():
             "--depth=40",
             "--tab=5",
             "--tabtype=0",
-            "--div_l=1",
-            "--div_w=2",
+            "--div-l=1",
+            "--div-w=2",
             "--keydiv=0",
             "--thickness=2"]
     
@@ -1050,26 +1039,37 @@ def test_output_kerf_divider_holes():
         poly = translate(poly, xoff=-bb.left, yoff=-bb.top)
         poly_kerf = translate(poly_kerf, xoff=-bb_kerf.left, yoff=-bb_kerf.top)
 
-        pp = poly.buffer(half_kerf, cap_style='square', join_style='mitre')
-        pp = translate(pp, xoff=half_kerf, yoff=half_kerf)
+        pp = poly.buffer(0.25, cap_style='square', join_style='mitre')
+        pp = translate(pp, xoff=0.25, yoff=0.25)
+        print(half_kerf)
 
         poly = poly.normalize()
         poly_kerf = poly_kerf.normalize()
         pp = pp.normalize() # Somehow needed
 
-        print(f'Piece: {k}')
-        print(f'Original: {poly}')
-        print(f'Kerf Generated: {poly_kerf}')
-        print(f'Kerf Shapely: {pp}')
+        print(f'Piece:{k}')
+        print(f'Original:\n{poly}')
+        print(f'Kerf Generated:\n{poly_kerf}')
+        print(f'Kerf Shapely:\n{pp}')
 
-        with open('/tmp.svg', "w", encoding="utf-8") as f:
-            f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-                    '<path d="' + str(polygon_to_path(poly_kerf)) + '" fill="none" stroke="blue"/>\n' +
-                    '</svg>\n')
+        #with open(os.path.join(actual_output_dir, 'v', 'poly-base.svg'), "w", encoding="utf-8") as f:
+        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+        #            '<path d="' + str(polygon_to_path(poly).to_relative()) + '" fill="none" stroke="blue"/>\n' +
+        #            '</svg>\n')
+        #    
+        #with open(os.path.join(actual_output_dir, 'v', 'poly-kerf.svg'), "w", encoding="utf-8") as f:
+        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+        #            '<path d="' + str(polygon_to_path(poly_kerf).to_relative()) + '" fill="none" stroke="blue"/>\n' +
+        #            '</svg>\n')
+#
+        #with open(os.path.join(actual_output_dir, 'v','poly-shapely.svg'), "w", encoding="utf-8") as f:
+        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+        #            '<path d="' + str(polygon_to_path(pp).to_relative()) + '" fill="none" stroke="blue"/>\n' +
+        #            '</svg>\n')
             
-        with open('/tmp-pp.svg', "w", encoding="utf-8") as f:
-            f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-                    '<path d="' + str(polygon_to_path(pp)) + '" fill="none" stroke="blue"/>\n' +
-                    '</svg>\n')
 
-        assert pp == poly_kerf or pp.reverse() == poly_kerf, f"Kerf output for {k} does not match expected"
+        if not pp.equals(poly_kerf):
+            assert pp.exterior == poly_kerf.exterior, f"Kerf output for {k} does not match expected (shell)"
+            assert len(pp.interiors) ==len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
+            for h in range(len(pp.interiors)):
+                assert pp.interiors[h] == poly_kerf.interiors[h], f"Kerf output for {k} does not match expected (interior {h})"

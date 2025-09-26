@@ -7,21 +7,27 @@
         <vbox>
             <label>Dimensions</label>
             <separator/>
-            <param name="unit" _gui-text="    Units" type="optiongroup" appearance="combo">
-                <option value="mm">mm</option>
+            <param name="unit" _gui-text="  Units" type="optiongroup" appearance="combo">
+                <_option value="document" selected="true">Document</_option>
                 <option value="cm">cm</option>
                 <option value="in">in</option>
+                <option value="pt">pt</option>
+                <option value="pc">pc</option>
+                <option value="mm">mm</option>
+                <option value="px">px</option>
             </param>
 
-            <param name="inside" type="optiongroup" _gui-text="    Box Dimensions" appearance="combo">
-                <_option value="1">Inside</_option>
-                <_option value="0">Outside</_option>
+            <param name="inside" type="optiongroup" _gui-text="  Box Dimensions" appearance="combo">
+                <_option value="True">Inside</_option>
+                <_option value="False">Outside/External</_option>
             </param>
 
-            <param name="length" type="float" precision="3" min="0.0" max="10000.0" _gui-text="    Length">180</param>
-            <param name="width" type="float" precision="3"  min="0.0" max="10000.0" _gui-text="    Width">240</param>
-            <param name="depth" type="float" precision="3"  min="0.0" max="10000.0" _gui-text="    Height">50</param>
-            
+            <param name="length"    type="float" precision="3" min="0.0" max="10000.0" _gui-text="  Length (X)">100</param>
+            <param name="width"     type="float" precision="3" min="0.0" max="10000.0" _gui-text="  Width (Y)">200</param>
+            <param name="depth"     type="float" precision="3" min="0.0" max="10000.0" _gui-text="  Height (Z)">50</param>
+            <param name="thickness" type="float" precision="3" min="0.0" max="10000.0" _gui-text="  Material Thickness">3.0</param>
+
+            <spacer/>
             <param name="optimize" type="boolean" _gui-text="Combine and clean paths">true</param>
 
             <spacer/>
@@ -34,15 +40,10 @@
 
             <param name="tab" type="float" precision="2" min="0.0" max="10000.0" _gui-text="    Min/Preferred Width">6.0</param> 
 
-            <param name="tabtype" type="optiongroup" _gui-text="    Type" appearance="combo">
-                <_option value="0">Regular (Laser)</_option>
-                <_option value="1">Dogbone (Mill)</_option>
-            </param>
-
             <param name="tabsymmetry" type="optiongroup" _gui-text="    Symmetry" appearance="combo">
                 <_option value="0">XY Symmetric</_option>
                 <_option value="1">Rotate Symmetric</_option>
-                <!--_option value="2">Antisymmetric</_option-->
+                <_option value="2">Antisymmetric</_option>
             </param>
 
             <param name="dimpleheight" type="float" precision="2" min="0.0" max="10000.0"
@@ -54,14 +55,26 @@
         <separator/>
         <spacer/>
         <vbox>
-            <label>Line and kerf</label>
+            <label>Design</label>
             <separator/>
-            <param name="hairline" type="optiongroup" _gui-text="    Line Thickness" appearance="combo">
-                <_option value="0">Default</_option>
-                <_option value="1">Hairline (0.002" for Epilog)</_option>
+            <param name="hairline" type="optiongroup" _gui-text="  Line Type" appearance="combo">
+                <_option value="True" selected="True">Hairline</_option>
+                <_option value="False">Custom</_option>
+            </param>
+            <param name="line-thickness" type="float" precision="3" min="0.0" max="100.0" _gui-text="  Line Thickness">0.1</param>
+            <param name="line-color" type="optiongroup" _gui-text="  Line Color" appearance="combo">
+                <_option value="black" selected="true">Black</_option>
+                <_option value="red">Red</_option>
+                <_option value="green">Green</_option>
+                <_option value="blue">Blue</_option>
             </param>
 
-            <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" _gui-text="    Material Thickness">3.0</param>
+            <spacer />
+            <label>Cutting settings</label>
+            <param name="tabtype" type="optiongroup" _gui-text="    Type" appearance="combo">
+                <_option value="0">Regular (Laser)</_option>
+                <_option value="1">Dogbone (Mill)</_option>
+            </param>
             <param name="kerf" type="float" precision="3"  min="0.0" max="10000.0" _gui-text="    Kerf (cut width)">0.1</param>
 
             <spacer/>
@@ -74,19 +87,19 @@
             </param>
 
             <param name="boxtype" _gui-text="    Box Type" type="optiongroup" appearance="combo">
-                <option value="1">Fully enclosed</option>
-                <option value="2">One side open (LxW)</option>
-                <option value="3">Two sides open (LxW and LxH)</option>
-                <option value="4">Three sides open (LxW, LxH, HxW)</option>
-                <option value="5">Opposite ends open (LxW)</option>
-                <option value="6">Two panels only (LxW and LxH)</option>
+                <_option value="1">Fully enclosed</_option>
+                <_option value="2" selected="true">One side open (LxW)</_option>
+                <_option value="3">Two sides open (LxW and LxH)</_option>
+                <_option value="4">Three sides open (LxW, LxH, HxW)</_option>
+                <_option value="5">Opposite ends open (LxW)</_option>
+                <_option value="6">Two panels only (LxW and LxH)</_option>
             </param>
 
-            <param name="div_l" type="int" min="0" max="20" _gui-text="    Dividers (Length axis)">2</param>
-            <param name="div_w" type="int" min="0" max="20" _gui-text="    Dividers (Width axis)">3</param>
+            <param name="div-l" type="int" min="0" max="20" _gui-text="  Dividers (Length axis)">2</param>
+            <param name="div-w" type="int" min="0" max="20" _gui-text="  Dividers (Width axis)">3</param>
             <param name="keydiv" _gui-text="    Key the dividers into" type="optiongroup" appearance="combo">
                 <option value="3">None</option>
-                <option value="2">Walls</option>
+                <option value="2" selected="True">Walls</option>
                 <option value="1">Floor / Ceiling</option>
                 <option value="0">All sides</option>
             </param>

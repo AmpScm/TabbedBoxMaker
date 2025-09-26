@@ -25,6 +25,7 @@ import inkex
 import math
 import os
 import gettext
+import sys
 
 from inkex import Effect, Group, PathElement
 from inkex.paths import Path
@@ -42,7 +43,9 @@ from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, BoxFaces, Tab
 _ = gettext.gettext
 
 def log(text: str) -> None:
-    if "SCHROFF_LOG" in os.environ:
+    if "STDERR_LOG" in os.environ:
+        print(text, file=sys.stderr)
+    elif "SCHROFF_LOG" in os.environ:
         f = open(os.environ.get("SCHROFF_LOG"), "a")
         f.write(text + "\n")
 
@@ -56,11 +59,11 @@ def IntBoolean(value):
             return False
         elif value == "1":
             return True
-    return False
+    return b
 
 class TabbedBoxMaker(Effect):
     nextId: dict[str, int]
-    linethickness: float = 1
+    line_thickness: float = 1
     nextId: dict[str, int]
     version = BOXMAKER_VERSION
     settings : BoxSettings
@@ -69,6 +72,7 @@ class TabbedBoxMaker(Effect):
     cli = False
     schroff = False
     inkscape = False
+    line_color = '#000000'
 
     def __init__(self, cli=True, schroff=False, inkscape=False):
         self.cli = cli
@@ -104,10 +108,10 @@ class TabbedBoxMaker(Effect):
     def makeLine(self, path , id : str = "line") -> PathElement:
         line = PathElement(id=self.makeId(id))
 
-        if self.linethickness == self.raw_hairline_thickness:
-            line.style = { "stroke": "#000000", "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+        if self.line_thickness == self.raw_hairline_thickness:
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
         else:
-            line.style = { "stroke": "#000000", "stroke-width"  : str(self.linethickness), "fill": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
         line.path = Path(path)
         return line
 
@@ -117,10 +121,10 @@ class TabbedBoxMaker(Effect):
         (cx, cy) = c
         log("putting circle at (%d,%d)" % (cx,cy))
         line = PathElement.arc((cx, cy), r, id=self.makeId(id))
-        if self.linethickness == self.hairline_thickness:
-            line.style = { "stroke": "#000000", "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+        if self.line_thickness == self.hairline_thickness:
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
         else:
-            line.style = { "stroke": "#000000", "stroke-width"  : str(self.linethickness), "fill": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
         return line
 
 
@@ -135,62 +139,6 @@ class TabbedBoxMaker(Effect):
                     self.arg_parser._remove_action(action)
 
         self.arg_parser.add_argument(
-            "--schroff",
-            action="store",
-            type=bool,
-            dest="schroff",
-            default=self.schroff,
-            help="Enable Schroff mode",
-        )
-        self.arg_parser.add_argument(
-            "--rail_height",
-            action="store",
-            type=float,
-            dest="rail_height",
-            default=10.0,
-            help="Height of rail (float)",
-        )
-        self.arg_parser.add_argument(
-            "--rail_mount_depth",
-            action="store",
-            type=float,
-            dest="rail_mount_depth",
-            default=17.4,
-            help="Depth at which to place hole for rail mount bolt (float)",
-        )
-        self.arg_parser.add_argument(
-            "--rail_mount_centre_offset",
-            action="store",
-            type=float,
-            dest="rail_mount_centre_offset",
-            default=0.0,
-            help="How far toward row centreline to offset rail mount bolt (from rail centreline) (float)",
-        )
-        self.arg_parser.add_argument(
-            "--rows",
-            action="store",
-            type=int,
-            dest="rows",
-            default=0,
-            help="Number of Schroff rows (int)",
-        )
-        self.arg_parser.add_argument(
-            "--hp",
-            action="store",
-            type=int,
-            dest="hp",
-            default=0,
-            help="Width (TE/HP units) of Schroff rows (int)",
-        )
-        self.arg_parser.add_argument(
-            "--row_spacing",
-            action="store",
-            type=float,
-            dest="row_spacing",
-            default=10.0,
-            help="Height of rail (float)",
-        )
-        self.arg_parser.add_argument(
             "--unit",
             action="store",
             type=str,
@@ -198,30 +146,81 @@ class TabbedBoxMaker(Effect):
             default="mm",
             help="Measure Units",
         )
-        self.arg_parser.add_argument(
-            "--inside",
-            action="store",
-            type=int,
-            dest="inside",
-            default=0,
-            help="Int/Ext Dimension",
-        )
-        self.arg_parser.add_argument(
-            "--length",
-            action="store",
-            type=float,
-            dest="length",
-            default=100,
-            help="Length of Box (float)",
-        )
-        self.arg_parser.add_argument(
-            "--width",
-            action="store",
-            type=float,
-            dest="width",
-            default=100,
-            help="Width of Box (float)",
-        )
+
+        if self.schroff:
+            self.arg_parser.add_argument(
+                "--rail_height",
+                action="store",
+                type=float,
+                dest="rail_height",
+                default=10.0,
+                help="Height of rail (float)",
+            )
+            self.arg_parser.add_argument(
+                "--rail_mount_depth",
+                action="store",
+                type=float,
+                dest="rail_mount_depth",
+                default=17.4,
+                help="Depth at which to place hole for rail mount bolt (float)",
+            )
+            self.arg_parser.add_argument(
+                "--rail_mount_centre_offset",
+                action="store",
+                type=float,
+                dest="rail_mount_centre_offset",
+                default=0.0,
+                help="How far toward row centreline to offset rail mount bolt (from rail centreline) (float)",
+            )
+            self.arg_parser.add_argument(
+                "--rows",
+                action="store",
+                type=int,
+                dest="rows",
+                default=0,
+                help="Number of Schroff rows (int)",
+            )
+            self.arg_parser.add_argument(
+                "--hp",
+                action="store",
+                type=int,
+                dest="hp",
+                default=0,
+                help="Width (TE/HP units) of Schroff rows (int)",
+            )
+            self.arg_parser.add_argument(
+                "--row_spacing",
+                action="store",
+                type=float,
+                dest="row_spacing",
+                default=10.0,
+                help="Height of rail (float)",
+            )
+        else:
+            self.arg_parser.add_argument(
+                "--inside",
+                action="store",
+                type=IntBoolean,
+                dest="inside",
+                default=0,
+                help="Int/Ext Dimension",
+            )
+            self.arg_parser.add_argument(
+                "--length",
+                action="store",
+                type=float,
+                dest="length",
+                default=100,
+                help="Length of Box (float)",
+            )
+            self.arg_parser.add_argument(
+                "--width",
+                action="store",
+                type=float,
+                dest="width",
+                default=100,
+                help="Width of Box (float)",
+            )
         self.arg_parser.add_argument(
             "--depth",
             action="store",
@@ -241,9 +240,9 @@ class TabbedBoxMaker(Effect):
         self.arg_parser.add_argument(
             "--equal",
             action="store",
-            type=int,
+            type=IntBoolean,
             dest="equal_tabs",
-            default=0,
+            default=False,
             help="Equal/Prop Tabs",
         )
         self.arg_parser.add_argument(
@@ -257,9 +256,9 @@ class TabbedBoxMaker(Effect):
         self.arg_parser.add_argument(
             "--tabtype",
             action="store",
-            type=int,
+            type=IntBoolean,
             dest="tabtype",
-            default=0,
+            default=False,
             help="Tab type: regular or dogbone",
         )
         self.arg_parser.add_argument(
@@ -285,21 +284,31 @@ class TabbedBoxMaker(Effect):
             dest="hairline",
             default=False,
             help="Line Thickness",
+            choices=[True, False, '0', '1'],
         )
         self.arg_parser.add_argument(
-            "--linethickness",
+            "--line-thickness",
             action="store",
             type=float,
-            dest="linethickness",
-            default=1,
+            dest="line_thickness",
+            default=0.1,
             help="Line Thickness (if not hairline)",
+        )
+        self.arg_parser.add_argument(
+            "--line-color",
+            action="store",
+            type=str,
+            dest="color",
+            default="black",
+            help="Line Color",
+            choices=["black", "red", "blue", "green"]
         )
         self.arg_parser.add_argument(
             "--thickness",
             action="store",
             type=float,
             dest="thickness",
-            default=10,
+            default=5.0,
             help="Thickness of Material",
         )
         self.arg_parser.add_argument(
@@ -307,7 +316,7 @@ class TabbedBoxMaker(Effect):
             action="store",
             type=float,
             dest="kerf",
-            default=0.5,
+            default=0,
             help="Kerf (width of cut)",
         )
         self.arg_parser.add_argument(
@@ -335,7 +344,7 @@ class TabbedBoxMaker(Effect):
             help="Box type",
         )
         self.arg_parser.add_argument(
-            "--div_l",
+            "--div-l",
             action="store",
             type=int,
             dest="div_x",
@@ -343,7 +352,7 @@ class TabbedBoxMaker(Effect):
             help="Dividers (Length axis / X axis)",
         )
         self.arg_parser.add_argument(
-            "--div_w",
+            "--div-w",
             action="store",
             type=int,
             dest="div_y",
@@ -359,18 +368,18 @@ class TabbedBoxMaker(Effect):
             help="Key dividers into walls/floor",
         )
         self.arg_parser.add_argument(
-            "--div_l_spacing",
+            "--div-l-spacing",
             action="store",
             type=str,
-            dest="div_l_spacing",
+            dest="div_x_spacing",
             default="",
             help="Custom spacing for X-axis dividers (semicolon separated widths)",
         )
         self.arg_parser.add_argument(
-            "--div_w_spacing",
+            "--div-w-spacing",
             action="store",
             type=str,
-            dest="div_w_spacing",
+            dest="div_y_spacing",
             default="",
             help="Custom spacing for Y-axis dividers (semicolon separated widths)",
         )
@@ -447,7 +456,7 @@ class TabbedBoxMaker(Effect):
         if remaining_sections > 0:
             remaining_width = available_width - used_width
             if remaining_width <= 0:
-                inkex.errormsg(f"Error: Specified section widths exceed available space")
+                inkex.errormsg(f"Error: Specified section widths exceed available space (remaining width {remaining_width:.2f})")
                 exit(1)
             auto_width = max(remaining_width / remaining_sections, 0)
             values.extend([auto_width] * remaining_sections)
@@ -470,42 +479,35 @@ class TabbedBoxMaker(Effect):
 
         # Get script's option values.
         hairline = self.options.hairline
-        unit = self.options.unit
+        unit = str(self.options.unit).lower()
         inside = self.options.inside
-        schroff = self.options.schroff
         kerf = self.options.kerf
 
-        # Set the line thickness
-        line_thickness = self.hairline_thickness if hairline else self.options.linethickness
+        if unit == 'document':
+            unit = svg.document_unit
 
+        # Set the line thickness
+        line_thickness = self.hairline_thickness if hairline else self.options.line_thickness
+        if line_thickness == 1.0:
+            line_thickness = 1 # Reproduce old output
+
+        schroff = self.schroff
         if schroff:
+            # schroffmaker.inx
+
+            # minimally different behaviour for schroffmaker.inx vs. boxmaker.inx
+            # essentially schroffmaker.inx is just an alternate interface with different
+            # default settings, some options removed, and a tiny amount of extra
+            # logic
+
             rows = self.options.rows
             rail_height = self.svg.unittouu(str(self.options.rail_height) + unit)
             row_centre_spacing = self.svg.unittouu(str(122.5) + unit)
             row_spacing = self.svg.unittouu(str(self.options.row_spacing) + unit)
-            rail_mount_depth = self.svg.unittouu(
-                str(self.options.rail_mount_depth) + unit
-            )
-            rail_mount_centre_offset = self.svg.unittouu(
-                str(self.options.rail_mount_centre_offset) + unit
-            )
+            rail_mount_depth = self.svg.unittouu(str(self.options.rail_mount_depth) + unit)
+            rail_mount_centre_offset = self.svg.unittouu(str(self.options.rail_mount_centre_offset) + unit)
             rail_mount_radius = self.svg.unittouu(str(2.5) + unit)
-        else:
-            # Default values when not in Schroff mode
-            rows = 0
-            rail_height = 0.0
-            row_spacing = 0.0
-            rail_mount_depth = 0.0
-            rail_mount_centre_offset = 0.0
-            rail_mount_radius = 0.0
 
-        # minimally different behaviour for schroffmaker.inx vs. boxmaker.inx
-        # essentially schroffmaker.inx is just an alternate interface with different
-        # default settings, some options removed, and a tiny amount of extra
-        # logic
-        base_corr = 0.0  # mm correction to get to pure outside dimension
-        if schroff:
-            # schroffmaker.inx
             X = self.svg.unittouu(str(self.options.hp * 5.08) + unit)
             # 122.5mm vertical distance between mounting hole centres of 3U
             # Schroff panels
@@ -514,10 +516,20 @@ class TabbedBoxMaker(Effect):
             # panels
             row_spacing_total = (rows - 1) * row_spacing
             Y = row_height + row_spacing_total
+            inside = False
         else:
-            # boxmaker.inx
+            # boxmaker.inx            
             X = self.svg.unittouu(str(self.options.length) + unit)
             Y = self.svg.unittouu(str(self.options.width) + unit)
+
+            # Default values when not in Schroff mode
+            rows = 0
+            rail_height = 0.0
+            row_spacing = 0.0
+            rail_mount_depth = 0.0
+            rail_mount_centre_offset = 0.0
+            rail_mount_radius = 0.0
+
 
         Z = self.svg.unittouu(str(self.options.height) + unit)
         thickness = self.svg.unittouu(str(self.options.thickness) + unit)
@@ -562,8 +574,8 @@ class TabbedBoxMaker(Effect):
             inside_Z = Z - thickness * ((PieceType.Top  in piece_types) + (PieceType.Bottom in piece_types))
 
         # Parse custom divider spacing using pure user dimensions (without kerf)
-        div_x_spacing = self.parse_divider_spacing(self.options.div_l_spacing, inside_Y, thickness, div_x, reverse=True)
-        div_y_spacing = self.parse_divider_spacing(self.options.div_w_spacing, inside_X, thickness, div_y, reverse=True)
+        div_x_spacing = self.parse_divider_spacing(self.options.div_x_spacing, inside_Y, thickness, div_x, reverse=True)
+        div_y_spacing = self.parse_divider_spacing(self.options.div_y_spacing, inside_X, thickness, div_y, reverse=True)
 
         return BoxSettings(
             X=X, Y=Y, Z=Z,
@@ -574,7 +586,8 @@ class TabbedBoxMaker(Effect):
             piece_types=piece_types, div_x=div_x, div_y=div_y, div_x_spacing=div_x_spacing, div_y_spacing=div_y_spacing,
             keydiv_walls=keydivwalls, keydiv_floor=keydivfloor,
             initOffsetX=initOffsetX, initOffsetY=initOffsetY,
-            hairline=hairline, schroff=schroff, kerf=kerf, line_thickness=line_thickness, unit=unit, rows=rows,
+            hairline=hairline, line_color=self.options.color,
+            schroff=schroff, kerf=kerf, line_thickness=line_thickness, unit=unit, rows=rows,
             rail_height=rail_height, row_spacing=row_spacing, rail_mount_depth=rail_mount_depth,
             rail_mount_centre_offset=rail_mount_centre_offset, rail_mount_radius=rail_mount_radius,
             optimize=optimize
@@ -589,14 +602,18 @@ class TabbedBoxMaker(Effect):
 
         # Validate input values
         error = False
+
+        if settings.unit not in ['mm', 'cm', 'in', 'ft', 'px', 'pt', 'pc']:
+            inkex.errormsg(_("Error: Invalid unit") + f': {settings.unit}')
+            error = True
         if min(settings.X, settings.Y, settings.Z) == 0:
-            inkex.errormsg(_("Error: Dimensions must be non zero"))
+            inkex.errormsg(_("Error: Dimensions must be non zero")+ f': ({settings.X}, {settings.Y}, {settings.Z})')
             error = True
         if min(settings.X, settings.Y, settings.Z) < 3 * settings.tab_width:
-            inkex.errormsg(_("Error: Tab size too large"))
+            inkex.errormsg(_("Error: Tab size too large") + f': ({3 * settings.tab_width} > {min(settings.X, settings.Y, settings.Z)})')
             error = True
         if settings.tab_width < settings.thickness:
-            inkex.errormsg(_("Error: Tab size too small"))
+            inkex.errormsg(_("Error: Tab size too small") + f': ({settings.tab_width} < {settings.thickness})')
             error = True
         if settings.thickness == 0:
             inkex.errormsg(_("Error: thickness is zero"))
@@ -605,16 +622,20 @@ class TabbedBoxMaker(Effect):
             inkex.errormsg(_("Error: Material too thick"))
             error = True
         if settings.kerf > min(settings.X, settings.Y, settings.Z) / 3:  # crude test
-            inkex.errormsg(_("Error: kerf too large"))
+            inkex.errormsg(_("Error: kerf too large")+ f': ({settings.kerf} > {min(settings.X, settings.Y, settings.Z) / 3})')
             error = True
         if settings.spacing > max(settings.X, settings.Y, settings.Z) * 10:  # crude test
-            inkex.errormsg(_("Error: Spacing too large"))
+            inkex.errormsg(_("Error: Spacing too large") + f': ({settings.spacing} > {max(settings.X, settings.Y, settings.Z) * 10})')
             error = True
         if settings.spacing < settings.kerf:
-            inkex.errormsg(_("Error: Spacing too small"))
+            inkex.errormsg(_("Error: Spacing too small") + f': ({settings.spacing} < {settings.kerf})')
+            error = True
+        if settings.line_color not in ['black', 'red', 'blue', 'green']:
+            inkex.errormsg(_("Error: Invalid line color") + f': {settings.line_color}')
             error = True
 
         if error:
+            inkex.errormsg(f'Provided arguments: {self.cli_args}')
             exit(1)
 
         # Handle Schroff settings if needed
@@ -739,7 +760,7 @@ class TabbedBoxMaker(Effect):
         col4 = (5, 2, 0, 2)  # fifth column, always offset by 2*X+2*Z
         col5 = (6, 3, 0, 2)  # sixth column, always offset by 3*X+2*Z
 
-        spacing = settings.spacing + settings.kerf
+        spacing = max(settings.spacing, 0 if settings.hairline else (settings.line_thickness)) + settings.kerf
         initOffsetX = settings.initOffsetX - settings.kerf / 2
         initOffsetY = settings.initOffsetY - settings.kerf / 2
 
@@ -759,8 +780,8 @@ class TabbedBoxMaker(Effect):
         # Y-divider template respectively
         pieces_list : list[Piece] = []
         if settings.layout == Layout.DIAGRAMMATIC:  # Diagramatic Layout
-            rr = deepcopy([row0, row1z, row2])
-            cc = deepcopy([col0, col1z, col2xz, col3xzz])
+            rr = [row0, row1z, row2]
+            cc = [col0, col1z, col2xz, col3xzz]
             if PieceType.Front not in piece_types:
                 reduceOffsets(rr, 0, 0, 0, 1)
             if PieceType.Left not in piece_types:
@@ -1206,7 +1227,8 @@ class TabbedBoxMaker(Effect):
         settings = self.parse_options_to_settings()
 
         # Store values needed for other methods
-        self.linethickness = settings.line_thickness
+        self.line_thickness = settings.line_thickness
+        self.line_color = {'black': '#000000', 'red': '#FF0000', 'green': '#00FF00', 'blue': '#0000FF'}.get(str(settings.line_color).lower(), "#000000")
 
         # Step 2: Parse settings into complete configuration with pieces
         config = self.parse_settings_to_configuration(settings)
@@ -1266,7 +1288,7 @@ class TabbedBoxMaker(Effect):
                     path_last = path[-1]
 
             if path[-1].x == path[0].x and path[-1].y == path[0].y:
-                path = path.reverse() # Make anti-clockwise
+                path = path.reverse() # Ensure correct winding order
                 path.append(inkex.paths.ZoneClose())
                 path_element.path = path
 
@@ -1334,7 +1356,7 @@ class TabbedBoxMaker(Effect):
 
         # Step 3: Include gaps in the panel outline by removing them from the panel path
         if len(paths) > 1:
-            try_combine_paths(paths)
+            try_combine_paths(paths, self.inkscape)
 
         # Last step: If the group now just contains one path, remove
         # the group around this path
@@ -1509,6 +1531,7 @@ class TabbedBoxMaker(Effect):
                         vector -= vecHalfKerf
                         s.append(Line(*vector))
                 tabVec = -tabVec  # swap tab direction
+            #first = 0  # only apply first offset once
 
         # finish the line off
         s.append(Line(*(side.next.start_offset * thickness + direction * (length + kerf))))
@@ -1630,38 +1653,42 @@ class TabbedBoxMaker(Effect):
         gapWidth = side.gap_width
         tabWidth = side.tab_width
 
-        if isMale:  # kerf correction
-            gapWidth -= settings.kerf
-            tabWidth += settings.kerf
-        else:
-            gapWidth += settings.kerf
-            tabWidth -= settings.kerf
+        first = halfkerf if isMale else -halfkerf
+        corr = -kerf if isMale else kerf
 
-        toInside = direction.rotate_clockwise()
-        vector = toInside * (side.has_tabs * thickness - halfkerf)
+        gapWidth += corr
+        tabWidth -= corr
+
+        toInsideX, toInsideY = toInside = direction.rotate_clockwise()
+
+        kerf_offset = Vec(1 if toInsideX else 0, -(1 if toInsideY else 0)) * halfkerf
+
+        vector = toInside * (side.has_tabs * thickness + halfkerf)
+        kerf_offset = Vec(1 if toInside.x else 0, -(1 if toInside.y else 0)) * halfkerf
+        log(f"TabWidth {tabWidth}, GapWidth {gapWidth}, Total={gapWidth+tabWidth}, Divisions {divisions}, isMale {isMale}, numDividers {numDividers}, Spacings {dividerSpacings}, vector {vector}, dir {direction}, toInside {toInside}")
 
         # generate line as tab or hole using:
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
         for tabDivision in range(divisions):
             # draw holes for divider tabs to key into side walls
-            if ((tabDivision % 2) == 0) != (not isMale) and numDividers > 0:
+            if ((tabDivision % 2) == 0) != (not isMale):
                 w = gapWidth if isMale else tabWidth
                 if (tabDivision == 0 or tabDivision == (divisions - 1)) and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                     if tabDivision == 0 and side.prev.has_tabs:
-                        w -= thickness
+                        w -= thickness - halfkerf
                     elif tabDivision > 0 and side.next.has_tabs:
-                        w -= thickness
-                holeLen = direction * w
+                        w -= thickness - kerf
+                holeLen = direction * (w + first)
                 for dividerNumber in range(numDividers):
                     cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, dividerSpacings, thickness)
-                    divider_offset = toInside * cumulative_position
-                    dogbone_offset = direction * (halfkerf) if dogbone else Vec(0, 0)
+                    divider_offset = direction.rotate_clockwise(1) * (cumulative_position + halfkerf)
+                    dogbone_offset = direction * (halfkerf- first) if dogbone else Vec(0, 0)
 
-                    pos = vector + divider_offset + dogbone_offset
+                    pos = vector + divider_offset + kerf_offset + dogbone_offset
 
                     if tabDivision == 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
-                        pos += Vec(startOffset.x * thickness, 0)
+                        pos += Vec(side.prev.has_tabs * thickness - halfkerf, 0)
 
                     h = Path()
                     h.append(Move(*pos))
@@ -1685,6 +1712,7 @@ class TabbedBoxMaker(Effect):
                 # draw the gap
                 vector += direction * (
                         gapWidth
+                        + (first if not (isMale and dogbone) else 0)
                         + dogbone * kerf * isMale
                     )
 
@@ -1696,6 +1724,8 @@ class TabbedBoxMaker(Effect):
 
             if dogbone and notMale:
                 vector -= direction * halfkerf
+
+            first = 0
 
         rootX, rootY = root + side.root_offset
         for node in nodes:

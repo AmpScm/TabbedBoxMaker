@@ -35,6 +35,7 @@ class BoxSettings:
     schroff: bool
     kerf: float
     line_thickness: float
+    line_color: str
     # Schroff-specific fields (only used when schroff=True)
     unit: str
     rows: int
@@ -104,6 +105,13 @@ class Vec(tuple):
         return Vec(self.x - other.x, self.y - other.y)
 
     def __mul__(self, other: Union[float, "Vec"]) -> Union["Vec", float]:
+        if isinstance(other, Vec):
+            return Vec(self.x * other.x, self.y * other.y)
+        elif isinstance(other, (int, float)):
+            return Vec(self.x * other, self.y * other)
+        return NotImplemented
+    
+    def __rmul__(self, other: Union[float, "Vec"]) -> Union["Vec", float]:
         if isinstance(other, Vec):
             return Vec(self.x * other.x, self.y * other.y)
         elif isinstance(other, (int, float)):
