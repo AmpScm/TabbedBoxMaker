@@ -7,18 +7,18 @@
     <g id="piece_001">
       <path id="side_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 24.1 106.2 L 27.4077 106.2 L 27.4077 104.2 L 30.5077 104.2 L 30.5077 106.2 L 33.7154 106.2 L 33.7154 104.2 L 36.8154 104.2 L 36.8154 106.2 L 40.0231 106.2 L 40.0231 104.2 L 43.1231 104.2 L 43.1231 106.2 L 46.3308 106.2 L 46.3308 104.2 L 49.4308 104.2 L 49.4308 106.2 L 52.6385 106.2 L 52.6385 104.2 L 55.7385 104.2 L 55.7385 106.2 L 58.9462 106.2 L 58.9462 104.2 L 62.0462 104.2 L 62.0462 106.2 L 65.2538 106.2 L 65.2538 104.2 L 68.3538 104.2 L 68.3538 106.2 L 71.5615 106.2 L 71.5615 104.2 L 74.6615 104.2 L 74.6615 106.2 L 77.8692 106.2 L 77.8692 104.2 L 80.9692 104.2 L 80.9692 106.2 L 84.1769 106.2 L 84.1769 104.2 L 87.2769 104.2 L 87.2769 106.2 L 90.4846 106.2 L 90.4846 104.2 L 93.5846 104.2 L 93.5846 106.2 L 96.7923 106.2 L 96.7923 104.2 L 99.8923 104.2 L 99.8923 106.2 L 103.2 106.2"/>
       <path id="side_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 103.2 106.2 L 103.2 107.55 L 101.2 107.55 L 101.2 110.45 L 103.2 110.45 L 103.2 113.8 L 101.2 113.8 L 101.2 116.7 L 103.2 116.7 L 103.2 120.05 L 101.2 120.05 L 101.2 122.95 L 103.2 122.95 L 103.2 126.3"/>
-      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 107.55 L 81.8667 110.45 L 83.7667 110.45 L 83.7667 107.55 L 81.8667 107.55 Z"/>
-      <path id="hole_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 107.55 L 62.5333 110.45 L 64.4333 110.45 L 64.4333 107.55 L 62.5333 107.55 Z"/>
-      <path id="hole_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 107.55 L 43.2 110.45 L 45.1 110.45 L 45.1 107.55 L 43.2 107.55 Z"/>
-      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 107.55 L 36.2 110.45 L 38.1 110.45 L 38.1 107.55 L 36.2 107.55 Z"/>
-      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 113.8 L 81.8667 116.7 L 83.7667 116.7 L 83.7667 113.8 L 81.8667 113.8 Z"/>
-      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 113.8 L 62.5333 116.7 L 64.4333 116.7 L 64.4333 113.8 L 62.5333 113.8 Z"/>
-      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 113.8 L 43.2 116.7 L 45.1 116.7 L 45.1 113.8 L 43.2 113.8 Z"/>
-      <path id="hole_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 113.8 L 36.2 116.7 L 38.1 116.7 L 38.1 113.8 L 36.2 113.8 Z"/>
-      <path id="hole_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 120.05 L 81.8667 122.95 L 83.7667 122.95 L 83.7667 120.05 L 81.8667 120.05 Z"/>
-      <path id="hole_010" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 120.05 L 62.5333 122.95 L 64.4333 122.95 L 64.4333 120.05 L 62.5333 120.05 Z"/>
-      <path id="hole_011" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 120.05 L 43.2 122.95 L 45.1 122.95 L 45.1 120.05 L 43.2 120.05 Z"/>
-      <path id="hole_012" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 120.05 L 36.2 122.95 L 38.1 122.95 L 38.1 120.05 L 36.2 120.05 Z"/>
+      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 107.6 L 83.8667 110.5 L 81.9667 110.5 L 81.9667 107.6 L 83.8667 107.6 Z"/>
+      <path id="hole_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 107.6 L 64.5333 110.5 L 62.6333 110.5 L 62.6333 107.6 L 64.5333 107.6 Z"/>
+      <path id="hole_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 107.6 L 45.2 110.5 L 43.3 110.5 L 43.3 107.6 L 45.2 107.6 Z"/>
+      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 107.6 L 38.2 110.5 L 36.3 110.5 L 36.3 107.6 L 38.2 107.6 Z"/>
+      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 113.85 L 83.8667 116.75 L 81.9667 116.75 L 81.9667 113.85 L 83.8667 113.85 Z"/>
+      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 113.85 L 64.5333 116.75 L 62.6333 116.75 L 62.6333 113.85 L 64.5333 113.85 Z"/>
+      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 113.85 L 45.2 116.75 L 43.3 116.75 L 43.3 113.85 L 45.2 113.85 Z"/>
+      <path id="hole_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 113.85 L 38.2 116.75 L 36.3 116.75 L 36.3 113.85 L 38.2 113.85 Z"/>
+      <path id="hole_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 120.1 L 83.8667 123 L 81.9667 123 L 81.9667 120.1 L 83.8667 120.1 Z"/>
+      <path id="hole_010" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 120.1 L 64.5333 123 L 62.6333 123 L 62.6333 120.1 L 64.5333 120.1 Z"/>
+      <path id="hole_011" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 120.1 L 45.2 123 L 43.3 123 L 43.3 120.1 L 45.2 120.1 Z"/>
+      <path id="hole_012" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 120.1 L 38.2 123 L 36.3 123 L 36.3 120.1 L 38.2 120.1 Z"/>
       <path id="side_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 103.2 126.3 L 99.7923 126.3 L 99.7923 126.3 L 96.8923 126.3 L 96.8923 126.3 L 93.4846 126.3 L 93.4846 126.3 L 90.5846 126.3 L 90.5846 126.3 L 87.1769 126.3 L 87.1769 126.3 L 84.2769 126.3 L 84.2769 126.3 L 80.8692 126.3 L 80.8692 126.3 L 77.9692 126.3 L 77.9692 126.3 L 74.5615 126.3 L 74.5615 126.3 L 71.6615 126.3 L 71.6615 126.3 L 68.2538 126.3 L 68.2538 126.3 L 65.3538 126.3 L 65.3538 126.3 L 61.9462 126.3 L 61.9462 126.3 L 59.0462 126.3 L 59.0462 126.3 L 55.6385 126.3 L 55.6385 126.3 L 52.7385 126.3 L 52.7385 126.3 L 49.3308 126.3 L 49.3308 126.3 L 46.4308 126.3 L 46.4308 126.3 L 43.0231 126.3 L 43.0231 126.3 L 40.1231 126.3 L 40.1231 126.3 L 36.7154 126.3 L 36.7154 126.3 L 33.8154 126.3 L 33.8154 126.3 L 30.4077 126.3 L 30.4077 126.3 L 27.5077 126.3 L 27.5077 126.3 L 24.1 126.3"/>
       <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 24.1 126.3 L 24.1 122.95 L 26.1 122.95 L 26.1 120.05 L 24.1 120.05 L 24.1 116.7 L 26.1 116.7 L 26.1 113.8 L 24.1 113.8 L 24.1 110.45 L 26.1 110.45 L 26.1 107.55 L 24.1 107.55 L 24.1 106.2"/>
     </g>
@@ -54,18 +54,18 @@
     </g>
     <g id="piece_002">
       <path id="side_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1 26.1 L 4.25 26.1 L 4.25 24.1 L 7.35 24.1 L 7.35 26.1 L 10.5 26.1 L 10.5 24.1 L 13.6 24.1 L 13.6 26.1 L 16.75 26.1 L 16.75 24.1 L 19.85 24.1 L 19.85 26.1 L 21.1 26.1"/>
-      <path id="hole_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1.05 70.1 L 4.25 70.1 L 4.25 72 L 1.05 72 L 1.05 70.1 Z"/>
-      <path id="hole_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1.05 82.1 L 4.25 82.1 L 4.25 84 L 1.05 84 L 1.05 82.1 Z"/>
-      <path id="hole_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1.05 89.1 L 4.25 89.1 L 4.25 91 L 1.05 91 L 1.05 89.1 Z"/>
-      <path id="hole_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 7.35 70.1 L 10.5 70.1 L 10.5 72 L 7.35 72 L 7.35 70.1 Z"/>
-      <path id="hole_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 7.35 82.1 L 10.5 82.1 L 10.5 84 L 7.35 84 L 7.35 82.1 Z"/>
-      <path id="hole_018" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 7.35 89.1 L 10.5 89.1 L 10.5 91 L 7.35 91 L 7.35 89.1 Z"/>
-      <path id="hole_019" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 13.6 70.1 L 16.75 70.1 L 16.75 72 L 13.6 72 L 13.6 70.1 Z"/>
-      <path id="hole_020" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 13.6 82.1 L 16.75 82.1 L 16.75 84 L 13.6 84 L 13.6 82.1 Z"/>
-      <path id="hole_021" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 13.6 89.1 L 16.75 89.1 L 16.75 91 L 13.6 91 L 13.6 89.1 Z"/>
-      <path id="hole_022" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 19.85 70.1 L 21 70.1 L 21 72 L 19.85 72 L 19.85 70.1 Z"/>
-      <path id="hole_023" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 19.85 82.1 L 21 82.1 L 21 84 L 19.85 84 L 19.85 82.1 Z"/>
-      <path id="hole_024" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 19.85 89.1 L 21 89.1 L 21 91 L 19.85 91 L 19.85 89.1 Z"/>
+      <path id="hole_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1.05 70.1 L 4.2 70.1 L 4.2 72 L 1.05 72 L 1.05 70.1 Z"/>
+      <path id="hole_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1.05 82.1 L 4.2 82.1 L 4.2 84 L 1.05 84 L 1.05 82.1 Z"/>
+      <path id="hole_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1.05 89.1 L 4.2 89.1 L 4.2 91 L 1.05 91 L 1.05 89.1 Z"/>
+      <path id="hole_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 7.3 70.1 L 10.45 70.1 L 10.45 72 L 7.3 72 L 7.3 70.1 Z"/>
+      <path id="hole_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 7.3 82.1 L 10.45 82.1 L 10.45 84 L 7.3 84 L 7.3 82.1 Z"/>
+      <path id="hole_018" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 7.3 89.1 L 10.45 89.1 L 10.45 91 L 7.3 91 L 7.3 89.1 Z"/>
+      <path id="hole_019" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 13.55 70.1 L 16.7 70.1 L 16.7 72 L 13.55 72 L 13.55 70.1 Z"/>
+      <path id="hole_020" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 13.55 82.1 L 16.7 82.1 L 16.7 84 L 13.55 84 L 13.55 82.1 Z"/>
+      <path id="hole_021" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 13.55 89.1 L 16.7 89.1 L 16.7 91 L 13.55 91 L 13.55 89.1 Z"/>
+      <path id="hole_022" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 19.8 70.1 L 20.95 70.1 L 20.95 72 L 19.8 72 L 19.8 70.1 Z"/>
+      <path id="hole_023" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 19.8 82.1 L 20.95 82.1 L 20.95 84 L 19.8 84 L 19.8 82.1 Z"/>
+      <path id="hole_024" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 19.8 89.1 L 20.95 89.1 L 20.95 91 L 19.8 91 L 19.8 89.1 Z"/>
       <path id="side_018" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 21.1 26.1 L 21.1 27.4077 L 23.1 27.4077 L 23.1 30.5077 L 21.1 30.5077 L 21.1 33.7154 L 23.1 33.7154 L 23.1 36.8154 L 21.1 36.8154 L 21.1 40.0231 L 23.1 40.0231 L 23.1 43.1231 L 21.1 43.1231 L 21.1 46.3308 L 23.1 46.3308 L 23.1 49.4308 L 21.1 49.4308 L 21.1 52.6385 L 23.1 52.6385 L 23.1 55.7385 L 21.1 55.7385 L 21.1 58.9462 L 23.1 58.9462 L 23.1 62.0462 L 21.1 62.0462 L 21.1 65.2538 L 23.1 65.2538 L 23.1 68.3538 L 21.1 68.3538 L 21.1 71.5615 L 23.1 71.5615 L 23.1 74.6615 L 21.1 74.6615 L 21.1 77.8692 L 23.1 77.8692 L 23.1 80.9692 L 21.1 80.9692 L 21.1 84.1769 L 23.1 84.1769 L 23.1 87.2769 L 21.1 87.2769 L 21.1 90.4846 L 23.1 90.4846 L 23.1 93.5846 L 21.1 93.5846 L 21.1 96.7923 L 23.1 96.7923 L 23.1 99.8923 L 21.1 99.8923 L 21.1 101.2"/>
       <path id="side_019" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 21.1 101.2 L 19.85 101.2 L 19.85 103.2 L 16.75 103.2 L 16.75 101.2 L 13.6 101.2 L 13.6 103.2 L 10.5 103.2 L 10.5 101.2 L 7.35 101.2 L 7.35 103.2 L 4.25 103.2 L 4.25 101.2 L 1 101.2"/>
       <path id="side_020" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1 101.2 L 1 99.7923 L 1 99.7923 L 1 96.8923 L 1 96.8923 L 1 93.4846 L 1 93.4846 L 1 90.5846 L 1 90.5846 L 1 87.1769 L 1 87.1769 L 1 84.2769 L 1 84.2769 L 1 80.8692 L 1 80.8692 L 1 77.9692 L 1 77.9692 L 1 74.5615 L 1 74.5615 L 1 71.6615 L 1 71.6615 L 1 68.2538 L 1 68.2538 L 1 65.3538 L 1 65.3538 L 1 61.9462 L 1 61.9462 L 1 59.0462 L 1 59.0462 L 1 55.6385 L 1 55.6385 L 1 52.7385 L 1 52.7385 L 1 49.3308 L 1 49.3308 L 1 46.4308 L 1 46.4308 L 1 43.0231 L 1 43.0231 L 1 40.1231 L 1 40.1231 L 1 36.7154 L 1 36.7154 L 1 33.8154 L 1 33.8154 L 1 30.4077 L 1 30.4077 L 1 27.5077 L 1 27.5077 L 1 26.1"/>
@@ -108,108 +108,108 @@
     </g>
     <g id="piece_003">
       <path id="side_037" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 24.1 24.1 L 27.5077 24.1 L 27.5077 26.1 L 30.4077 26.1 L 30.4077 24.1 L 33.8154 24.1 L 33.8154 26.1 L 36.7154 26.1 L 36.7154 24.1 L 40.1231 24.1 L 40.1231 26.1 L 43.0231 26.1 L 43.0231 24.1 L 46.4308 24.1 L 46.4308 26.1 L 49.3308 26.1 L 49.3308 24.1 L 52.7385 24.1 L 52.7385 26.1 L 55.6385 26.1 L 55.6385 24.1 L 59.0462 24.1 L 59.0462 26.1 L 61.9462 26.1 L 61.9462 24.1 L 65.3538 24.1 L 65.3538 26.1 L 68.2538 26.1 L 68.2538 24.1 L 71.6615 24.1 L 71.6615 26.1 L 74.5615 26.1 L 74.5615 24.1 L 77.9692 24.1 L 77.9692 26.1 L 80.8692 26.1 L 80.8692 24.1 L 84.2769 24.1 L 84.2769 26.1 L 87.1769 26.1 L 87.1769 24.1 L 90.5846 24.1 L 90.5846 26.1 L 93.4846 26.1 L 93.4846 24.1 L 96.8923 24.1 L 96.8923 26.1 L 99.7923 26.1 L 99.7923 24.1 L 103.2 24.1"/>
-      <path id="hole_025" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 27.5077 72.1 L 30.4077 72.1 L 30.4077 70.2 L 27.5077 70.2 L 27.5077 72.1 Z"/>
-      <path id="hole_026" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 27.5077 84.1 L 30.4077 84.1 L 30.4077 82.2 L 27.5077 82.2 L 27.5077 84.1 Z"/>
-      <path id="hole_027" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 27.5077 91.1 L 30.4077 91.1 L 30.4077 89.2 L 27.5077 89.2 L 27.5077 91.1 Z"/>
-      <path id="hole_028" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 33.8154 72.1 L 36.7154 72.1 L 36.7154 70.2 L 33.8154 70.2 L 33.8154 72.1 Z"/>
-      <path id="hole_029" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 33.8154 84.1 L 36.7154 84.1 L 36.7154 82.2 L 33.8154 82.2 L 33.8154 84.1 Z"/>
-      <path id="hole_030" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 33.8154 91.1 L 36.7154 91.1 L 36.7154 89.2 L 33.8154 89.2 L 33.8154 91.1 Z"/>
-      <path id="hole_031" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 40.1231 72.1 L 43.0231 72.1 L 43.0231 70.2 L 40.1231 70.2 L 40.1231 72.1 Z"/>
-      <path id="hole_032" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 40.1231 84.1 L 43.0231 84.1 L 43.0231 82.2 L 40.1231 82.2 L 40.1231 84.1 Z"/>
-      <path id="hole_033" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 40.1231 91.1 L 43.0231 91.1 L 43.0231 89.2 L 40.1231 89.2 L 40.1231 91.1 Z"/>
-      <path id="hole_034" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 46.4308 72.1 L 49.3308 72.1 L 49.3308 70.2 L 46.4308 70.2 L 46.4308 72.1 Z"/>
-      <path id="hole_035" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 46.4308 84.1 L 49.3308 84.1 L 49.3308 82.2 L 46.4308 82.2 L 46.4308 84.1 Z"/>
-      <path id="hole_036" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 46.4308 91.1 L 49.3308 91.1 L 49.3308 89.2 L 46.4308 89.2 L 46.4308 91.1 Z"/>
-      <path id="hole_037" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 52.7385 72.1 L 55.6385 72.1 L 55.6385 70.2 L 52.7385 70.2 L 52.7385 72.1 Z"/>
-      <path id="hole_038" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 52.7385 84.1 L 55.6385 84.1 L 55.6385 82.2 L 52.7385 82.2 L 52.7385 84.1 Z"/>
-      <path id="hole_039" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 52.7385 91.1 L 55.6385 91.1 L 55.6385 89.2 L 52.7385 89.2 L 52.7385 91.1 Z"/>
-      <path id="hole_040" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 59.0462 72.1 L 61.9462 72.1 L 61.9462 70.2 L 59.0462 70.2 L 59.0462 72.1 Z"/>
-      <path id="hole_041" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 59.0462 84.1 L 61.9462 84.1 L 61.9462 82.2 L 59.0462 82.2 L 59.0462 84.1 Z"/>
-      <path id="hole_042" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 59.0462 91.1 L 61.9462 91.1 L 61.9462 89.2 L 59.0462 89.2 L 59.0462 91.1 Z"/>
-      <path id="hole_043" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 65.3538 72.1 L 68.2538 72.1 L 68.2538 70.2 L 65.3538 70.2 L 65.3538 72.1 Z"/>
-      <path id="hole_044" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 65.3538 84.1 L 68.2538 84.1 L 68.2538 82.2 L 65.3538 82.2 L 65.3538 84.1 Z"/>
-      <path id="hole_045" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 65.3538 91.1 L 68.2538 91.1 L 68.2538 89.2 L 65.3538 89.2 L 65.3538 91.1 Z"/>
-      <path id="hole_046" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 71.6615 72.1 L 74.5615 72.1 L 74.5615 70.2 L 71.6615 70.2 L 71.6615 72.1 Z"/>
-      <path id="hole_047" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 71.6615 84.1 L 74.5615 84.1 L 74.5615 82.2 L 71.6615 82.2 L 71.6615 84.1 Z"/>
-      <path id="hole_048" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 71.6615 91.1 L 74.5615 91.1 L 74.5615 89.2 L 71.6615 89.2 L 71.6615 91.1 Z"/>
-      <path id="hole_049" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 77.9692 72.1 L 80.8692 72.1 L 80.8692 70.2 L 77.9692 70.2 L 77.9692 72.1 Z"/>
-      <path id="hole_050" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 77.9692 84.1 L 80.8692 84.1 L 80.8692 82.2 L 77.9692 82.2 L 77.9692 84.1 Z"/>
-      <path id="hole_051" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 77.9692 91.1 L 80.8692 91.1 L 80.8692 89.2 L 77.9692 89.2 L 77.9692 91.1 Z"/>
-      <path id="hole_052" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 84.2769 72.1 L 87.1769 72.1 L 87.1769 70.2 L 84.2769 70.2 L 84.2769 72.1 Z"/>
-      <path id="hole_053" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 84.2769 84.1 L 87.1769 84.1 L 87.1769 82.2 L 84.2769 82.2 L 84.2769 84.1 Z"/>
-      <path id="hole_054" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 84.2769 91.1 L 87.1769 91.1 L 87.1769 89.2 L 84.2769 89.2 L 84.2769 91.1 Z"/>
-      <path id="hole_055" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 90.5846 72.1 L 93.4846 72.1 L 93.4846 70.2 L 90.5846 70.2 L 90.5846 72.1 Z"/>
-      <path id="hole_056" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 90.5846 84.1 L 93.4846 84.1 L 93.4846 82.2 L 90.5846 82.2 L 90.5846 84.1 Z"/>
-      <path id="hole_057" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 90.5846 91.1 L 93.4846 91.1 L 93.4846 89.2 L 90.5846 89.2 L 90.5846 91.1 Z"/>
-      <path id="hole_058" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 96.8923 72.1 L 99.7923 72.1 L 99.7923 70.2 L 96.8923 70.2 L 96.8923 72.1 Z"/>
-      <path id="hole_059" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 96.8923 84.1 L 99.7923 84.1 L 99.7923 82.2 L 96.8923 82.2 L 96.8923 84.1 Z"/>
-      <path id="hole_060" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 96.8923 91.1 L 99.7923 91.1 L 99.7923 89.2 L 96.8923 89.2 L 96.8923 91.1 Z"/>
+      <path id="hole_025" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 27.5577 70.1 L 30.4577 70.1 L 30.4577 72 L 27.5577 72 L 27.5577 70.1 Z"/>
+      <path id="hole_026" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 27.5577 82.1 L 30.4577 82.1 L 30.4577 84 L 27.5577 84 L 27.5577 82.1 Z"/>
+      <path id="hole_027" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 27.5577 89.1 L 30.4577 89.1 L 30.4577 91 L 27.5577 91 L 27.5577 89.1 Z"/>
+      <path id="hole_028" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 33.8654 70.1 L 36.7654 70.1 L 36.7654 72 L 33.8654 72 L 33.8654 70.1 Z"/>
+      <path id="hole_029" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 33.8654 82.1 L 36.7654 82.1 L 36.7654 84 L 33.8654 84 L 33.8654 82.1 Z"/>
+      <path id="hole_030" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 33.8654 89.1 L 36.7654 89.1 L 36.7654 91 L 33.8654 91 L 33.8654 89.1 Z"/>
+      <path id="hole_031" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 40.1731 70.1 L 43.0731 70.1 L 43.0731 72 L 40.1731 72 L 40.1731 70.1 Z"/>
+      <path id="hole_032" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 40.1731 82.1 L 43.0731 82.1 L 43.0731 84 L 40.1731 84 L 40.1731 82.1 Z"/>
+      <path id="hole_033" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 40.1731 89.1 L 43.0731 89.1 L 43.0731 91 L 40.1731 91 L 40.1731 89.1 Z"/>
+      <path id="hole_034" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 46.4808 70.1 L 49.3808 70.1 L 49.3808 72 L 46.4808 72 L 46.4808 70.1 Z"/>
+      <path id="hole_035" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 46.4808 82.1 L 49.3808 82.1 L 49.3808 84 L 46.4808 84 L 46.4808 82.1 Z"/>
+      <path id="hole_036" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 46.4808 89.1 L 49.3808 89.1 L 49.3808 91 L 46.4808 91 L 46.4808 89.1 Z"/>
+      <path id="hole_037" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 52.7885 70.1 L 55.6885 70.1 L 55.6885 72 L 52.7885 72 L 52.7885 70.1 Z"/>
+      <path id="hole_038" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 52.7885 82.1 L 55.6885 82.1 L 55.6885 84 L 52.7885 84 L 52.7885 82.1 Z"/>
+      <path id="hole_039" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 52.7885 89.1 L 55.6885 89.1 L 55.6885 91 L 52.7885 91 L 52.7885 89.1 Z"/>
+      <path id="hole_040" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 59.0962 70.1 L 61.9962 70.1 L 61.9962 72 L 59.0962 72 L 59.0962 70.1 Z"/>
+      <path id="hole_041" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 59.0962 82.1 L 61.9962 82.1 L 61.9962 84 L 59.0962 84 L 59.0962 82.1 Z"/>
+      <path id="hole_042" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 59.0962 89.1 L 61.9962 89.1 L 61.9962 91 L 59.0962 91 L 59.0962 89.1 Z"/>
+      <path id="hole_043" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 65.4038 70.1 L 68.3038 70.1 L 68.3038 72 L 65.4038 72 L 65.4038 70.1 Z"/>
+      <path id="hole_044" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 65.4038 82.1 L 68.3038 82.1 L 68.3038 84 L 65.4038 84 L 65.4038 82.1 Z"/>
+      <path id="hole_045" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 65.4038 89.1 L 68.3038 89.1 L 68.3038 91 L 65.4038 91 L 65.4038 89.1 Z"/>
+      <path id="hole_046" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 71.7115 70.1 L 74.6115 70.1 L 74.6115 72 L 71.7115 72 L 71.7115 70.1 Z"/>
+      <path id="hole_047" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 71.7115 82.1 L 74.6115 82.1 L 74.6115 84 L 71.7115 84 L 71.7115 82.1 Z"/>
+      <path id="hole_048" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 71.7115 89.1 L 74.6115 89.1 L 74.6115 91 L 71.7115 91 L 71.7115 89.1 Z"/>
+      <path id="hole_049" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 78.0192 70.1 L 80.9192 70.1 L 80.9192 72 L 78.0192 72 L 78.0192 70.1 Z"/>
+      <path id="hole_050" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 78.0192 82.1 L 80.9192 82.1 L 80.9192 84 L 78.0192 84 L 78.0192 82.1 Z"/>
+      <path id="hole_051" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 78.0192 89.1 L 80.9192 89.1 L 80.9192 91 L 78.0192 91 L 78.0192 89.1 Z"/>
+      <path id="hole_052" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 84.3269 70.1 L 87.2269 70.1 L 87.2269 72 L 84.3269 72 L 84.3269 70.1 Z"/>
+      <path id="hole_053" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 84.3269 82.1 L 87.2269 82.1 L 87.2269 84 L 84.3269 84 L 84.3269 82.1 Z"/>
+      <path id="hole_054" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 84.3269 89.1 L 87.2269 89.1 L 87.2269 91 L 84.3269 91 L 84.3269 89.1 Z"/>
+      <path id="hole_055" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 90.6346 70.1 L 93.5346 70.1 L 93.5346 72 L 90.6346 72 L 90.6346 70.1 Z"/>
+      <path id="hole_056" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 90.6346 82.1 L 93.5346 82.1 L 93.5346 84 L 90.6346 84 L 90.6346 82.1 Z"/>
+      <path id="hole_057" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 90.6346 89.1 L 93.5346 89.1 L 93.5346 91 L 90.6346 91 L 90.6346 89.1 Z"/>
+      <path id="hole_058" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 96.9423 70.1 L 99.8423 70.1 L 99.8423 72 L 96.9423 72 L 96.9423 70.1 Z"/>
+      <path id="hole_059" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 96.9423 82.1 L 99.8423 82.1 L 99.8423 84 L 96.9423 84 L 96.9423 82.1 Z"/>
+      <path id="hole_060" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 96.9423 89.1 L 99.8423 89.1 L 99.8423 91 L 96.9423 91 L 96.9423 89.1 Z"/>
       <path id="side_038" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 103.2 24.1 L 103.2 27.5077 L 101.2 27.5077 L 101.2 30.4077 L 103.2 30.4077 L 103.2 33.8154 L 101.2 33.8154 L 101.2 36.7154 L 103.2 36.7154 L 103.2 40.1231 L 101.2 40.1231 L 101.2 43.0231 L 103.2 43.0231 L 103.2 46.4308 L 101.2 46.4308 L 101.2 49.3308 L 103.2 49.3308 L 103.2 52.7385 L 101.2 52.7385 L 101.2 55.6385 L 103.2 55.6385 L 103.2 59.0462 L 101.2 59.0462 L 101.2 61.9462 L 103.2 61.9462 L 103.2 65.3538 L 101.2 65.3538 L 101.2 68.2538 L 103.2 68.2538 L 103.2 71.6615 L 101.2 71.6615 L 101.2 74.5615 L 103.2 74.5615 L 103.2 77.9692 L 101.2 77.9692 L 101.2 80.8692 L 103.2 80.8692 L 103.2 84.2769 L 101.2 84.2769 L 101.2 87.1769 L 103.2 87.1769 L 103.2 90.5846 L 101.2 90.5846 L 101.2 93.4846 L 103.2 93.4846 L 103.2 96.8923 L 101.2 96.8923 L 101.2 99.7923 L 103.2 99.7923 L 103.2 103.2"/>
-      <path id="hole_061" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 27.5077 L 81.8667 30.4077 L 83.7667 30.4077 L 83.7667 27.5077 L 81.8667 27.5077 Z"/>
-      <path id="hole_062" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 27.5077 L 62.5333 30.4077 L 64.4333 30.4077 L 64.4333 27.5077 L 62.5333 27.5077 Z"/>
-      <path id="hole_063" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 27.5077 L 43.2 30.4077 L 45.1 30.4077 L 45.1 27.5077 L 43.2 27.5077 Z"/>
-      <path id="hole_064" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 27.5077 L 36.2 30.4077 L 38.1 30.4077 L 38.1 27.5077 L 36.2 27.5077 Z"/>
-      <path id="hole_065" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 33.8154 L 81.8667 36.7154 L 83.7667 36.7154 L 83.7667 33.8154 L 81.8667 33.8154 Z"/>
-      <path id="hole_066" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 33.8154 L 62.5333 36.7154 L 64.4333 36.7154 L 64.4333 33.8154 L 62.5333 33.8154 Z"/>
-      <path id="hole_067" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 33.8154 L 43.2 36.7154 L 45.1 36.7154 L 45.1 33.8154 L 43.2 33.8154 Z"/>
-      <path id="hole_068" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 33.8154 L 36.2 36.7154 L 38.1 36.7154 L 38.1 33.8154 L 36.2 33.8154 Z"/>
-      <path id="hole_069" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 40.1231 L 81.8667 43.0231 L 83.7667 43.0231 L 83.7667 40.1231 L 81.8667 40.1231 Z"/>
-      <path id="hole_070" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 40.1231 L 62.5333 43.0231 L 64.4333 43.0231 L 64.4333 40.1231 L 62.5333 40.1231 Z"/>
-      <path id="hole_071" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 40.1231 L 43.2 43.0231 L 45.1 43.0231 L 45.1 40.1231 L 43.2 40.1231 Z"/>
-      <path id="hole_072" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 40.1231 L 36.2 43.0231 L 38.1 43.0231 L 38.1 40.1231 L 36.2 40.1231 Z"/>
-      <path id="hole_073" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 46.4308 L 81.8667 49.3308 L 83.7667 49.3308 L 83.7667 46.4308 L 81.8667 46.4308 Z"/>
-      <path id="hole_074" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 46.4308 L 62.5333 49.3308 L 64.4333 49.3308 L 64.4333 46.4308 L 62.5333 46.4308 Z"/>
-      <path id="hole_075" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 46.4308 L 43.2 49.3308 L 45.1 49.3308 L 45.1 46.4308 L 43.2 46.4308 Z"/>
-      <path id="hole_076" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 46.4308 L 36.2 49.3308 L 38.1 49.3308 L 38.1 46.4308 L 36.2 46.4308 Z"/>
-      <path id="hole_077" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 52.7385 L 81.8667 55.6385 L 83.7667 55.6385 L 83.7667 52.7385 L 81.8667 52.7385 Z"/>
-      <path id="hole_078" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 52.7385 L 62.5333 55.6385 L 64.4333 55.6385 L 64.4333 52.7385 L 62.5333 52.7385 Z"/>
-      <path id="hole_079" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 52.7385 L 43.2 55.6385 L 45.1 55.6385 L 45.1 52.7385 L 43.2 52.7385 Z"/>
-      <path id="hole_080" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 52.7385 L 36.2 55.6385 L 38.1 55.6385 L 38.1 52.7385 L 36.2 52.7385 Z"/>
-      <path id="hole_081" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 59.0462 L 81.8667 61.9462 L 83.7667 61.9462 L 83.7667 59.0462 L 81.8667 59.0462 Z"/>
-      <path id="hole_082" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 59.0462 L 62.5333 61.9462 L 64.4333 61.9462 L 64.4333 59.0462 L 62.5333 59.0462 Z"/>
-      <path id="hole_083" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 59.0462 L 43.2 61.9462 L 45.1 61.9462 L 45.1 59.0462 L 43.2 59.0462 Z"/>
-      <path id="hole_084" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 59.0462 L 36.2 61.9462 L 38.1 61.9462 L 38.1 59.0462 L 36.2 59.0462 Z"/>
-      <path id="hole_085" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 65.3538 L 81.8667 68.2538 L 83.7667 68.2538 L 83.7667 65.3538 L 81.8667 65.3538 Z"/>
-      <path id="hole_086" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 65.3538 L 62.5333 68.2538 L 64.4333 68.2538 L 64.4333 65.3538 L 62.5333 65.3538 Z"/>
-      <path id="hole_087" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 65.3538 L 43.2 68.2538 L 45.1 68.2538 L 45.1 65.3538 L 43.2 65.3538 Z"/>
-      <path id="hole_088" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 65.3538 L 36.2 68.2538 L 38.1 68.2538 L 38.1 65.3538 L 36.2 65.3538 Z"/>
-      <path id="hole_089" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 71.6615 L 81.8667 74.5615 L 83.7667 74.5615 L 83.7667 71.6615 L 81.8667 71.6615 Z"/>
-      <path id="hole_090" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 71.6615 L 62.5333 74.5615 L 64.4333 74.5615 L 64.4333 71.6615 L 62.5333 71.6615 Z"/>
-      <path id="hole_091" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 71.6615 L 43.2 74.5615 L 45.1 74.5615 L 45.1 71.6615 L 43.2 71.6615 Z"/>
-      <path id="hole_092" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 71.6615 L 36.2 74.5615 L 38.1 74.5615 L 38.1 71.6615 L 36.2 71.6615 Z"/>
-      <path id="hole_093" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 77.9692 L 81.8667 80.8692 L 83.7667 80.8692 L 83.7667 77.9692 L 81.8667 77.9692 Z"/>
-      <path id="hole_094" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 77.9692 L 62.5333 80.8692 L 64.4333 80.8692 L 64.4333 77.9692 L 62.5333 77.9692 Z"/>
-      <path id="hole_095" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 77.9692 L 43.2 80.8692 L 45.1 80.8692 L 45.1 77.9692 L 43.2 77.9692 Z"/>
-      <path id="hole_096" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 77.9692 L 36.2 80.8692 L 38.1 80.8692 L 38.1 77.9692 L 36.2 77.9692 Z"/>
-      <path id="hole_097" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 84.2769 L 81.8667 87.1769 L 83.7667 87.1769 L 83.7667 84.2769 L 81.8667 84.2769 Z"/>
-      <path id="hole_098" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 84.2769 L 62.5333 87.1769 L 64.4333 87.1769 L 64.4333 84.2769 L 62.5333 84.2769 Z"/>
-      <path id="hole_099" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 84.2769 L 43.2 87.1769 L 45.1 87.1769 L 45.1 84.2769 L 43.2 84.2769 Z"/>
-      <path id="hole_100" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 84.2769 L 36.2 87.1769 L 38.1 87.1769 L 38.1 84.2769 L 36.2 84.2769 Z"/>
-      <path id="hole_101" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 90.5846 L 81.8667 93.4846 L 83.7667 93.4846 L 83.7667 90.5846 L 81.8667 90.5846 Z"/>
-      <path id="hole_102" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 90.5846 L 62.5333 93.4846 L 64.4333 93.4846 L 64.4333 90.5846 L 62.5333 90.5846 Z"/>
-      <path id="hole_103" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 90.5846 L 43.2 93.4846 L 45.1 93.4846 L 45.1 90.5846 L 43.2 90.5846 Z"/>
-      <path id="hole_104" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 90.5846 L 36.2 93.4846 L 38.1 93.4846 L 38.1 90.5846 L 36.2 90.5846 Z"/>
-      <path id="hole_105" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 96.8923 L 81.8667 99.7923 L 83.7667 99.7923 L 83.7667 96.8923 L 81.8667 96.8923 Z"/>
-      <path id="hole_106" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 96.8923 L 62.5333 99.7923 L 64.4333 99.7923 L 64.4333 96.8923 L 62.5333 96.8923 Z"/>
-      <path id="hole_107" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 96.8923 L 43.2 99.7923 L 45.1 99.7923 L 45.1 96.8923 L 43.2 96.8923 Z"/>
-      <path id="hole_108" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 96.8923 L 36.2 99.7923 L 38.1 99.7923 L 38.1 96.8923 L 36.2 96.8923 Z"/>
+      <path id="hole_061" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 27.5577 L 83.8667 30.4577 L 81.9667 30.4577 L 81.9667 27.5577 L 83.8667 27.5577 Z"/>
+      <path id="hole_062" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 27.5577 L 64.5333 30.4577 L 62.6333 30.4577 L 62.6333 27.5577 L 64.5333 27.5577 Z"/>
+      <path id="hole_063" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 27.5577 L 45.2 30.4577 L 43.3 30.4577 L 43.3 27.5577 L 45.2 27.5577 Z"/>
+      <path id="hole_064" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 27.5577 L 38.2 30.4577 L 36.3 30.4577 L 36.3 27.5577 L 38.2 27.5577 Z"/>
+      <path id="hole_065" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 33.8654 L 83.8667 36.7654 L 81.9667 36.7654 L 81.9667 33.8654 L 83.8667 33.8654 Z"/>
+      <path id="hole_066" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 33.8654 L 64.5333 36.7654 L 62.6333 36.7654 L 62.6333 33.8654 L 64.5333 33.8654 Z"/>
+      <path id="hole_067" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 33.8654 L 45.2 36.7654 L 43.3 36.7654 L 43.3 33.8654 L 45.2 33.8654 Z"/>
+      <path id="hole_068" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 33.8654 L 38.2 36.7654 L 36.3 36.7654 L 36.3 33.8654 L 38.2 33.8654 Z"/>
+      <path id="hole_069" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 40.1731 L 83.8667 43.0731 L 81.9667 43.0731 L 81.9667 40.1731 L 83.8667 40.1731 Z"/>
+      <path id="hole_070" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 40.1731 L 64.5333 43.0731 L 62.6333 43.0731 L 62.6333 40.1731 L 64.5333 40.1731 Z"/>
+      <path id="hole_071" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 40.1731 L 45.2 43.0731 L 43.3 43.0731 L 43.3 40.1731 L 45.2 40.1731 Z"/>
+      <path id="hole_072" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 40.1731 L 38.2 43.0731 L 36.3 43.0731 L 36.3 40.1731 L 38.2 40.1731 Z"/>
+      <path id="hole_073" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 46.4808 L 83.8667 49.3808 L 81.9667 49.3808 L 81.9667 46.4808 L 83.8667 46.4808 Z"/>
+      <path id="hole_074" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 46.4808 L 64.5333 49.3808 L 62.6333 49.3808 L 62.6333 46.4808 L 64.5333 46.4808 Z"/>
+      <path id="hole_075" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 46.4808 L 45.2 49.3808 L 43.3 49.3808 L 43.3 46.4808 L 45.2 46.4808 Z"/>
+      <path id="hole_076" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 46.4808 L 38.2 49.3808 L 36.3 49.3808 L 36.3 46.4808 L 38.2 46.4808 Z"/>
+      <path id="hole_077" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 52.7885 L 83.8667 55.6885 L 81.9667 55.6885 L 81.9667 52.7885 L 83.8667 52.7885 Z"/>
+      <path id="hole_078" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 52.7885 L 64.5333 55.6885 L 62.6333 55.6885 L 62.6333 52.7885 L 64.5333 52.7885 Z"/>
+      <path id="hole_079" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 52.7885 L 45.2 55.6885 L 43.3 55.6885 L 43.3 52.7885 L 45.2 52.7885 Z"/>
+      <path id="hole_080" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 52.7885 L 38.2 55.6885 L 36.3 55.6885 L 36.3 52.7885 L 38.2 52.7885 Z"/>
+      <path id="hole_081" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 59.0962 L 83.8667 61.9962 L 81.9667 61.9962 L 81.9667 59.0962 L 83.8667 59.0962 Z"/>
+      <path id="hole_082" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 59.0962 L 64.5333 61.9962 L 62.6333 61.9962 L 62.6333 59.0962 L 64.5333 59.0962 Z"/>
+      <path id="hole_083" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 59.0962 L 45.2 61.9962 L 43.3 61.9962 L 43.3 59.0962 L 45.2 59.0962 Z"/>
+      <path id="hole_084" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 59.0962 L 38.2 61.9962 L 36.3 61.9962 L 36.3 59.0962 L 38.2 59.0962 Z"/>
+      <path id="hole_085" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 65.4038 L 83.8667 68.3038 L 81.9667 68.3038 L 81.9667 65.4038 L 83.8667 65.4038 Z"/>
+      <path id="hole_086" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 65.4038 L 64.5333 68.3038 L 62.6333 68.3038 L 62.6333 65.4038 L 64.5333 65.4038 Z"/>
+      <path id="hole_087" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 65.4038 L 45.2 68.3038 L 43.3 68.3038 L 43.3 65.4038 L 45.2 65.4038 Z"/>
+      <path id="hole_088" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 65.4038 L 38.2 68.3038 L 36.3 68.3038 L 36.3 65.4038 L 38.2 65.4038 Z"/>
+      <path id="hole_089" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 71.7115 L 83.8667 74.6115 L 81.9667 74.6115 L 81.9667 71.7115 L 83.8667 71.7115 Z"/>
+      <path id="hole_090" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 71.7115 L 64.5333 74.6115 L 62.6333 74.6115 L 62.6333 71.7115 L 64.5333 71.7115 Z"/>
+      <path id="hole_091" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 71.7115 L 45.2 74.6115 L 43.3 74.6115 L 43.3 71.7115 L 45.2 71.7115 Z"/>
+      <path id="hole_092" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 71.7115 L 38.2 74.6115 L 36.3 74.6115 L 36.3 71.7115 L 38.2 71.7115 Z"/>
+      <path id="hole_093" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 78.0192 L 83.8667 80.9192 L 81.9667 80.9192 L 81.9667 78.0192 L 83.8667 78.0192 Z"/>
+      <path id="hole_094" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 78.0192 L 64.5333 80.9192 L 62.6333 80.9192 L 62.6333 78.0192 L 64.5333 78.0192 Z"/>
+      <path id="hole_095" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 78.0192 L 45.2 80.9192 L 43.3 80.9192 L 43.3 78.0192 L 45.2 78.0192 Z"/>
+      <path id="hole_096" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 78.0192 L 38.2 80.9192 L 36.3 80.9192 L 36.3 78.0192 L 38.2 78.0192 Z"/>
+      <path id="hole_097" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 84.3269 L 83.8667 87.2269 L 81.9667 87.2269 L 81.9667 84.3269 L 83.8667 84.3269 Z"/>
+      <path id="hole_098" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 84.3269 L 64.5333 87.2269 L 62.6333 87.2269 L 62.6333 84.3269 L 64.5333 84.3269 Z"/>
+      <path id="hole_099" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 84.3269 L 45.2 87.2269 L 43.3 87.2269 L 43.3 84.3269 L 45.2 84.3269 Z"/>
+      <path id="hole_100" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 84.3269 L 38.2 87.2269 L 36.3 87.2269 L 36.3 84.3269 L 38.2 84.3269 Z"/>
+      <path id="hole_101" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 90.6346 L 83.8667 93.5346 L 81.9667 93.5346 L 81.9667 90.6346 L 83.8667 90.6346 Z"/>
+      <path id="hole_102" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 90.6346 L 64.5333 93.5346 L 62.6333 93.5346 L 62.6333 90.6346 L 64.5333 90.6346 Z"/>
+      <path id="hole_103" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 90.6346 L 45.2 93.5346 L 43.3 93.5346 L 43.3 90.6346 L 45.2 90.6346 Z"/>
+      <path id="hole_104" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 90.6346 L 38.2 93.5346 L 36.3 93.5346 L 36.3 90.6346 L 38.2 90.6346 Z"/>
+      <path id="hole_105" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 96.9423 L 83.8667 99.8423 L 81.9667 99.8423 L 81.9667 96.9423 L 83.8667 96.9423 Z"/>
+      <path id="hole_106" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 96.9423 L 64.5333 99.8423 L 62.6333 99.8423 L 62.6333 96.9423 L 64.5333 96.9423 Z"/>
+      <path id="hole_107" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 96.9423 L 45.2 99.8423 L 43.3 99.8423 L 43.3 96.9423 L 45.2 96.9423 Z"/>
+      <path id="hole_108" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 96.9423 L 38.2 99.8423 L 36.3 99.8423 L 36.3 96.9423 L 38.2 96.9423 Z"/>
       <path id="side_039" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 103.2 103.2 L 99.7923 103.2 L 99.7923 101.2 L 96.8923 101.2 L 96.8923 103.2 L 93.4846 103.2 L 93.4846 101.2 L 90.5846 101.2 L 90.5846 103.2 L 87.1769 103.2 L 87.1769 101.2 L 84.2769 101.2 L 84.2769 103.2 L 80.8692 103.2 L 80.8692 101.2 L 77.9692 101.2 L 77.9692 103.2 L 74.5615 103.2 L 74.5615 101.2 L 71.6615 101.2 L 71.6615 103.2 L 68.2538 103.2 L 68.2538 101.2 L 65.3538 101.2 L 65.3538 103.2 L 61.9462 103.2 L 61.9462 101.2 L 59.0462 101.2 L 59.0462 103.2 L 55.6385 103.2 L 55.6385 101.2 L 52.7385 101.2 L 52.7385 103.2 L 49.3308 103.2 L 49.3308 101.2 L 46.4308 101.2 L 46.4308 103.2 L 43.0231 103.2 L 43.0231 101.2 L 40.1231 101.2 L 40.1231 103.2 L 36.7154 103.2 L 36.7154 101.2 L 33.8154 101.2 L 33.8154 103.2 L 30.4077 103.2 L 30.4077 101.2 L 27.5077 101.2 L 27.5077 103.2 L 24.1 103.2"/>
       <path id="side_040" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 24.1 103.2 L 24.1 99.7923 L 26.1 99.7923 L 26.1 96.8923 L 24.1 96.8923 L 24.1 93.4846 L 26.1 93.4846 L 26.1 90.5846 L 24.1 90.5846 L 24.1 87.1769 L 26.1 87.1769 L 26.1 84.2769 L 24.1 84.2769 L 24.1 80.8692 L 26.1 80.8692 L 26.1 77.9692 L 24.1 77.9692 L 24.1 74.5615 L 26.1 74.5615 L 26.1 71.6615 L 24.1 71.6615 L 24.1 68.2538 L 26.1 68.2538 L 26.1 65.3538 L 24.1 65.3538 L 24.1 61.9462 L 26.1 61.9462 L 26.1 59.0462 L 24.1 59.0462 L 24.1 55.6385 L 26.1 55.6385 L 26.1 52.7385 L 24.1 52.7385 L 24.1 49.3308 L 26.1 49.3308 L 26.1 46.4308 L 24.1 46.4308 L 24.1 43.0231 L 26.1 43.0231 L 26.1 40.1231 L 24.1 40.1231 L 24.1 36.7154 L 26.1 36.7154 L 26.1 33.8154 L 24.1 33.8154 L 24.1 30.4077 L 26.1 30.4077 L 26.1 27.5077 L 24.1 27.5077 L 24.1 24.1"/>
     </g>
     <g id="piece_004">
       <path id="side_041" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 106.2 26.1 L 107.45 26.1 L 107.45 24.1 L 110.55 24.1 L 110.55 26.1 L 113.7 26.1 L 113.7 24.1 L 116.8 24.1 L 116.8 26.1 L 119.95 26.1 L 119.95 24.1 L 123.05 24.1 L 123.05 26.1 L 126.3 26.1"/>
-      <path id="hole_109" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 106.25 70.1 L 107.45 70.1 L 107.45 72 L 106.25 72 L 106.25 70.1 Z"/>
-      <path id="hole_110" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 106.25 82.1 L 107.45 82.1 L 107.45 84 L 106.25 84 L 106.25 82.1 Z"/>
-      <path id="hole_111" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 106.25 89.1 L 107.45 89.1 L 107.45 91 L 106.25 91 L 106.25 89.1 Z"/>
-      <path id="hole_112" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 110.55 70.1 L 113.7 70.1 L 113.7 72 L 110.55 72 L 110.55 70.1 Z"/>
-      <path id="hole_113" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 110.55 82.1 L 113.7 82.1 L 113.7 84 L 110.55 84 L 110.55 82.1 Z"/>
-      <path id="hole_114" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 110.55 89.1 L 113.7 89.1 L 113.7 91 L 110.55 91 L 110.55 89.1 Z"/>
-      <path id="hole_115" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 116.8 70.1 L 119.95 70.1 L 119.95 72 L 116.8 72 L 116.8 70.1 Z"/>
-      <path id="hole_116" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 116.8 82.1 L 119.95 82.1 L 119.95 84 L 116.8 84 L 116.8 82.1 Z"/>
-      <path id="hole_117" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 116.8 89.1 L 119.95 89.1 L 119.95 91 L 116.8 91 L 116.8 89.1 Z"/>
-      <path id="hole_118" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 123.05 70.1 L 126.2 70.1 L 126.2 72 L 123.05 72 L 123.05 70.1 Z"/>
-      <path id="hole_119" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 123.05 82.1 L 126.2 82.1 L 126.2 84 L 123.05 84 L 123.05 82.1 Z"/>
-      <path id="hole_120" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 123.05 89.1 L 126.2 89.1 L 126.2 91 L 123.05 91 L 123.05 89.1 Z"/>
+      <path id="hole_109" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 106.25 70.1 L 107.4 70.1 L 107.4 72 L 106.25 72 L 106.25 70.1 Z"/>
+      <path id="hole_110" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 106.25 82.1 L 107.4 82.1 L 107.4 84 L 106.25 84 L 106.25 82.1 Z"/>
+      <path id="hole_111" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 106.25 89.1 L 107.4 89.1 L 107.4 91 L 106.25 91 L 106.25 89.1 Z"/>
+      <path id="hole_112" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 110.5 70.1 L 113.65 70.1 L 113.65 72 L 110.5 72 L 110.5 70.1 Z"/>
+      <path id="hole_113" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 110.5 82.1 L 113.65 82.1 L 113.65 84 L 110.5 84 L 110.5 82.1 Z"/>
+      <path id="hole_114" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 110.5 89.1 L 113.65 89.1 L 113.65 91 L 110.5 91 L 110.5 89.1 Z"/>
+      <path id="hole_115" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 116.75 70.1 L 119.9 70.1 L 119.9 72 L 116.75 72 L 116.75 70.1 Z"/>
+      <path id="hole_116" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 116.75 82.1 L 119.9 82.1 L 119.9 84 L 116.75 84 L 116.75 82.1 Z"/>
+      <path id="hole_117" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 116.75 89.1 L 119.9 89.1 L 119.9 91 L 116.75 91 L 116.75 89.1 Z"/>
+      <path id="hole_118" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 123 70.1 L 126.15 70.1 L 126.15 72 L 123 72 L 123 70.1 Z"/>
+      <path id="hole_119" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 123 82.1 L 126.15 82.1 L 126.15 84 L 123 84 L 123 82.1 Z"/>
+      <path id="hole_120" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 123 89.1 L 126.15 89.1 L 126.15 91 L 123 91 L 123 89.1 Z"/>
       <path id="side_042" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 126.3 26.1 L 126.3 27.5077 L 126.3 27.5077 L 126.3 30.4077 L 126.3 30.4077 L 126.3 33.8154 L 126.3 33.8154 L 126.3 36.7154 L 126.3 36.7154 L 126.3 40.1231 L 126.3 40.1231 L 126.3 43.0231 L 126.3 43.0231 L 126.3 46.4308 L 126.3 46.4308 L 126.3 49.3308 L 126.3 49.3308 L 126.3 52.7385 L 126.3 52.7385 L 126.3 55.6385 L 126.3 55.6385 L 126.3 59.0462 L 126.3 59.0462 L 126.3 61.9462 L 126.3 61.9462 L 126.3 65.3538 L 126.3 65.3538 L 126.3 68.2538 L 126.3 68.2538 L 126.3 71.6615 L 126.3 71.6615 L 126.3 74.5615 L 126.3 74.5615 L 126.3 77.9692 L 126.3 77.9692 L 126.3 80.8692 L 126.3 80.8692 L 126.3 84.2769 L 126.3 84.2769 L 126.3 87.1769 L 126.3 87.1769 L 126.3 90.5846 L 126.3 90.5846 L 126.3 93.4846 L 126.3 93.4846 L 126.3 96.8923 L 126.3 96.8923 L 126.3 99.7923 L 126.3 99.7923 L 126.3 101.2"/>
       <path id="side_043" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 126.3 101.2 L 123.05 101.2 L 123.05 103.2 L 119.95 103.2 L 119.95 101.2 L 116.8 101.2 L 116.8 103.2 L 113.7 103.2 L 113.7 101.2 L 110.55 101.2 L 110.55 103.2 L 107.45 103.2 L 107.45 101.2 L 106.2 101.2"/>
       <path id="side_044" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 106.2 101.2 L 106.2 99.8923 L 104.2 99.8923 L 104.2 96.7923 L 106.2 96.7923 L 106.2 93.5846 L 104.2 93.5846 L 104.2 90.4846 L 106.2 90.4846 L 106.2 87.2769 L 104.2 87.2769 L 104.2 84.1769 L 106.2 84.1769 L 106.2 80.9692 L 104.2 80.9692 L 104.2 77.8692 L 106.2 77.8692 L 106.2 74.6615 L 104.2 74.6615 L 104.2 71.5615 L 106.2 71.5615 L 106.2 68.3538 L 104.2 68.3538 L 104.2 65.2538 L 106.2 65.2538 L 106.2 62.0462 L 104.2 62.0462 L 104.2 58.9462 L 106.2 58.9462 L 106.2 55.7385 L 104.2 55.7385 L 104.2 52.6385 L 106.2 52.6385 L 106.2 49.4308 L 104.2 49.4308 L 104.2 46.3308 L 106.2 46.3308 L 106.2 43.1231 L 104.2 43.1231 L 104.2 40.0231 L 106.2 40.0231 L 106.2 36.8154 L 104.2 36.8154 L 104.2 33.7154 L 106.2 33.7154 L 106.2 30.5077 L 104.2 30.5077 L 104.2 27.4077 L 106.2 27.4077 L 106.2 26.1"/>
@@ -217,18 +217,18 @@
     <g id="piece_005">
       <path id="side_045" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 24.1 1 L 27.5077 1 L 27.5077 1 L 30.4077 1 L 30.4077 1 L 33.8154 1 L 33.8154 1 L 36.7154 1 L 36.7154 1 L 40.1231 1 L 40.1231 1 L 43.0231 1 L 43.0231 1 L 46.4308 1 L 46.4308 1 L 49.3308 1 L 49.3308 1 L 52.7385 1 L 52.7385 1 L 55.6385 1 L 55.6385 1 L 59.0462 1 L 59.0462 1 L 61.9462 1 L 61.9462 1 L 65.3538 1 L 65.3538 1 L 68.2538 1 L 68.2538 1 L 71.6615 1 L 71.6615 1 L 74.5615 1 L 74.5615 1 L 77.9692 1 L 77.9692 1 L 80.8692 1 L 80.8692 1 L 84.2769 1 L 84.2769 1 L 87.1769 1 L 87.1769 1 L 90.5846 1 L 90.5846 1 L 93.4846 1 L 93.4846 1 L 96.8923 1 L 96.8923 1 L 99.7923 1 L 99.7923 1 L 103.2 1"/>
       <path id="side_046" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 103.2 1 L 103.2 4.35 L 101.2 4.35 L 101.2 7.25 L 103.2 7.25 L 103.2 10.6 L 101.2 10.6 L 101.2 13.5 L 103.2 13.5 L 103.2 16.85 L 101.2 16.85 L 101.2 19.75 L 103.2 19.75 L 103.2 21.1"/>
-      <path id="hole_121" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 4.35 L 81.8667 7.25 L 83.7667 7.25 L 83.7667 4.35 L 81.8667 4.35 Z"/>
-      <path id="hole_122" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 4.35 L 62.5333 7.25 L 64.4333 7.25 L 64.4333 4.35 L 62.5333 4.35 Z"/>
-      <path id="hole_123" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 4.35 L 43.2 7.25 L 45.1 7.25 L 45.1 4.35 L 43.2 4.35 Z"/>
-      <path id="hole_124" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 4.35 L 36.2 7.25 L 38.1 7.25 L 38.1 4.35 L 36.2 4.35 Z"/>
-      <path id="hole_125" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 10.6 L 81.8667 13.5 L 83.7667 13.5 L 83.7667 10.6 L 81.8667 10.6 Z"/>
-      <path id="hole_126" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 10.6 L 62.5333 13.5 L 64.4333 13.5 L 64.4333 10.6 L 62.5333 10.6 Z"/>
-      <path id="hole_127" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 10.6 L 43.2 13.5 L 45.1 13.5 L 45.1 10.6 L 43.2 10.6 Z"/>
-      <path id="hole_128" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 10.6 L 36.2 13.5 L 38.1 13.5 L 38.1 10.6 L 36.2 10.6 Z"/>
-      <path id="hole_129" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 81.8667 16.85 L 81.8667 19.75 L 83.7667 19.75 L 83.7667 16.85 L 81.8667 16.85 Z"/>
-      <path id="hole_130" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 62.5333 16.85 L 62.5333 19.75 L 64.4333 19.75 L 64.4333 16.85 L 62.5333 16.85 Z"/>
-      <path id="hole_131" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 43.2 16.85 L 43.2 19.75 L 45.1 19.75 L 45.1 16.85 L 43.2 16.85 Z"/>
-      <path id="hole_132" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 36.2 16.85 L 36.2 19.75 L 38.1 19.75 L 38.1 16.85 L 36.2 16.85 Z"/>
+      <path id="hole_121" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 4.4 L 83.8667 7.3 L 81.9667 7.3 L 81.9667 4.4 L 83.8667 4.4 Z"/>
+      <path id="hole_122" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 4.4 L 64.5333 7.3 L 62.6333 7.3 L 62.6333 4.4 L 64.5333 4.4 Z"/>
+      <path id="hole_123" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 4.4 L 45.2 7.3 L 43.3 7.3 L 43.3 4.4 L 45.2 4.4 Z"/>
+      <path id="hole_124" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 4.4 L 38.2 7.3 L 36.3 7.3 L 36.3 4.4 L 38.2 4.4 Z"/>
+      <path id="hole_125" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 10.65 L 83.8667 13.55 L 81.9667 13.55 L 81.9667 10.65 L 83.8667 10.65 Z"/>
+      <path id="hole_126" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 10.65 L 64.5333 13.55 L 62.6333 13.55 L 62.6333 10.65 L 64.5333 10.65 Z"/>
+      <path id="hole_127" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 10.65 L 45.2 13.55 L 43.3 13.55 L 43.3 10.65 L 45.2 10.65 Z"/>
+      <path id="hole_128" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 10.65 L 38.2 13.55 L 36.3 13.55 L 36.3 10.65 L 38.2 10.65 Z"/>
+      <path id="hole_129" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 83.8667 16.9 L 83.8667 19.8 L 81.9667 19.8 L 81.9667 16.9 L 83.8667 16.9 Z"/>
+      <path id="hole_130" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64.5333 16.9 L 64.5333 19.8 L 62.6333 19.8 L 62.6333 16.9 L 64.5333 16.9 Z"/>
+      <path id="hole_131" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 45.2 16.9 L 45.2 19.8 L 43.3 19.8 L 43.3 16.9 L 45.2 16.9 Z"/>
+      <path id="hole_132" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 38.2 16.9 L 38.2 19.8 L 36.3 19.8 L 36.3 16.9 L 38.2 16.9 Z"/>
       <path id="side_047" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 103.2 21.1 L 99.8923 21.1 L 99.8923 23.1 L 96.7923 23.1 L 96.7923 21.1 L 93.5846 21.1 L 93.5846 23.1 L 90.4846 23.1 L 90.4846 21.1 L 87.2769 21.1 L 87.2769 23.1 L 84.1769 23.1 L 84.1769 21.1 L 80.9692 21.1 L 80.9692 23.1 L 77.8692 23.1 L 77.8692 21.1 L 74.6615 21.1 L 74.6615 23.1 L 71.5615 23.1 L 71.5615 21.1 L 68.3538 21.1 L 68.3538 23.1 L 65.2538 23.1 L 65.2538 21.1 L 62.0462 21.1 L 62.0462 23.1 L 58.9462 23.1 L 58.9462 21.1 L 55.7385 21.1 L 55.7385 23.1 L 52.6385 23.1 L 52.6385 21.1 L 49.4308 21.1 L 49.4308 23.1 L 46.3308 23.1 L 46.3308 21.1 L 43.1231 21.1 L 43.1231 23.1 L 40.0231 23.1 L 40.0231 21.1 L 36.8154 21.1 L 36.8154 23.1 L 33.7154 23.1 L 33.7154 21.1 L 30.5077 21.1 L 30.5077 23.1 L 27.4077 23.1 L 27.4077 21.1 L 24.1 21.1"/>
       <path id="side_048" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 24.1 21.1 L 24.1 19.75 L 26.1 19.75 L 26.1 16.85 L 24.1 16.85 L 24.1 13.5 L 26.1 13.5 L 26.1 10.6 L 24.1 10.6 L 24.1 7.25 L 26.1 7.25 L 26.1 4.35 L 24.1 4.35 L 24.1 1"/>
     </g>

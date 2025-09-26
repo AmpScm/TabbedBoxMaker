@@ -1000,3 +1000,76 @@ def test_output_kerf_dividers():
         #            '</svg>\n')
 
         assert pp == poly_kerf or pp.reverse() == poly_kerf, f"Kerf output for {k} does not match expected"
+
+
+def test_output_kerf_divider_holes():
+    kerf = 0.5
+    name = 'sizes-20-30-40-outside-dh'
+    args = [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--div_l=1",
+            "--div_w=2",
+            "--keydiv=0",
+            "--thickness=2"]
+    
+    output, _ = run_one(os.path.join('v', name), 
+                        args + ['--kerf=0'], optimize=True, mask=False)
+    output_kerf, _ = run_one(os.path.join('v', name + '-kerf'),
+                             args + [f'--kerf={kerf}'], optimize=True, mask=False)
+    
+    map = {}
+    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output):
+        map[i[0]] = i[2]
+
+    map_kerf = {}
+    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output_kerf):
+        map_kerf[i[0]] = i[2]
+
+
+    for k in map.keys():
+        if k not in map_kerf:
+            assert 0 == 1, f"Missing kerf output for {k}"
+
+        p = Path(map[k])
+        p_kerf = Path(map_kerf[k])
+
+        bb = p.bounding_box()
+        bb_kerf = p_kerf.bounding_box()
+
+        assert bb.width == bb_kerf.width - 0.5, f"Kerf output for {k} has different width ({bb.width} vs {bb_kerf.width})"
+
+        half_kerf = kerf / 2.0
+        poly = path_to_polygon(p)
+        poly_kerf = path_to_polygon(p_kerf)
+        poly = translate(poly, xoff=-bb.left, yoff=-bb.top)
+        poly_kerf = translate(poly_kerf, xoff=-bb_kerf.left, yoff=-bb_kerf.top)
+
+        pp = poly.buffer(half_kerf, cap_style='square', join_style='mitre')
+        pp = translate(pp, xoff=half_kerf, yoff=half_kerf)
+
+        poly = poly.normalize()
+        poly_kerf = poly_kerf.normalize()
+        pp = pp.normalize() # Somehow needed
+
+        print(f'Piece: {k}')
+        print(f'Original: {poly}')
+        print(f'Kerf Generated: {poly_kerf}')
+        print(f'Kerf Shapely: {pp}')
+
+        with open('/tmp.svg', "w", encoding="utf-8") as f:
+            f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+                    '<path d="' + str(polygon_to_path(poly_kerf)) + '" fill="none" stroke="blue"/>\n' +
+                    '</svg>\n')
+            
+        with open('/tmp-pp.svg', "w", encoding="utf-8") as f:
+            f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
+                    '<path d="' + str(polygon_to_path(pp)) + '" fill="none" stroke="blue"/>\n' +
+                    '</svg>\n')
+
+        assert pp == poly_kerf or pp.reverse() == poly_kerf, f"Kerf output for {k} does not match expected"
