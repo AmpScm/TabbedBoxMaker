@@ -36,17 +36,27 @@ def path_to_polygon(path_obj : inkex.Path):
     from shapely.geometry import Polygon, MultiPolygon, LinearRing
     # Accepts inkex.Path object, only absolute Move/Line/Close
     coords = []
+
+    paths = []
     for seg in path_obj:
         if seg.letter == 'M':
             coords.append((seg.x, seg.y))
         elif seg.letter == 'L':
             coords.append((seg.x, seg.y))
         elif seg.letter in 'Zz':
+            paths.append(coords)
+            coords = []
             continue
         else:
             raise AssertionError(f"Unexpected path segment type: {seg.letter}")
+        
     if len(coords) > 2:
-        return Polygon(coords)
+        paths.append(coords)
+
+    if len(paths) == 1:
+        return Polygon(paths[0])
+    elif len(paths) > 1:
+        return Polygon(paths[0], holes=paths[1:])
     return None
 
 

@@ -1434,9 +1434,7 @@ class TabbedBoxMaker(Effect):
             tabWidth -= settings.kerf
             first = 0
 
-        #first = 0
-        firstVec = 0
-        secondVec = tabDepth
+        tabVec = tabDepth
         toInsideX, toInsideY = toInside = direction.rotate_clockwise(1)
         s = Path()
 
@@ -1477,18 +1475,17 @@ class TabbedBoxMaker(Effect):
                 if tabDivision % 2:
                     # draw the gap
                     vector += direction * (gapWidth
-                                            + dogbone * kerf * isMale
-                                            + firstVec)
+                                            + dogbone * kerf * isMale)
                     s.append(Line(*vector))
                     if dogbone and isMale:
                         vector -= vecHalfKerf
                         s.append(Line(*vector))
                     # draw the starting edge of the tab
                     s.extend(self.dimpleStr(
-                        secondVec, vector, direction, toInside, 1, isMale,
+                        tabVec, vector, direction, toInside, 1, isMale,
                         settings.dimple_length, settings.dimple_height
                     ))
-                    vector += toInside * secondVec
+                    vector += toInside * tabVec
                     s.append(Line(*vector))
                     if dogbone and notMale:
                         vector -= vecHalfKerf
@@ -1496,22 +1493,22 @@ class TabbedBoxMaker(Effect):
 
                 else:
                     # draw the tab
-                    vector += direction * (tabWidth + dogbone * kerf * notMale + firstVec)
+                    vector += direction * (tabWidth + dogbone * kerf * notMale)
                     s.append(Line(*vector))
                     if dogbone and notMale:
                         vector -= vecHalfKerf
                         s.append(Line(*vector))
                     # draw the ending edge of the tab
                     s.extend(self.dimpleStr(
-                        secondVec, vector, direction, toInside, -1, isMale,
+                        tabVec, vector, direction, toInside, -1, isMale,
                         settings.dimple_length, settings.dimple_height
                     ))
-                    vector += toInside * secondVec
+                    vector += toInside * tabVec
                     s.append(Line(*vector))
                     if dogbone and isMale:
                         vector -= vecHalfKerf
                         s.append(Line(*vector))
-                (secondVec, firstVec) = (-secondVec, -firstVec)  # swap tab direction
+                tabVec = -tabVec  # swap tab direction
 
         # finish the line off
         s.append(Line(*(side.next.start_offset * thickness + direction * (length + kerf))))
@@ -1563,9 +1560,9 @@ class TabbedBoxMaker(Effect):
 
         nodes = []
 
-        rDirection = direction.rotate_clockwise(1)
-        vector = rDirection * side.has_tabs * thickness        
-        kerf_offset = rDirection * halfkerf
+        toInside = direction.rotate_clockwise(1)
+        vector = toInside * side.has_tabs * thickness        
+        kerf_offset = toInside * halfkerf
 
 
         for dividerNumber in range(numDividers):
@@ -1584,7 +1581,7 @@ class TabbedBoxMaker(Effect):
             pos = start_pos + direction * width
             h.append(Line(*pos))
 
-            pos += rDirection * (thickness - kerf)
+            pos += toInside * (thickness - kerf)
             h.append(Line(*pos))
 
             pos -= direction * width
@@ -1636,17 +1633,12 @@ class TabbedBoxMaker(Effect):
         if isMale:  # kerf correction
             gapWidth -= settings.kerf
             tabWidth += settings.kerf
-            first = halfkerf
         else:
             gapWidth += settings.kerf
             tabWidth -= settings.kerf
-            first = -halfkerf
 
-        vec = thickness
-        toInsideX, toInsideY = toInside = direction.rotate_clockwise()
-        vector = toInside * side.has_tabs * thickness
-
-        kerf_offset = Vec(1 if toInsideX else 0, -(1 if toInsideY else 0)) * halfkerf
+        toInside = direction.rotate_clockwise()
+        vector = toInside * (side.has_tabs * thickness - halfkerf)
 
         # generate line as tab or hole using:
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
@@ -1660,13 +1652,13 @@ class TabbedBoxMaker(Effect):
                         w -= thickness
                     elif tabDivision > 0 and side.next.has_tabs:
                         w -= thickness
-                holeLen = direction * (w + first)
+                holeLen = direction * w
                 for dividerNumber in range(numDividers):
                     cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, dividerSpacings, thickness)
-                    divider_offset = direction.rotate_clockwise(1) * cumulative_position
-                    dogbone_offset = direction * (halfkerf- first) if dogbone else Vec(0, 0)
+                    divider_offset = toInside * cumulative_position
+                    dogbone_offset = direction * (halfkerf) if dogbone else Vec(0, 0)
 
-                    pos = vector + divider_offset + kerf_offset + dogbone_offset
+                    pos = vector + divider_offset + dogbone_offset
 
                     if tabDivision == 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                         pos += Vec(startOffset.x * thickness, 0)
@@ -1677,7 +1669,7 @@ class TabbedBoxMaker(Effect):
                     pos += holeLen
                     h.append(Line(*pos))
 
-                    thickVec = toInside * (vec - math.copysign(1, vec) * kerf)
+                    thickVec = toInside * (thickness - kerf)
                     pos += thickVec
                     h.append(Line(*pos))
 
@@ -1693,7 +1685,6 @@ class TabbedBoxMaker(Effect):
                 # draw the gap
                 vector += direction * (
                         gapWidth
-                        + (first if not (isMale and dogbone) else 0)
                         + dogbone * kerf * isMale
                     )
 
@@ -1705,10 +1696,6 @@ class TabbedBoxMaker(Effect):
 
             if dogbone and notMale:
                 vector -= direction * halfkerf
-            vector += toInside * vec
-
-            vec = - vec  # swap tab direction
-            first = 0
 
         rootX, rootY = root + side.root_offset
         for node in nodes:

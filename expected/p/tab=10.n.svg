@@ -7,7 +7,7 @@
     <g id="piece_001">
       <path id="side_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 161 L 64 161 L 64 158 L 74 158 L 74 161 L 88 161 L 88 158 L 98 158 L 98 161 L 112 161 L 112 158 L 122 158 L 122 161 L 136 161"/>
       <path id="side_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 136 161 L 136 176 L 133 176 L 133 186 L 136 186 L 136 201"/>
-      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 176 L 91.5 186 L 94.5 186 L 94.5 176 L 91.5 176 Z"/>
+      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 94.5 176 L 94.5 186 L 91.5 186 L 91.5 176 L 94.5 176 Z"/>
       <path id="side_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 136 201 L 122 201 L 122 204 L 112 204 L 112 201 L 98 201 L 98 204 L 88 204 L 88 201 L 74 201 L 74 204 L 64 204 L 64 201 L 50 201"/>
       <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 201 L 50 186 L 53 186 L 53 176 L 50 176 L 50 161"/>
     </g>
@@ -35,14 +35,14 @@
     </g>
     <g id="piece_003">
       <path id="side_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 50 L 64 50 L 64 53 L 74 53 L 74 50 L 88 50 L 88 53 L 98 53 L 98 50 L 112 50 L 112 53 L 122 53 L 122 50 L 136 50"/>
-      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64 104.5 L 74 104.5 L 74 101.5 L 64 101.5 L 64 104.5 Z"/>
-      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88 104.5 L 98 104.5 L 98 101.5 L 88 101.5 L 88 104.5 Z"/>
-      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 112 104.5 L 122 104.5 L 122 101.5 L 112 101.5 L 112 104.5 Z"/>
+      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 64 101.5 L 74 101.5 L 74 104.5 L 64 104.5 L 64 101.5 Z"/>
+      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88 101.5 L 98 101.5 L 98 104.5 L 88 104.5 L 88 101.5 Z"/>
+      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 112 101.5 L 122 101.5 L 122 104.5 L 112 104.5 L 112 101.5 Z"/>
       <path id="side_018" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 136 50 L 136 63.2 L 133 63.2 L 133 73.2 L 136 73.2 L 136 86.4 L 133 86.4 L 133 96.4 L 136 96.4 L 136 109.6 L 133 109.6 L 133 119.6 L 136 119.6 L 136 132.8 L 133 132.8 L 133 142.8 L 136 142.8 L 136 156"/>
-      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 63.2 L 91.5 73.2 L 94.5 73.2 L 94.5 63.2 L 91.5 63.2 Z"/>
-      <path id="hole_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 86.4 L 91.5 96.4 L 94.5 96.4 L 94.5 86.4 L 91.5 86.4 Z"/>
-      <path id="hole_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 109.6 L 91.5 119.6 L 94.5 119.6 L 94.5 109.6 L 91.5 109.6 Z"/>
-      <path id="hole_010" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 132.8 L 91.5 142.8 L 94.5 142.8 L 94.5 132.8 L 91.5 132.8 Z"/>
+      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 94.5 63.2 L 94.5 73.2 L 91.5 73.2 L 91.5 63.2 L 94.5 63.2 Z"/>
+      <path id="hole_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 94.5 86.4 L 94.5 96.4 L 91.5 96.4 L 91.5 86.4 L 94.5 86.4 Z"/>
+      <path id="hole_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 94.5 109.6 L 94.5 119.6 L 91.5 119.6 L 91.5 109.6 L 94.5 109.6 Z"/>
+      <path id="hole_010" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 94.5 132.8 L 94.5 142.8 L 91.5 142.8 L 91.5 132.8 L 94.5 132.8 Z"/>
       <path id="side_019" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 136 156 L 122 156 L 122 153 L 112 153 L 112 156 L 98 156 L 98 153 L 88 153 L 88 156 L 74 156 L 74 153 L 64 153 L 64 156 L 50 156"/>
       <path id="side_020" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 156 L 50 142.8 L 53 142.8 L 53 132.8 L 50 132.8 L 50 119.6 L 53 119.6 L 53 109.6 L 50 109.6 L 50 96.4 L 53 96.4 L 53 86.4 L 50 86.4 L 50 73.2 L 53 73.2 L 53 63.2 L 50 63.2 L 50 50"/>
     </g>
@@ -56,21 +56,21 @@
     </g>
     <g id="piece_005">
       <path id="side_025" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 186 50 L 200 50 L 200 53 L 210 53 L 210 50 L 224 50 L 224 53 L 234 53 L 234 50 L 248 50 L 248 53 L 258 53 L 258 50 L 272 50"/>
-      <path id="hole_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 200 104.5 L 210 104.5 L 210 101.5 L 200 101.5 L 200 104.5 Z"/>
-      <path id="hole_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 224 104.5 L 234 104.5 L 234 101.5 L 224 101.5 L 224 104.5 Z"/>
-      <path id="hole_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 248 104.5 L 258 104.5 L 258 101.5 L 248 101.5 L 248 104.5 Z"/>
+      <path id="hole_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 200 101.5 L 210 101.5 L 210 104.5 L 200 104.5 L 200 101.5 Z"/>
+      <path id="hole_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 224 101.5 L 234 101.5 L 234 104.5 L 224 104.5 L 224 101.5 Z"/>
+      <path id="hole_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 248 101.5 L 258 101.5 L 258 104.5 L 248 104.5 L 248 101.5 Z"/>
       <path id="side_026" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 272 50 L 272 63.2 L 269 63.2 L 269 73.2 L 272 73.2 L 272 86.4 L 269 86.4 L 269 96.4 L 272 96.4 L 272 109.6 L 269 109.6 L 269 119.6 L 272 119.6 L 272 132.8 L 269 132.8 L 269 142.8 L 272 142.8 L 272 156"/>
-      <path id="hole_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 227.5 63.2 L 227.5 73.2 L 230.5 73.2 L 230.5 63.2 L 227.5 63.2 Z"/>
-      <path id="hole_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 227.5 86.4 L 227.5 96.4 L 230.5 96.4 L 230.5 86.4 L 227.5 86.4 Z"/>
-      <path id="hole_018" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 227.5 109.6 L 227.5 119.6 L 230.5 119.6 L 230.5 109.6 L 227.5 109.6 Z"/>
-      <path id="hole_019" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 227.5 132.8 L 227.5 142.8 L 230.5 142.8 L 230.5 132.8 L 227.5 132.8 Z"/>
+      <path id="hole_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 230.5 63.2 L 230.5 73.2 L 227.5 73.2 L 227.5 63.2 L 230.5 63.2 Z"/>
+      <path id="hole_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 230.5 86.4 L 230.5 96.4 L 227.5 96.4 L 227.5 86.4 L 230.5 86.4 Z"/>
+      <path id="hole_018" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 230.5 109.6 L 230.5 119.6 L 227.5 119.6 L 227.5 109.6 L 230.5 109.6 Z"/>
+      <path id="hole_019" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 230.5 132.8 L 230.5 142.8 L 227.5 142.8 L 227.5 132.8 L 230.5 132.8 Z"/>
       <path id="side_027" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 272 156 L 258 156 L 258 153 L 248 153 L 248 156 L 234 156 L 234 153 L 224 153 L 224 156 L 210 156 L 210 153 L 200 153 L 200 156 L 186 156"/>
       <path id="side_028" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 186 156 L 186 142.8 L 189 142.8 L 189 132.8 L 186 132.8 L 186 119.6 L 189 119.6 L 189 109.6 L 186 109.6 L 186 96.4 L 189 96.4 L 189 86.4 L 186 86.4 L 186 73.2 L 189 73.2 L 189 63.2 L 186 63.2 L 186 50"/>
     </g>
     <g id="piece_006">
       <path id="side_029" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 5 L 64 5 L 64 2 L 74 2 L 74 5 L 88 5 L 88 2 L 98 2 L 98 5 L 112 5 L 112 2 L 122 2 L 122 5 L 136 5"/>
       <path id="side_030" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 136 5 L 136 20 L 133 20 L 133 30 L 136 30 L 136 45"/>
-      <path id="hole_020" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 20 L 91.5 30 L 94.5 30 L 94.5 20 L 91.5 20 Z"/>
+      <path id="hole_020" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 94.5 20 L 94.5 30 L 91.5 30 L 91.5 20 L 94.5 20 Z"/>
       <path id="side_031" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 136 45 L 122 45 L 122 48 L 112 48 L 112 45 L 98 45 L 98 48 L 88 48 L 88 45 L 74 45 L 74 48 L 64 48 L 64 45 L 50 45"/>
       <path id="side_032" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 45 L 50 30 L 53 30 L 53 20 L 50 20 L 50 5"/>
     </g>

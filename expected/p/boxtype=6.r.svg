@@ -29,13 +29,13 @@
       <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 130 2 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25 l 0 0 l 0 6 l 0 0 l 0 7.25"/>
       <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 130 102 l -6.714 0 l 0 0 l -6 0 l 0 0 l -6.715 0 l 0 0 l -6 0 l 0 0 l -6.7139 0 l 0 0 l -6 0 l 0 0 l -6.7142 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0 l 0 0 l -6 0 l 0 0 l -6.7143 0"/>
       <path id="side_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 47 102 l 0 -7.25 l 3 0 l 0 -6 l -3 0 l 0 -7.25 l 3 0 l 0 -6 l -3 0 l 0 -7.25 l 3 0 l 0 -6 l -3 0 l 0 -7.25 l 3 0 l 0 -6 l -3 0 l 0 -7.25 l 3 0 l 0 -6 l -3 0 l 0 -7.25 l 3 0 l 0 -6 l -3 0 l 0 -7.25 l 3 0 l 0 -6 l -3 0 l 0 -7.25"/>
-      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 91.5 94.75 l 0 -6 l -3 0 l 0 6 l 3 0 z"/>
-      <path id="hole_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 91.5 81.5 l 0 -6 l -3 0 l 0 6 l 3 0 z"/>
-      <path id="hole_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 91.5 68.25 l 0 -6 l -3 0 l 0 6 l 3 0 z"/>
-      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 91.5 55 l 0 -6 l -3 0 l 0 6 l 3 0 z"/>
-      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 91.5 41.75 l 0 -6 l -3 0 l 0 6 l 3 0 z"/>
-      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 91.5 28.5 l 0 -6 l -3 0 l 0 6 l 3 0 z"/>
-      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 91.5 15.25 l 0 -6 l -3 0 l 0 6 l 3 0 z"/>
+      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 88.5 94.75 l 0 -6 l 3 0 l 0 6 l -3 0 z"/>
+      <path id="hole_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 88.5 81.5 l 0 -6 l 3 0 l 0 6 l -3 0 z"/>
+      <path id="hole_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 88.5 68.25 l 0 -6 l 3 0 l 0 6 l -3 0 z"/>
+      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 88.5 55 l 0 -6 l 3 0 l 0 6 l -3 0 z"/>
+      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 88.5 41.75 l 0 -6 l 3 0 l 0 6 l -3 0 z"/>
+      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 88.5 28.5 l 0 -6 l 3 0 l 0 6 l -3 0 z"/>
+      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 88.5 15.25 l 0 -6 l 3 0 l 0 6 l -3 0 z"/>
     </g>
   </g>
 </svg>
