@@ -1276,7 +1276,7 @@ class TabbedBoxMaker(Effect):
 
                 other_first = other_path[0]
 
-                if (other_first.x == path_last.x and other_first.y == path_last.y):
+                if math.fabs(other_first.x-path_last.x) < 0.01 and math.fabs(other_first.y - path_last.y) < 0.01:
                     new_id = min(path_element.get_id(), other_element.get_id())
                     path_element.path = path + other_path[1:]
                     group.remove(other_element)
