@@ -1637,8 +1637,6 @@ class TabbedBoxMaker(Effect):
 
         direction = side.direction
 
-        startOffset = side.start_offset
-
         isMale = side.is_male
         notMale = not isMale
         thickness = side.thickness
@@ -1683,12 +1681,11 @@ class TabbedBoxMaker(Effect):
                 for dividerNumber in range(numDividers):
                     cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, dividerSpacings, thickness)
                     divider_offset = direction.rotate_clockwise(1) * (cumulative_position + halfkerf)
-                    dogbone_offset = direction * (halfkerf- first) if dogbone else Vec(0, 0)
 
-                    pos = vector + divider_offset + kerf_offset + dogbone_offset
+                    pos = vector + divider_offset + kerf_offset
 
                     if tabDivision == 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
-                        pos += Vec(side.prev.has_tabs * thickness - halfkerf, 0)
+                        pos += direction * (side.prev.has_tabs * thickness - halfkerf)
 
                     h = Path()
                     h.append(Move(*pos))
@@ -1710,20 +1707,10 @@ class TabbedBoxMaker(Effect):
 
             if (tabDivision % 2) == 0:
                 # draw the gap
-                vector += direction * (
-                        gapWidth
-                        + (first if not (isMale and dogbone) else 0)
-                        + dogbone * kerf * isMale
-                    )
-
-                if dogbone and isMale:
-                    vector -= direction * halfkerf
+                vector += direction * (gapWidth + first)
             else:
                 # draw the tab
-                vector += direction * (tabWidth + dogbone * kerf * notMale)
-
-            if dogbone and notMale:
-                vector -= direction * halfkerf
+                vector += direction * tabWidth
 
             first = 0
 
