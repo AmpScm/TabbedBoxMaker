@@ -419,7 +419,9 @@ class TabbedBoxMaker(Effect):
 
         self._run_effect()
 
-        adjust_canvas(svg, unit=self.options.unit)
+        # If generated from CLI, adjust canvas to fit contents. Otherwise keep user setting
+        if not self.inkscape:
+            adjust_canvas(svg, unit=self.options.unit)
 
 
     @staticmethod
@@ -481,13 +483,15 @@ class TabbedBoxMaker(Effect):
         hairline = self.options.hairline
         unit = str(self.options.unit).lower()
         inside = self.options.inside
-        kerf = self.options.kerf
 
         if unit == 'document':
             unit = svg.document_unit
 
+
+        kerf = self.svg.unittouu(str(self.options.kerf) + unit)
+
         # Set the line thickness
-        line_thickness = self.hairline_thickness if hairline else self.options.line_thickness
+        line_thickness = self.hairline_thickness if hairline else self.svg.unittouu(str(self.options.line_thickness) + unit)
         if line_thickness == 1.0:
             line_thickness = 1 # Reproduce old output
 
@@ -1434,9 +1438,9 @@ class TabbedBoxMaker(Effect):
 
         if side.has_tabs:
             # Calculate direction
-            tabDepth = -thickness if isMale else thickness
+            tabVec = -thickness if isMale else thickness
         else:
-            tabDepth = 0
+            tabVec = 0
 
         kerf = settings.kerf
         halfkerf = kerf / 2
@@ -1456,24 +1460,33 @@ class TabbedBoxMaker(Effect):
             tabWidth -= settings.kerf
             first = 0
 
-        tabVec = tabDepth
-        toInsideX, toInsideY = toInside = direction.rotate_clockwise(1)
+        toInside = direction.rotate_clockwise(1)
         s = Path()
 
         startOffsetX, startOffsetY = startOffset = side.start_offset
+        vecHalfKerf = direction * halfkerf
 
         vector = startOffset * thickness
 
         s.append(Move(*vector))
+        if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC and piece.pieceType in [PieceType.Bottom, PieceType.Top]:
+            p = vector + toInside * -(thickness + halfkerf)
+            s.append(Line(*p))
 
-        if tabDepth != 0 or not settings.optimize:
+            p += direction * (thickness + kerf)
+            s.append(Line(*p))
+
+            p -= toInside * -(thickness + halfkerf)
+            s.append(Line(*p))
+
+        if side.has_tabs or not settings.optimize:
             # Set vector for tab generation
             if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
                 vector = Vec(startOffsetX if startOffsetX else dirX, startOffsetY if startOffsetY else dirY) * thickness
             else:
-                if toInsideX:
+                if toInside.x:
                     vector = Vec(vector.x, 0) # set correct line start for tab generation
-                if toInsideY:
+                if toInside.y:
                     vector = Vec(0, vector.y) # set correct line start for tab generation
 
             if piece.pieceType == PieceType.DividerY and side.name in (Sides.B, Sides.D) and not side.prev.has_tabs:
@@ -1490,8 +1503,6 @@ class TabbedBoxMaker(Effect):
             # generate line as tab or hole using:
             #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
             #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
-
-            vecHalfKerf = Vec(dirX * halfkerf, dirY * halfkerf)
 
             for tabDivision in range(1, int(divisions)):
                 if tabDivision % 2:
@@ -1531,7 +1542,7 @@ class TabbedBoxMaker(Effect):
                         vector -= vecHalfKerf
                         s.append(Line(*vector))
                 tabVec = -tabVec  # swap tab direction
-            #first = 0  # only apply first offset once
+            first = 0  # only apply first offset once
 
         # finish the line off
         s.append(Line(*(side.next.start_offset * thickness + direction * (length + kerf))))
@@ -1638,12 +1649,10 @@ class TabbedBoxMaker(Effect):
         direction = side.direction
 
         isMale = side.is_male
-        notMale = not isMale
         thickness = side.thickness
 
         kerf = settings.kerf
         halfkerf = kerf / 2
-        dogbone = side.dogbone
 
         nodes = []
 
@@ -1662,6 +1671,16 @@ class TabbedBoxMaker(Effect):
         kerf_offset = Vec(1 if toInsideX else 0, -(1 if toInsideY else 0)) * halfkerf
 
         vector = toInside * (side.has_tabs * thickness + halfkerf)
+
+        if side.tab_symmetry != TabSymmetry.XY_SYMMETRIC:
+            vector += direction * (side.prev.has_tabs * thickness - halfkerf)
+            
+            if side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and isMale:                
+                vector += direction * thickness
+                divisions -= 1
+
+        asym_male = isMale and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC
+
         kerf_offset = Vec(1 if toInside.x else 0, -(1 if toInside.y else 0)) * halfkerf
         log(f"TabWidth {tabWidth}, GapWidth {gapWidth}, Total={gapWidth+tabWidth}, Divisions {divisions}, isMale {isMale}, numDividers {numDividers}, Spacings {dividerSpacings}, vector {vector}, dir {direction}, toInside {toInside}")
 
@@ -1672,7 +1691,7 @@ class TabbedBoxMaker(Effect):
             # draw holes for divider tabs to key into side walls
             if ((tabDivision % 2) == 0) != (not isMale):
                 w = gapWidth if isMale else tabWidth
-                if (tabDivision == 0 or tabDivision == (divisions - 1)) and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+                if (tabDivision == 0 or tabDivision == (divisions - 1)) and (side.tab_symmetry == TabSymmetry.XY_SYMMETRIC or asym_male):
                     if tabDivision == 0 and side.prev.has_tabs:
                         w -= thickness - halfkerf
                     elif tabDivision > 0 and side.next.has_tabs:
@@ -1684,7 +1703,7 @@ class TabbedBoxMaker(Effect):
 
                     pos = vector + divider_offset + kerf_offset
 
-                    if tabDivision == 0 and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
+                    if tabDivision == 0 and (side.tab_symmetry == TabSymmetry.XY_SYMMETRIC or asym_male):
                         pos += direction * (side.prev.has_tabs * thickness - halfkerf)
 
                     h = Path()
