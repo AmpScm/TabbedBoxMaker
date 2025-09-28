@@ -110,14 +110,14 @@ class Vec(tuple):
         elif isinstance(other, (int, float)):
             return Vec(self.x * other, self.y * other)
         return NotImplemented
-    
+
     def __rmul__(self, other: Union[float, "Vec"]) -> Union["Vec", float]:
         if isinstance(other, Vec):
             return Vec(self.x * other.x, self.y * other.y)
         elif isinstance(other, (int, float)):
             return Vec(self.x * other, self.y * other)
         return NotImplemented
-    
+
     def __neg__(self):
         return Vec(-self.x, -self.y)
 
@@ -223,6 +223,7 @@ class Side:
         self.recalc()
 
     def recalc(self, pieceType: PieceType = None):
+
         length = self.length
 
         if pieceType == PieceType.DividerY and self.name in (Sides.B, Sides.D):

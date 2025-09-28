@@ -45,9 +45,6 @@ _ = gettext.gettext
 def log(text: str) -> None:
     if "STDERR_LOG" in os.environ:
         print(text, file=sys.stderr)
-    elif "SCHROFF_LOG" in os.environ:
-        f = open(os.environ.get("SCHROFF_LOG"), "a")
-        f.write(text + "\n")
 
 def IntBoolean(value):
     """ArgParser function to turn a boolean string into a python boolean"""
@@ -522,7 +519,7 @@ class TabbedBoxMaker(Effect):
             Y = row_height + row_spacing_total
             inside = False
         else:
-            # boxmaker.inx            
+            # boxmaker.inx
             X = self.svg.unittouu(str(self.options.length) + unit)
             Y = self.svg.unittouu(str(self.options.width) + unit)
 
@@ -847,7 +844,7 @@ class TabbedBoxMaker(Effect):
             for piece in get_pieces(PieceType.Top):
                 piece.base = calculate_position(cc[3], rr[1])  # cc[3], rr[1] - Top piece
                 pieces_list.append(piece)
-            
+
             for piece in get_pieces(PieceType.Front):
                 piece.base = calculate_position(cc[1], rr[0])  # cc[1], rr[0] - Front piece
                 pieces_list.append(piece)
@@ -952,7 +949,7 @@ class TabbedBoxMaker(Effect):
                 y = ys * spacing + yx * settings.X + yy * settings.Y + yz * settings.Z + initOffsetY
 
                 return Vec(x, y)
-            
+
 
             # Follow exact original INLINE_COMPACT order: Back -> X dividers -> Left -> Y dividers -> Top -> Bottom -> Right -> Front
             for piece in get_pieces(PieceType.Back):
@@ -1133,7 +1130,7 @@ class TabbedBoxMaker(Effect):
                     sides[1].length = sides[3].length = sides[1].inside_length
                 if not settings.keydiv_walls:
                     sides[1].has_tabs = sides[3].has_tabs = False # sides B and D
-                    sides[1].is_male = sides[3].is_male = False                     
+                    sides[1].is_male = sides[3].is_male = False
                     sides[0].length = sides[2].length = sides[0].inside_length
 
                 sides[1].num_dividers = settings.div_y * (settings.div_x > 0)
@@ -1154,7 +1151,7 @@ class TabbedBoxMaker(Effect):
                     sides[1].length = sides[3].length = sides[1].inside_length
                 if not settings.keydiv_floor:
                     sides[1].has_tabs = sides[3].has_tabs = False # sides B and D
-                    sides[1].is_male = sides[3].is_male = False                     
+                    sides[1].is_male = sides[3].is_male = False
                     sides[0].length = sides[2].length = sides[0].inside_length
 
                 sides[0].num_dividers = settings.div_x * (settings.div_x > 0)
@@ -1586,7 +1583,7 @@ class TabbedBoxMaker(Effect):
         numDividers = side.num_dividers
         if numDividers == 0 or side.name not in (Sides.A, Sides.B):
             return []
-        
+
         direction = side.direction
         thickness = side.thickness
         kerf = settings.kerf
@@ -1595,7 +1592,7 @@ class TabbedBoxMaker(Effect):
         nodes = []
 
         toInside = direction.rotate_clockwise(1)
-        vector = toInside * side.has_tabs * thickness        
+        vector = toInside * side.has_tabs * thickness
         kerf_offset = toInside * halfkerf
 
 
@@ -1672,14 +1669,12 @@ class TabbedBoxMaker(Effect):
 
         vector = toInside * (side.has_tabs * thickness + halfkerf)
 
-        if side.tab_symmetry != TabSymmetry.XY_SYMMETRIC:
-            vector += direction * (side.prev.has_tabs * thickness - halfkerf)
-            
-            if side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and isMale:                
-                vector += direction * thickness
-                divisions -= 1
-
+        asym_female = not isMale and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC
         asym_male = isMale and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC
+
+
+        if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
+            vector += direction * (side.prev.has_tabs * thickness - halfkerf)
 
         kerf_offset = Vec(1 if toInside.x else 0, -(1 if toInside.y else 0)) * halfkerf
         log(f"TabWidth {tabWidth}, GapWidth {gapWidth}, Total={gapWidth+tabWidth}, Divisions {divisions}, isMale {isMale}, numDividers {numDividers}, Spacings {dividerSpacings}, vector {vector}, dir {direction}, toInside {toInside}")
@@ -1691,10 +1686,10 @@ class TabbedBoxMaker(Effect):
             # draw holes for divider tabs to key into side walls
             if ((tabDivision % 2) == 0) != (not isMale):
                 w = gapWidth if isMale else tabWidth
-                if (tabDivision == 0 or tabDivision == (divisions - 1)) and (side.tab_symmetry == TabSymmetry.XY_SYMMETRIC or asym_male):
+                if (tabDivision == 0 or tabDivision == (divisions - 1)) and (side.tab_symmetry == TabSymmetry.XY_SYMMETRIC or side.tab_symmetry == TabSymmetry.ANTISYMMETRIC):
                     if tabDivision == 0 and side.prev.has_tabs:
                         w -= thickness - halfkerf
-                    elif tabDivision > 0 and side.next.has_tabs:
+                    elif tabDivision > 0 and side.next.has_tabs and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC:
                         w -= thickness - kerf
                 holeLen = direction * (w + first)
                 for dividerNumber in range(numDividers):
