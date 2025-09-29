@@ -138,7 +138,7 @@ def best_effort_inkex_combine_paths(paths: list[inkex.Path]):
 
         if hole not in ignore_holes:
             for other in holes:
-                if hole_bb & other.bounding_box() and other != hole and other not in ignore_holes:
+                if hole_bb & other.bounding_box() and other != hole and other not in ignore_holes and len(hole.path) == 5 and len(other.path) == 5:
                     # Merge the two holes
                     new_path = merge_two_rectangles_to_outer_path(hole, other)
                     hole.path = new_path

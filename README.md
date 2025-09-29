@@ -4,7 +4,7 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-_Version 1.4.0 - September 2025_
+_Version 2.0 - September 2025_
 
 Original box maker by Elliot White (formerly of twot.eu, domain name now squatted)
 
@@ -19,13 +19,22 @@ Now maintained by [Bert Huijben](https://github.com/rhuijben).
  An additional extension which uses the same TabbedBoxMaker generator script is also included: Schroff Box Maker. The Schroff addition was created by [John Slee](https://github.com/jsleeio). If you create further derivative box generators, feel free to send me a pull request!
 
 ## Release Notes
-This is a major upgrade to support Inkscape v1.0 and CNC mills (with dogbone cuts), plus an updated dialog layout and documentation, and a number of smaller fixes. So far no serious bugs (i.e causing runtime errors) have been found. The program works with Python 3 ONLY. See [issues](https://github.com/ampscm/TabbedBoxMaker/issues) for known issues, or to log issues and enhancement requests.
+The code was completely refactored since the v1.x series. It is now a proper python package with testssuite
+and supports both plugin for Inkscape and a commandline scenarios. The plugin provides 3 extension points
+in Inkscape.
+ * Tabbed Box maker
+ * Schroff Box maker (=Tabbed Boxmaker customized with schroff settings)
+ * Cardboard Box maker (completely separate for now)
+ 
+The regression tests validate if output matches what is expected and if basic mathemetical constraints hold. (E.g. kerf is calculated correctly. Parts produce enough material to really create the rectangle, etc.)
 
-Note that in this release the extension has *moved to the Box Maker submenu*.  This is to better reflect that this tool can be used on a wide variety of CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
+The program works with Python 3 ONLY. See [issues](https://github.com/ampscm/TabbedBoxMaker/issues) for known issues, or to log issues and enhancement requests.
+
+Note that in this release the extension has *moved to the Box Maker submenu*.  This is to better reflect that this tool can be used on a wide variety of 
+CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
  
 ## To do
-* Tidy, modularise and simplify the code - it is rough and unpythonic.  Needs some work by a master Python guru.
-* Add tests and perhaps get it submitted as a core extension to be installed with Inkscape?
+* More cleanup
 * Improve input checking to restrict values to correct solutions.
 * Dogbone only works on tabbed joins, NOT divider keyholes or slots yet
 * Would be great to make shapes closed and do path subtraction to get slot cutouts and keyholes from faces, and perhaps offer to add fill colour
@@ -79,21 +88,21 @@ Parameters in order of appearance:
     * Three sides open (LxW, LxH, HxW) - one of each panel omitted
     * Opposite ends open (LxW) - an open-ended "tube" with the LxW panels omitted
     * Two panels only (LxW and LxH) - two panels with a single joint down the Length axis
- 			
+             
 * Dividers (Length axis) - use this to create additional LxH panels that mount inside the box 
   along the length axis and have finger joints into the side panels
   and slots for Width dividers to slot into
-				
+                
 * Dividers (Width axis) - use this to create additional WxH panels that mount inside the box 
-						 along the width axis and have finger joints into the side panels
-						 and slots for Length dividers to slot into
-						 
+                         along the width axis and have finger joints into the side panels
+                         and slots for Length dividers to slot into
+                         
 * Key the dividers into - this allows you to choose if/how the dividers are keyed into the sides of the box. Options are:
-	* None - no keying, dividers will be free to slide in and out
-	* Walls - dividers will only be keyed into the side walls of the box
-	* Floor/Ceiling - dividers will only be keyed into the top/bottom of the box
-	* All Sides
-				
+    * None - no keying, dividers will be free to slide in and out
+    * Walls - dividers will only be keyed into the side walls of the box
+    * Floor/Ceiling - dividers will only be keyed into the top/bottom of the box
+    * All Sides
+                
 * Space Between Parts - how far apart the pieces are in the drawing produced
 
 * Live Preview - you may need to turn this off when changing tab style, box type, or layout
@@ -277,3 +286,5 @@ version | Date | Notes
 1.0 |  (17 June 2020) | v1.0 final released: fixes and dogbone added - Mills now supported!
 1.1 |  (9 Aug 2021) | v1.1 with fixes for newer Inkscape versions - sorry for the delays
 1.2 |  (4 Dec 2023) | PR merged from [@mausmaux](https://github.com/mausmaux) with thanks
+1.4 | Early 2025 | Merged several PRs
+2.0 | (Sep 2025) | Completely refactored to be more maintainable. Make rotational and antisymetric support generally usable with other settings.

@@ -1629,10 +1629,17 @@ class TabbedBoxMaker(Effect):
             h.append(Move(*start_pos))
 
             pos = start_pos + direction * width
+            if side.dogbone:
+                db = pos + direction * halfkerf
+                h.append(Line(*db))
             h.append(Line(*pos))
 
             pos += toInside * (thickness - kerf)
             h.append(Line(*pos))
+
+            if side.dogbone:
+                db = pos + direction * halfkerf
+                h.append(Line(*db))
 
             pos -= direction * width
             h.append(Line(*pos))
@@ -1678,9 +1685,9 @@ class TabbedBoxMaker(Effect):
         gapWidth += corr
         tabWidth -= corr
 
-        toInsideX, toInsideY = toInside = direction.rotate_clockwise()
+        toInside = direction.rotate_clockwise()
 
-        kerf_offset = Vec(1 if toInsideX else 0, -(1 if toInsideY else 0)) * halfkerf
+        kerf_offset = Vec(1 if toInside.x else 0, -(1 if toInside.y else 0)) * halfkerf
 
         vector = root + side.root_offset + toInside * (side.has_tabs * thickness + halfkerf)
 
@@ -1696,7 +1703,7 @@ class TabbedBoxMaker(Effect):
         for tabDivision in range(divisions):
             # draw holes for divider tabs to key into side walls
             if ((tabDivision % 2) == 0) != (not isMale):
-                w = gapWidth if isMale else tabWidth
+                ww = w = gapWidth if isMale else tabWidth
                 if (tabDivision == 0 or tabDivision == (divisions - 1)) and (side.tab_symmetry == TabSymmetry.XY_SYMMETRIC or side.tab_symmetry == TabSymmetry.ANTISYMMETRIC):
                     if tabDivision == 0 and side.prev.has_tabs:
                         w -= thickness - halfkerf
@@ -1715,18 +1722,36 @@ class TabbedBoxMaker(Effect):
 
                     h = Path()
                     h.append(Move(*pos))
+                    if side.dogbone and ww == w:
+                        db = pos - direction * halfkerf
+                        h.append(Line(*db))
 
                     pos += holeLen
+                    if side.dogbone and ww == w:
+                        db = pos + direction * halfkerf
+                        h.append(Line(*db))
                     h.append(Line(*pos))
 
                     thickVec = toInside * (thickness - kerf)
                     pos += thickVec
                     h.append(Line(*pos))
 
+                    if side.dogbone and ww == w:
+                        db = pos + direction * halfkerf
+                        h.append(Line(*db))
+
                     pos -= holeLen
+
+                    if side.dogbone and ww == w:
+                        db = pos - direction * halfkerf
+                        h.append(Line(*db))
+
                     h.append(Line(*pos))
 
                     pos -= thickVec
+                    #if side.dogbone and ww == w:
+                    #    db = pos - direction * halfkerf
+                    #    h.append(Line(*db))
                     h.append(Line(*pos))
                     h.append(ZoneClose())
                     nodes.append(self.makeLine(h, "hole"))
