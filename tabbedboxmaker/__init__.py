@@ -70,6 +70,7 @@ class TabbedBoxMaker(Effect):
     schroff = False
     inkscape = False
     line_color = '#000000'
+    no_subtract = False
 
     def __init__(self, cli=True, schroff=False, inkscape=False):
         self.cli = cli
@@ -1354,7 +1355,7 @@ class TabbedBoxMaker(Effect):
 
         # Step 3: Include gaps in the panel outline by removing them from the panel path
         if len(paths) > 1:
-            try_combine_paths(paths, self.inkscape)
+            try_combine_paths(paths, inkscape=self.inkscape, no_subtract=self.no_subtract)
 
         # Last step: If the group now just contains one path, remove
         # the group around this path

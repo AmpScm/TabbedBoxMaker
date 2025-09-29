@@ -581,7 +581,7 @@ expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected")
 actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual")
 
 
-def make_box(args, make_relative=False, optimize=False, mask=True) -> str:
+def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=False) -> str:
     """Run one test case and return (output, expected) strings."""
 
     outfh = io.BytesIO()
@@ -590,6 +590,7 @@ def make_box(args, make_relative=False, optimize=False, mask=True) -> str:
     boxMaker.parse_arguments(args)
     boxMaker.options.output = outfh
     boxMaker.options.optimize = optimize
+    boxMaker.no_subtract = no_subtract
 
     boxMaker.load_raw()
     boxMaker.save_raw(boxMaker.effect())
@@ -611,10 +612,10 @@ def make_box(args, make_relative=False, optimize=False, mask=True) -> str:
 
     return output
 
-def make_box_paths(args, optimize=False) -> dict[str, Path]:
+def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
     """Run one test case and return a map of id -> Path."""
 
-    output = make_box(args, optimize=optimize, mask=False)
+    output = make_box(args, optimize=optimize, mask=False, no_subtract=no_subtract)
 
     map = {}
     for i in re.findall(r'path id="([^"]+)".*?d="(M [^"]*(?="))', output):
@@ -622,10 +623,10 @@ def make_box_paths(args, optimize=False) -> dict[str, Path]:
 
     return map
 
-def make_box_polygons(args, optimize=False) -> dict[str, Polygon]:
+def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Polygon]:
     """Run one test case and return a map of id -> Shapely Polygon."""
 
-    paths = make_box_paths(args, optimize=optimize)
+    paths = make_box_paths(args, optimize=optimize, no_subtract=no_subtract)
 
     map = {}
     for k, v in paths.items():

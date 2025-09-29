@@ -169,11 +169,11 @@ def best_effort_inkex_combine_paths(paths: list[inkex.Path]):
     panel.path = inkex.Path(combined_superpath)
 
 
-def try_combine_paths(paths: list[inkex.Path], inkscape: bool = False):
+def try_combine_paths(paths: list[inkex.Path], inkscape: bool = False, no_subtract: bool = False):
     if len(paths) < 2:
         return
 
-    if inkscape:
+    if inkscape or no_subtract:
         return best_effort_inkex_combine_paths(paths)
 
     try:

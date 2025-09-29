@@ -24,6 +24,7 @@ jobs:
       with:
         tools: libgirepository-2.0-dev gir1.2-glib-2.0 libglib2.0-dev libcairo2-dev gobject-introspection pkg-config python3-dev
         cache: yes
+        method: timestamp
 
     - name: Cache pip packages
       uses: actions/cache@v4
