@@ -17,12 +17,21 @@ from shapely.geometry import Polygon
 
 def mask_unstable(svgin: str) -> str:
     """Mask out unstable parts of SVG output that may vary between runs."""
+
+    def round_points(m):
+        x = round(float(m.group(2)), 3)
+        y = round(float(m.group(4)), 3)
+        return f'{m.group(1)} {x} {y}'
+
     return re.sub(
         r'<!--.*?-->', '<!-- MASKED -->', re.sub(
         r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"',  re.sub(
         r'id="[^"]*"', 'id="MASKED"',  re.sub(
-        r'<metadata[^>]*?/>', '<metadata />', svgin, flags=re.DOTALL),
-        flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL).replace('\r\n', '\n')
+        r'<metadata[^>]*?/>', '<metadata />', re.sub(
+        r'([ML]) (-?\d+(\.\d+)?) (-?\d+(\.\d+)?)', round_points, 
+        svgin, flags=re.DOTALL),
+        flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL
+        ).replace('\r\n', '\n')
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
