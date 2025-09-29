@@ -1108,7 +1108,7 @@ def test_output_area():
 
     for boxtype in [1, 2, 3, 4, 5, 6]:
         b_args = arg_base.copy()
-        b_args.append(f'--boxtype={boxtype}')
+        b_args.append(f'--boxtype={boxtype % 100}')
 
         # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
         expected_area = {
@@ -1117,7 +1117,7 @@ def test_output_area():
             3: 3488.0, #TWO_SIDES_OPEN
             4: 2424.0, #THREE_SIDES_OPEN
             5: 3680.0, #OPPOSITE_ENDS_OPEN
-            6: 1740.0  #TWO_PANELS_ONLY
+            6: 1740.0,  #TWO_PANELS_ONLY
         }.get(boxtype, 0)
 
         for sym in [0, 1, 2]:
@@ -1125,6 +1125,78 @@ def test_output_area():
 
             polies = make_box_polygons(args, optimize=True)
             area = 0.0
+
+            for k,p in polies.items():
+                if p.area == 0:
+                    print(f"Warning: zero area polygon for ({boxtype,sym}: {" " .join(args)}")
+                area += p.area
+
+            area = round(area, 3)
+            expected_area = round(expected_area, 3)
+
+            assert area == expected_area, f"Area mismatch for ({boxtype,sym}: {" " .join(args)}: {area} != {expected_area}"
+
+
+
+def test_output_area_dividers():
+    thickness = 2
+    arg_base = [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            f"--thickness={thickness}"]
+
+
+    for boxtype in [101, 102, 103, 104, 105, 106, 201, 202, 203, 204, 205, 206]:
+        b_args = arg_base.copy()
+        b_args.append(f'--boxtype={boxtype % 100}')
+
+
+        if boxtype > 200:
+            b_args += ['--div-w=1', '--keydiv=1']
+        elif boxtype > 100:
+            b_args += ['--div-l=2', '--keydiv=1']
+
+        # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
+        base_expected_area = {
+            101: 5664.0, #FULLY_ENCLOSED with dividers
+            102: 5312.0, #ONE_SIDE_OPEN with dividers
+            103: 4704.0, #TWO_SIDES_OPEN with dividers
+            104: 3792.0, #THREE_SIDES_OPEN with dividers
+            105: 4960.0, #OPPOSITE_ENDS_OPEN with dividers
+            106: 3108.0,  #TWO_PANELS_ONLY with dividers
+
+            201: 5448.0, #FULLY_ENCLOSED with dividers
+            202: 5084.0, #ONE_SIDE_OPEN with dividers
+            203: 4554.0, #TWO_SIDES_OPEN with dividers
+            204: 3488.0, #THREE_SIDES_OPEN with dividers
+            205: 4720.0, #OPPOSITE_ENDS_OPEN with dividers
+            206: 2880.0,  #TWO_PANELS_ONLY with dividers
+        }.get(boxtype, 0)
+
+        for sym in [0, 1, 2]:
+            args = b_args + [f'--tabsymmetry={sym}']
+
+            polies = make_box_polygons(args, optimize=True)
+            area = 0.0
+
+            offset = {
+                (104,1): 4,
+                (104,2): 8,
+                (202,2): -12,
+                (201,2): -16,
+                (203,0): -2,
+                (203,2): -14,
+                (204,1): 2,
+                (206,1): +4,
+            }.get((boxtype, sym), 0)
+
+
+            expected_area = base_expected_area +offset
 
             for k,p in polies.items():
                 if p.area == 0:

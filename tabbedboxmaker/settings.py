@@ -148,7 +148,6 @@ class Side:
     name: Sides
     is_male: bool
     has_tabs: bool
-    length: float  # Current length (for backward compatibility)
     direction: Vec
     tab_symmetry: TabSymmetry
     divisions: int
@@ -200,13 +199,25 @@ class Side:
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             return False # Always ends outside for rotational symmetry
         return self.is_male and self.has_tabs
+    
+    @property
+    def length(self) -> float:
 
-    def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, length: float, inside_length: float):
+        len = self.inside_length
+
+        if self.prev and self.next:
+            if self.prev.has_tabs:
+                len += self.thickness
+            if self.next.has_tabs:
+                len += self.thickness
+        
+        return len
+
+    def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, inside_length: float):
         self.name = name
         self.is_male = is_male
         self.has_tabs = has_tabs
         # Current length parameter (outside dimension for backward compatibility)
-        self.length = length
         self.inside_length = inside_length  # Inside dimension passed explicitly
         self.divider_spacings = []
 
@@ -257,17 +268,21 @@ class Piece:
     """A piece of the box with its sides and positioning"""
     sides: list[Side]
     pieceType: PieceType
-    dx: float  # outside dimension
-    dy: float  # outside dimension
     base: Vec  # (x,y) base co-ordinates for piece
+
+    @property
+    def dx(self) -> float:
+        """Outside dimension in X direction"""
+        return self.sides[0].length  # Same as sides[0].length
+    
+    @property
+    def dy(self) -> float:
+        """Outside dimension in Y direction"""
+        return self.sides[1].length  # Same as sides[1].length
 
     def __init__(self, sides: list[Side], pieceType: PieceType):
         self.sides = sides
         self.pieceType = pieceType
-
-        # For backward compatibility, dx and dy continue to represent outside dimensions
-        self.dx = sides[0].length  # Same as sides[0].length
-        self.dy = sides[1].length  # Same as sides[1].length
 
         # Link sides together
         sides[0].next = sides[1]

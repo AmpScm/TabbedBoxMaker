@@ -14,11 +14,11 @@
       <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 48 201 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -4"/>
     </g>
     <g id="xdivider_001">
-      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 48 205 l 7.1429 0 l 0 -3 l 6 0 l 0 3 l 7.1428 0 l 0 -3 l 6 0 l 0 3 l 7.1429 0 l 0 -3 l 6 0 l 0 3 l 7.1428 0 l 0 -3 l 5.9996 0 l 0 3 l 7.143 0 l 0 -3 l 6 0 l 0 3 l 7.143 0 l 0 -3 l 6 0 l 0 3 l 7.143 0"/>
-      <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 134 205 l 0 4 l -3 0 l 0 6 l 3 0 l 0 7 l -3 0 l 0 6 l 3 0 l 0 7 l -3 0 l 0 6 l 3 0 l 0 7"/>
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 92.5 202 l 0 24.5 l -3 0 l 0 -24.5 l 3 0 z"/>
-      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 134 248 l -7.143 0 l 0 0 l -6 0 l 0 0 l -7.143 0 l 0 0 l -6 0 l 0 0 l -7.143 0 l 0 0 l -5.9996 0 l 0 0 l -7.1428 0 l 0 0 l -6 0 l 0 0 l -7.1429 0 l 0 0 l -6 0 l 0 0 l -7.1428 0 l 0 0 l -6 0 l 0 0 l -7.1429 0"/>
-      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 48 248 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -4"/>
+      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 48 202 l 7.1429 0 l 0 0 l 6 0 l 0 0 l 7.1428 0 l 0 0 l 6 0 l 0 0 l 7.1429 0 l 0 0 l 6 0 l 0 0 l 7.1428 0 l 0 0 l 5.9996 0 l 0 0 l 7.143 0 l 0 0 l 6 0 l 0 0 l 7.143 0 l 0 0 l 6 0 l 0 0 l 7.143 0"/>
+      <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 134 202 l 0 7 l -3 0 l 0 6 l 3 0 l 0 7 l -3 0 l 0 6 l 3 0 l 0 7 l -3 0 l 0 6 l 3 0 l 0 4"/>
+      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 134 245 l -7.143 0 l 0 3 l -6 0 l 0 -3 l -7.143 0 l 0 3 l -6 0 l 0 -3 l -7.143 0 l 0 3 l -5.9996 0 l 0 -3 l -7.1428 0 l 0 3 l -6 0 l 0 -3 l -7.1429 0 l 0 3 l -6 0 l 0 -3 l -7.1428 0 l 0 3 l -6 0 l 0 -3 l -7.1429 0"/>
+      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 48 245 l 0 -4 l 3 0 l 0 -6 l -3 0 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -7 l 3 0 l 0 -6 l -3 0 l 0 -7"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 89.5 248 l 0 -24.5 l 3 0 l 0 24.5 l -3 0 z"/>
     </g>
     <g id="piece_002">
       <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 1 51 l 7 0 l 0 -3 l 6 0 l 0 3 l 7 0 l 0 -3 l 6 0 l 0 3 l 7 0 l 0 -3 l 6 0 l 0 3 l 4 0"/>

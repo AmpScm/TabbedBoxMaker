@@ -14,9 +14,9 @@
     <g id="xdivider_001">
       <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 209 L 64 209 L 64 206 L 74 206 L 74 209 L 88 209 L 88 206 L 98 206 L 98 209 L 112 209 L 112 206 L 122 206 L 122 209 L 136 209"/>
       <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 136 209 L 136 224 L 133 224 L 133 234 L 136 234 L 136 249"/>
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 94.5 206 L 94.5 229 L 91.5 229 L 91.5 206 L 94.5 206 Z"/>
       <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 136 249 L 122 249 L 122 252 L 112 252 L 112 249 L 98 249 L 98 252 L 88 252 L 88 249 L 74 249 L 74 252 L 64 252 L 64 249 L 50 249"/>
       <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 50 249 L 50 234 L 53 234 L 53 224 L 50 224 L 50 209"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 252 L 91.5 229 L 94.5 229 L 94.5 252 L 91.5 252 Z"/>
     </g>
     <g id="piece_002">
       <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 5 53 L 20 53 L 20 50 L 30 50 L 30 53 L 45 53"/>

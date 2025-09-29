@@ -15,9 +15,9 @@
     <g id="xdivider_001">
       <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 44 191 l 6.2857 0 l 0 -3 l 6 0 l 0 3 l 6.2857 0 l 0 -3 l 6 0 l 0 3 l 6.2857 0 l 0 -3 l 6 0 l 0 3 l 6.2858 0 l 0 -3 l 6 0 l 0 3 l 6.2857 0 l 0 -3 l 6.0004 0 l 0 3 l 6.285 0 l 0 -3 l 6 0 l 0 3 l 6.286 0"/>
       <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 124 191 l 0 6.333 l -3 0 l 0 6 l 3 0 l 0 9.334 l -3 0 l 0 6 l 3 0 l 0 6.333"/>
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 85.5 188 l 0 20 l -3 0 l 0 -20 l 3 0 z"/>
       <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 124 225 l -6.286 0 l 0 3 l -6 0 l 0 -3 l -6.285 0 l 0 3 l -6.0004 0 l 0 -3 l -6.2857 0 l 0 3 l -6 0 l 0 -3 l -6.2858 0 l 0 3 l -6 0 l 0 -3 l -6.2857 0 l 0 3 l -6 0 l 0 -3 l -6.2857 0 l 0 3 l -6 0 l 0 -3 l -6.2857 0"/>
       <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 44 225 l 0 -6.333 l 3 0 l 0 -6 l -3 0 l 0 -9.334 l 3 0 l 0 -6 l -3 0 l 0 -6.333"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 82.5 228 l 0 -20 l 3 0 l 0 20 l -3 0 z"/>
     </g>
     <g id="piece_002">
       <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="m 5 47 l 6.3333 0 l 0 -3 l 6 0 l 0 3 l 9.3334 0 l 0 -3 l 6 0 l 0 3 l 6.3333 0"/>
