@@ -183,7 +183,7 @@ class Side:
         """
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            return True # Always use offset for rotational symmetry (starts inside)
+            return self.has_tabs # Always use offset for rotational symmetry (starts inside)
         return self.is_male and self.has_tabs
 
     @property
@@ -198,7 +198,7 @@ class Side:
         """
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            return not self.has_tabs # Always use offset for rotational symmetry (starts inside)
+            return False # Always ends outside for rotational symmetry
         return self.is_male and self.has_tabs
 
     def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, length: float, inside_length: float):

@@ -56,4 +56,4 @@ v1.4 - 2025-09 (WIP) by Bert Huijben
 
 """
 
-__version__ = "1.4.0"
+__version__ = "2.0.0"

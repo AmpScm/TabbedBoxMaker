@@ -34,7 +34,7 @@ def fstr(f: float) -> str:
 
 
 def path_to_polygon(path_obj : inkex.Path):
-    from shapely.geometry import Polygon, MultiPolygon, LinearRing
+    from shapely.geometry import Polygon
     # Accepts inkex.Path object, only absolute Move/Line/Close
     coords = []
 

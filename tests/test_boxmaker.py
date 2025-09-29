@@ -13,6 +13,7 @@ from tabbedboxmaker import TabbedBoxMaker
 
 
 from shapely.affinity import translate
+from shapely.geometry import Polygon
 
 def mask_unstable(svgin: str) -> str:
     """Mask out unstable parts of SVG output that may vary between runs."""
@@ -570,6 +571,59 @@ cases = [
 expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected")
 actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual")
 
+
+def make_box(args, make_relative=False, optimize=False, mask=True) -> str:
+    """Run one test case and return (output, expected) strings."""
+
+    outfh = io.BytesIO()
+
+    boxMaker = TabbedBoxMaker(cli=True)
+    boxMaker.parse_arguments(args)
+    boxMaker.options.output = outfh
+    boxMaker.options.optimize = optimize
+
+    boxMaker.load_raw()
+    boxMaker.save_raw(boxMaker.effect())
+
+    output = outfh.getvalue().decode("utf-8")
+    output = pretty_xml(output)
+
+    if make_relative:
+        def make_path_relative(m):
+            v = m.group(0)
+            v = Path(v)
+            return str(v.to_relative())
+
+        output = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
+
+
+    if mask:
+        output = mask_unstable(output)
+
+    return output
+
+def make_box_paths(args, optimize=False) -> dict[str, Path]:
+    """Run one test case and return a map of id -> Path."""
+
+    output = make_box(args, optimize=optimize, mask=False)
+
+    map = {}
+    for i in re.findall(r'path id="([^"]+)".*?d="(M [^"]*(?="))', output):
+        map[i[0]] = Path(i[1])
+
+    return map
+
+def make_box_polygons(args, optimize=False) -> dict[str, Polygon]:
+    """Run one test case and return a map of id -> Shapely Polygon."""
+
+    paths = make_box_paths(args, optimize=optimize)
+
+    map = {}
+    for k, v in paths.items():
+        map[k] = path_to_polygon(v)
+
+    return map
+
 def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple[str, str]:
     """Run one test case and return (output, expected) strings."""
 
@@ -591,7 +645,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
             expected = f.read()
 
     tbm = TabbedBoxMaker()
-    
+
     blank_svg = os.path.join(os.path.dirname(__file__), "blank.svg")
 
     with open(blank_svg, "r") as f:
@@ -717,7 +771,7 @@ for i in range(len(gen_args)):
         for kk in range(len(k)):
             sa += f'--{k[kk]}={v[vv][kk]} '
             if na != '':
-                na += '&'            
+                na += '&'
             na += f'{k[kk]}={v[vv][kk]}'
 
         arg_cases.append([s, sa, na])
@@ -783,7 +837,7 @@ def test_inside_sizes_no_kerf():
         h = bbox.height - 4
 
         sizes.append((round(min(w, h), 3), round(max(w, h), 3)))
-    
+
     sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
     assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
 
@@ -807,7 +861,7 @@ def test_inside_sizes_kerf():
         h = bbox.height - 4 - 0.5
 
         sizes.append((round(min(w, h), 3), round(max(w, h), 3)))
-    
+
     sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
     assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
 
@@ -831,7 +885,7 @@ def test_outside_sizes_no_kerf():
         h = bbox.height
 
         sizes.append((round(min(w, h), 3), round(max(w, h), 3)))
-    
+
     sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
     assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
 
@@ -855,13 +909,14 @@ def test_outside_sizes_kerf():
         h = bbox.height - 0.5
 
         sizes.append((round(min(w, h), 3), round(max(w, h), 3)))
-    
+
     sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
     assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
 
 
 def test_output_kerf():
-    output, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside'), [
+    kerf = 0.5
+    args = [
             "--unit=mm",
             "--inside=0",
             "--length=20",
@@ -869,62 +924,54 @@ def test_output_kerf():
             "--depth=40",
             "--tab=5",
             "--tabtype=0",
-            "--kerf=0",
-            "--thickness=2"], optimize=True, mask=False)
-    
-    output_kerf, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside-kerf'), [
-            "--unit=mm",
-            "--inside=0",
-            "--length=20",
-            "--width=30",
-            "--depth=40",
-            "--tab=5",
-            "--tabtype=0",
-            "--kerf=0.5",
-            "--thickness=2"], optimize=True, mask=False)
-    
-    map = {}
-    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output):
-        map[i[0]] = i[2]
+            "--thickness=2"]
 
-    map_kerf = {}
-    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output_kerf):
-        map_kerf[i[0]] = i[2]
-
+    map = make_box_polygons(args, args + ['--kerf=0'])
+    map_kerf = make_box_polygons(args + [f'--kerf={kerf}'], optimize=True)
 
     for k in map.keys():
         if k not in map_kerf:
             assert 0 == 1, f"Missing kerf output for {k}"
 
-        p = Path(map[k])
-        p_kerf = Path(map_kerf[k])
+        poly = map[k]
+        poly_kerf = map_kerf[k]
 
-        bb = p.bounding_box()
-        bb_kerf = p_kerf.bounding_box()
+        poly_bb = poly.bounds
+        poly_kerf_bb = poly_kerf.bounds
 
-        assert bb.width == bb_kerf.width - 0.5, f"Kerf output for {k} has different width ({bb.width} vs {bb_kerf.width})"
+        width = poly_bb[2] - poly_bb[0]
+        kerf_width = poly_kerf_bb[2] - poly_kerf_bb[0]
+        assert width == kerf_width - 0.5, f"Kerf output for {k} has different width ({width} vs {kerf_width})"
 
-        poly = path_to_polygon(p)
-        poly_kerf = path_to_polygon(p_kerf)
+        height = poly_bb[3] - poly_bb[1]
+        kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
+        assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        poly = translate(poly, xoff=-bb.left, yoff=-bb.top)
-        poly_kerf = translate(poly_kerf, xoff=-bb_kerf.left, yoff=-bb_kerf.top)
+        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1])
+        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1])
 
-        pp = poly.buffer(0.25, cap_style='square', join_style='mitre')
-        pp = translate(pp, xoff=0.25, yoff=0.25)
+        shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
+        shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
 
         poly = poly.normalize()
         poly_kerf = poly_kerf.normalize()
+        shapely_kerf = shapely_kerf.normalize() # Somehow needed
 
-        print(k)
-        print(poly)
-        print(poly_kerf)
-        print(pp)
-        assert pp.equals(poly_kerf), f"Kerf output for {k} does not match expected"
+        print(f'Piece:{k}')
+        print(f'Original:\n{poly}')
+        print(f'Kerf Generated:\n{poly_kerf}')
+        print(f'Kerf Shapely:\n{shapely_kerf}')
+
+        if not shapely_kerf.equals(poly_kerf):
+            assert shapely_kerf.exterior == poly_kerf.exterior, f"Kerf output for {k} does not match expected (shell)"
+            assert len(shapely_kerf.interiors) ==len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
+            for h in range(len(shapely_kerf.interiors)):
+                assert shapely_kerf.interiors[h] == poly_kerf.interiors[h], f"Kerf output for {k} does not match expected (interior {h})"
 
 
 def test_output_kerf_dividers():
-    output, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside-d'), [
+    kerf = 0.5
+    args =[
             "--unit=mm",
             "--inside=0",
             "--length=20",
@@ -932,68 +979,56 @@ def test_output_kerf_dividers():
             "--depth=40",
             "--tab=5",
             "--tabtype=0",
-            "--kerf=0",
             "--div-l=1",
             "--div-w=2",
-            "--thickness=2"], optimize=True, mask=False)
-    
-    output_kerf, _ = run_one(os.path.join('v', 'sizes-20-30-40-outside-d-kerf'), [
-            "--unit=mm",
-            "--inside=0",
-            "--length=20",
-            "--width=30",
-            "--depth=40",
-            "--tab=5",
-            "--tabtype=0",
-            "--kerf=0.5",
-            "--div-l=1",
-            "--div-w=2",
-            "--thickness=2"], optimize=True, mask=False)
-    
-    map = {}
-    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output):
-        map[i[0]] = i[2]
+            "--thickness=2"]
 
-    map_kerf = {}
-    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output_kerf):
-        map_kerf[i[0]] = i[2]
-
+    map = make_box_polygons(args, args + ['--kerf=0'])
+    map_kerf = make_box_polygons(args + [f'--kerf={kerf}'], optimize=True)
 
     for k in map.keys():
         if k not in map_kerf:
             assert 0 == 1, f"Missing kerf output for {k}"
 
-        p = Path(map[k])
-        p_kerf = Path(map_kerf[k])
+        poly = map[k]
+        poly_kerf = map_kerf[k]
 
-        bb = p.bounding_box()
-        bb_kerf = p_kerf.bounding_box()
+        poly_bb = poly.bounds
+        poly_kerf_bb = poly_kerf.bounds
 
-        assert bb.width == bb_kerf.width - 0.5, f"Kerf output for {k} has different width ({bb.width} vs {bb_kerf.width})"
+        width = poly_bb[2] - poly_bb[0]
+        kerf_width = poly_kerf_bb[2] - poly_kerf_bb[0]
+        assert width == kerf_width - 0.5, f"Kerf output for {k} has different width ({width} vs {kerf_width})"
 
-        poly = path_to_polygon(p)
-        poly_kerf = path_to_polygon(p_kerf)
+        height = poly_bb[3] - poly_bb[1]
+        kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
+        assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        poly = translate(poly, xoff=-bb.left, yoff=-bb.top)
-        poly_kerf = translate(poly_kerf, xoff=-bb_kerf.left, yoff=-bb_kerf.top)
+        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1])
+        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1])
 
-        pp = poly.buffer(0.25, cap_style='square', join_style='mitre')
-        pp = translate(pp, xoff=0.25, yoff=0.25)
+        shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
+        shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
 
         poly = poly.normalize()
         poly_kerf = poly_kerf.normalize()
+        shapely_kerf = shapely_kerf.normalize() # Somehow needed
 
-        print(k)
-        print(poly)
-        print(poly_kerf)
-        print(pp)
+        print(f'Piece:{k}')
+        print(f'Original:\n{poly}')
+        print(f'Kerf Generated:\n{poly_kerf}')
+        print(f'Kerf Shapely:\n{shapely_kerf}')
 
-        assert pp.equals(poly_kerf), f"Kerf output for {k} does not match expected"
+        if not shapely_kerf.equals(poly_kerf):
+            assert shapely_kerf.exterior == poly_kerf.exterior, f"Kerf output for {k} does not match expected (shell)"
+            assert len(shapely_kerf.interiors) ==len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
+            for h in range(len(shapely_kerf.interiors)):
+                assert shapely_kerf.interiors[h] == poly_kerf.interiors[h], f"Kerf output for {k} does not match expected (interior {h})"
+
 
 
 def test_output_kerf_divider_holes():
     kerf = 0.5
-    name = 'sizes-20-30-40-outside-dh'
     args = [
             "--unit=mm",
             "--inside=0",
@@ -1006,70 +1041,88 @@ def test_output_kerf_divider_holes():
             "--div-w=2",
             "--keydiv=0",
             "--thickness=2"]
-    
-    output, _ = run_one(os.path.join('v', name), 
-                        args + ['--kerf=0'], optimize=True, mask=False)
-    output_kerf, _ = run_one(os.path.join('v', name + '-kerf'),
-                             args + [f'--kerf={kerf}'], optimize=True, mask=False)
-    
-    map = {}
-    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output):
-        map[i[0]] = i[2]
 
-    map_kerf = {}
-    for i in re.findall(r'id="((piece|[xy]divider)[^"]+)".*d="(M [^"]*(?="))', output_kerf):
-        map_kerf[i[0]] = i[2]
-
+    map = make_box_polygons(args, args + ['--kerf=0'])
+    map_kerf = make_box_polygons(args + [f'--kerf={kerf}'], optimize=True)
 
     for k in map.keys():
         if k not in map_kerf:
             assert 0 == 1, f"Missing kerf output for {k}"
 
-        p = Path(map[k])
-        p_kerf = Path(map_kerf[k])
+        poly = map[k]
+        poly_kerf = map_kerf[k]
 
-        bb = p.bounding_box()
-        bb_kerf = p_kerf.bounding_box()
+        poly_bb = poly.bounds
+        poly_kerf_bb = poly_kerf.bounds
 
-        assert bb.width == bb_kerf.width - 0.5, f"Kerf output for {k} has different width ({bb.width} vs {bb_kerf.width})"
+        width = poly_bb[2] - poly_bb[0]
+        kerf_width = poly_kerf_bb[2] - poly_kerf_bb[0]
+        assert width == kerf_width - 0.5, f"Kerf output for {k} has different width ({width} vs {kerf_width})"
 
-        half_kerf = kerf / 2.0
-        poly = path_to_polygon(p)
-        poly_kerf = path_to_polygon(p_kerf)
-        poly = translate(poly, xoff=-bb.left, yoff=-bb.top)
-        poly_kerf = translate(poly_kerf, xoff=-bb_kerf.left, yoff=-bb_kerf.top)
+        height = poly_bb[3] - poly_bb[1]
+        kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
+        assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        pp = poly.buffer(0.25, cap_style='square', join_style='mitre')
-        pp = translate(pp, xoff=0.25, yoff=0.25)
-        print(half_kerf)
+        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1])
+        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1])
+
+        shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
+        shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
 
         poly = poly.normalize()
         poly_kerf = poly_kerf.normalize()
-        pp = pp.normalize() # Somehow needed
+        shapely_kerf = shapely_kerf.normalize() # Somehow needed
 
         print(f'Piece:{k}')
         print(f'Original:\n{poly}')
         print(f'Kerf Generated:\n{poly_kerf}')
-        print(f'Kerf Shapely:\n{pp}')
+        print(f'Kerf Shapely:\n{shapely_kerf}')
 
-        #with open(os.path.join(actual_output_dir, 'v', 'poly-base.svg'), "w", encoding="utf-8") as f:
-        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-        #            '<path d="' + str(polygon_to_path(poly).to_relative()) + '" fill="none" stroke="blue"/>\n' +
-        #            '</svg>\n')
-        #    
-        #with open(os.path.join(actual_output_dir, 'v', 'poly-kerf.svg'), "w", encoding="utf-8") as f:
-        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-        #            '<path d="' + str(polygon_to_path(poly_kerf).to_relative()) + '" fill="none" stroke="blue"/>\n' +
-        #            '</svg>\n')
-#
-        #with open(os.path.join(actual_output_dir, 'v','poly-shapely.svg'), "w", encoding="utf-8") as f:
-        #    f.write('<svg xmlns="http://www.w3.org/2000/svg">\n' +
-        #            '<path d="' + str(polygon_to_path(pp).to_relative()) + '" fill="none" stroke="blue"/>\n' +
-        #            '</svg>\n')
-            
+        if not shapely_kerf.equals(poly_kerf):
+            assert shapely_kerf.exterior == poly_kerf.exterior, f"Kerf output for {k} does not match expected (shell)"
+            assert len(shapely_kerf.interiors) ==len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
+            for h in range(len(shapely_kerf.interiors)):
+                assert shapely_kerf.interiors[h] == poly_kerf.interiors[h], f"Kerf output for {k} does not match expected (interior {h})"
 
-        if not pp.equals(poly_kerf):
-            assert pp.exterior == poly_kerf.exterior, f"Kerf output for {k} does not match expected (shell)"
-            assert len(pp.interiors) ==len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
-            for h in range(len(pp.interiors)):
-                assert pp.interiors[h] == poly_kerf.interiors[h], f"Kerf output for {k} does not match expected (interior {h})"
+
+def test_output_area():
+    thickness = 2
+    arg_base = [
+            "--unit=mm",
+            "--inside=0",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            f"--thickness={thickness}"]
+
+    for boxtype in [1, 2, 3, 4, 5, 6]:
+        b_args = arg_base.copy()
+        b_args.append(f'--boxtype={boxtype}')
+
+        # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
+        expected_area = {
+            1: (20.0*30.0*40.0 - 16.0*26.0*36.0) / 2.0, # 4512.0, #FULLY_ENCLOSED
+            2: 4096.0, #ONE_SIDE_OPEN
+            3: 3488.0, #TWO_SIDES_OPEN
+            4: 2424.0, #THREE_SIDES_OPEN
+            5: 3680.0, #OPPOSITE_ENDS_OPEN
+            6: 1740.0  #TWO_PANELS_ONLY
+        }.get(boxtype, 0)
+
+        for sym in [0, 1, 2]:
+            args = b_args + [f'--tabsymmetry={sym}']
+
+            polies = make_box_polygons(args, optimize=True)
+            area = 0.0
+
+            for k,p in polies.items():
+                if p.area == 0:
+                    print(f"Warning: zero area polygon for ({boxtype,sym}: {" " .join(args)}")
+                area += p.area
+
+            area = round(area, 3)
+            expected_area = round(expected_area, 3)
+
+            assert area == expected_area, f"Area mismatch for ({boxtype,sym}: {" " .join(args)}: {area} != {expected_area}"
