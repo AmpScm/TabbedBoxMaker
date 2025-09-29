@@ -1369,8 +1369,8 @@ class TabbedBoxMaker(Effect):
     def dimpleStr(
         tabVector: float,
         vector: Vec,
-        dir: Vec,
-        notDir: Vec,
+        direction: Vec,
+        toInside: Vec,
         ddir: int,
         isMale: bool,
         dimpleLength: float,
@@ -1386,13 +1386,13 @@ class TabbedBoxMaker(Effect):
             else:
                 dimpleStart = (tabVector + dimpleLength) / 2 + dimpleHeight
                 tabSign = -1
-            Vd = vector + notDir * dimpleStart
+            Vd = vector + toInside * dimpleStart
             ds.append(Line(*Vd))
-            Vd += (notDir * tabSign * dimpleHeight) - (dir * ddir * dimpleHeight)
+            Vd += (toInside * tabSign * dimpleHeight) - (direction * ddir * dimpleHeight)
             ds.append(Line(*Vd))
-            Vd += notDir * (tabSign * dimpleLength)
+            Vd += toInside * (tabSign * dimpleLength)
             ds.append(Line(*Vd))
-            Vd += (notDir * tabSign * dimpleHeight) + (dir * ddir * dimpleHeight)
+            Vd += (toInside * tabSign * dimpleHeight) + (direction * ddir * dimpleHeight)
             ds.append(Line(*Vd))
         return ds
 
@@ -1464,19 +1464,20 @@ class TabbedBoxMaker(Effect):
 
         s.append(Move(*vector))
         
-        if (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC and piece.pieceType in [PieceType.Bottom, PieceType.Top]) or \
-            (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType ==  PieceType.Top and side.is_male and not side.prev.is_male):
-            p = vector + toInside * -(thickness + halfkerf)
-            s.append(Line(*p))
-
-            p += direction * (thickness + kerf)
-            s.append(Line(*p))
-
-            ## TODO: Add dimple if necessary
-            p -= toInside * -(thickness + halfkerf)
-            s.append(Line(*p))
-
         if side.has_tabs or not settings.optimize:
+            if (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC and piece.pieceType in [PieceType.Bottom, PieceType.Top]) or \
+                (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType ==  PieceType.Top and side.is_male and not side.prev.is_male):
+                p = vector + toInside * -(thickness + halfkerf)
+                s.append(Line(*p))
+
+                p += direction * (thickness + kerf)
+                s.append(Line(*p))
+
+                ## TODO: Add dimple if necessary
+                p -= toInside * -(thickness + halfkerf)
+                s.append(Line(*p))
+
+        
             # Set vector for tab generation
             if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
                 vector = Vec(startOffsetX if startOffsetX else dirX, startOffsetY if startOffsetY else dirY) * thickness
@@ -1505,7 +1506,7 @@ class TabbedBoxMaker(Effect):
                 if tabDivision % 2:
                     # draw the gap
                     vector += direction * (gapWidth
-                                            + dogbone * kerf * isMale)
+                                            + (kerf if dogbone and isMale else 0))
                     s.append(Line(*vector))
                     if dogbone and isMale:
                         vector -= vecHalfKerf
@@ -1523,7 +1524,7 @@ class TabbedBoxMaker(Effect):
 
                 else:
                     # draw the tab
-                    vector += direction * (tabWidth + dogbone * kerf * notMale)
+                    vector += direction * (tabWidth + (kerf if dogbone and notMale else 0))
                     s.append(Line(*vector))
                     if dogbone and notMale:
                         vector -= vecHalfKerf

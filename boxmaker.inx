@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
-    <_name>Box Maker</_name>
+    <_name>Tabbed Box Maker</_name>
     <id>net.ampscm.tabbedboxmaker.tabbedboxmaker</id>
 
     <hbox>
