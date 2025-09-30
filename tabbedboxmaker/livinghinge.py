@@ -38,6 +38,8 @@ class LivingHinge(inkex.Effect):
     raw_hairline_thickness : float = None
     parent = None
     line_color = None
+    nextId = {}
+
 
     def __init__(self, cli=True, inkscape=False):
 
@@ -45,6 +47,8 @@ class LivingHinge(inkex.Effect):
         self.inkscape = inkscape
         # Call the base class constructor.
         super().__init__()  # Call the base class constructor
+
+        self.nextId = {}
 
     def add_arguments(self, pars) -> None:
         """Define options"""
@@ -189,8 +193,20 @@ class LivingHinge(inkex.Effect):
         )
 
 
-    def drawS(self, XYstring : str):         # Draw lines from a list
-        line = PathElement()
+
+    def makeId(self, prefix: str | None) -> str:
+        """Generate a new unique ID with the given prefix."""
+
+        prefix = prefix if prefix is not None else "id"
+        if prefix not in self.nextId:
+            id = self.nextId[prefix] = 0
+
+        self.nextId[prefix] = id = self.nextId[prefix] + 1
+
+        return f"{prefix}_{id:03d}"
+
+    def drawS(self, XYstring : str, prefix='line'):         # Draw lines from a list
+        line = PathElement(id=self.makeId(prefix))
 
         if self.line_thickness == self.raw_hairline_thickness:
             line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
@@ -201,11 +217,11 @@ class LivingHinge(inkex.Effect):
 
         self.parent.add(line)
 
-    def draw_SVG_ellipse(self, a1, a2, start_end):
+    def draw_SVG_ellipse(self, a1, a2, start_end, prefix='arc'):
         (centerx, centery), (radiusx, radiusy) = a1, a2
 
 
-        line = PathElement.arc((centerx, centery), radiusx, ry=radiusy, start=start_end[0], end=start_end[1], open=True)
+        line = PathElement.arc((centerx, centery), radiusx, ry=radiusy, start=start_end[0], end=start_end[1], open=True, id=self.makeId(prefix))
 
         if self.line_thickness == self.raw_hairline_thickness:
             line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
@@ -214,11 +230,11 @@ class LivingHinge(inkex.Effect):
 
         self.parent.add(line)
 
-    def draw_SVG_line(self, a1, a2, parent):
+    def draw_SVG_line(self, a1, a2, parent, prefix='line'):
         """draw an SVG line segment between the given (raw) points"""
         (x1, y1), (x2, y2) = a1, a2
 
-        line = PathElement()
+        line = PathElement(id=self.makeId(prefix))
 
 
         if self.line_thickness == self.raw_hairline_thickness:
@@ -258,7 +274,7 @@ class LivingHinge(inkex.Effect):
         s+='L '+str(ex)+','+str(ey)+' '
         s+='L '+str(sx)+','+str(ey)+' '
         if not leaveLeftSideOpen:
-            s+='L '+str(sx)+','+str(sy)+' '
+            s+='L '+str(sx)+','+str(sy)+' Z'
         return s
 
     def side(self, a1, a2, a3,tabVec,length, a4,isTab,isLongSide,truncate = False, gap = False, thumbTab = False):
@@ -355,7 +371,7 @@ class LivingHinge(inkex.Effect):
                 Vy=Vy+diryN*secondVec
                 s+='L '+str(Vx)+','+str(Vy)+' '
                 if thumbTab:
-                    self.drawS(self.box((Vxs,Vys),(Vx,Vy)))
+                    self.drawS(self.box((Vxs,Vys),(Vx,Vy)), prefix='thumbtab')
             (secondVec,firstVec)=(-secondVec,-firstVec) # swap tab direction
             first=0
         if not truncate:
@@ -388,7 +404,7 @@ class LivingHinge(inkex.Effect):
 
         space = width / horizontalSlots
 
-        grp = Group()
+        grp = Group(id=self.makeId('hinge'))
         self.parent.add(grp)
 
         for n in range(0,horizontalSlots+1):
@@ -425,7 +441,7 @@ class LivingHinge(inkex.Effect):
 
         horizontalSlots = int(round(horizontalSlots * 1/2)) #We do 2 passes per render, so divide slots requirement in half
 
-        grp = Group()
+        grp = Group(id=self.makeId('hinge'))
         self.parent.add(grp)
 
         centerX = Sx + (width/2)
@@ -472,7 +488,7 @@ class LivingHinge(inkex.Effect):
             space = height / horizontalSlots
             skew = 0 #Don't paint the first and last lines, as they're on the cut already, and double cuts on a laser are messy
 
-        grp = Group()
+        grp = Group(id=self.makeId('hinge'))
         self.parent.add(grp)
 
         for n in range(1 - skew,horizontalSlots + skew):
@@ -533,7 +549,7 @@ class LivingHinge(inkex.Effect):
         spacing = self.svg.unittouu( str(self.options.spacing)  + unit )
         hingeOpt = self.options.hingeOpt
         hingeThick = self.options.hingeThick
-        thumbTab = self.svg.unittouu( str(self.options.thumbTab) + unit ) if self.options.thumbTab else 0.0
+        thumbTab = self.svg.unittouu( str(self.options.thumbTab) + unit ) if self.options.thumbTab else None
 
         if inside: # if inside dimension selected correct values to outside dimension
             X+=thickness*2
@@ -604,7 +620,12 @@ class LivingHinge(inkex.Effect):
                     [(5,3,0,1),(1,0,0,0),Z+(self.EllipseCircumference(X/2, Z/2)/4)+thickness,Y,0b1011,1]
                     ]
 
+        p = self.parent
         for piece in pieces: # generate and draw each piece of the box
+            grp = Group(id=self.makeId('piece'))
+            p.add(grp)
+            self.parent = grp
+
             (xs,xx,xy,xz)=piece[0]
             (ys,yx,yy,yz)=piece[1]
             x=xs*spacing+xx*X+xy*Y+xz*Z  # root x co-ord for piece
@@ -633,8 +654,7 @@ class LivingHinge(inkex.Effect):
             elif piece[5] == -1:
                 self.drawS(self.    side((x+dx+skew,y+dy),(-b,-c),(-b,a),thickness if b else -thickness,dy,(0,-1),b,shortSide, True))     # side b (right) when the right side participates in a curve
             else:
-                #It is a cardnal sin to compare floats, so assume <0.0005 is 0 since the front end only gives you 3 digits of precision
-                if thumbTab > 0.0005:
+                if thumbTab is not None:
                     self.side((x+dx+skew,y),(-b,a),(-b,-c),thickness if b else -thickness,dy,(0,1),b,shortSide, False, True, True) #The one call to side that doesn't actually draw. Instead, side draws boxes on its own
                     self.drawS(self.box((x+dx+skew,y+thickness),(x+dx+skew+thumbTab,y+dy-thickness), True))
                 else:
@@ -668,4 +688,8 @@ class LivingHinge(inkex.Effect):
                 elif hingeOpt == 5: #Double snake design
                     self.LivingHinge4((x+(Z/2), y), ((x+(Z/2)+(self.EllipseCircumference(X/2, Z/2)/4)), y + (dy/2) + thickness), True, 0, hingeThick) #Add thickness as a cheat so design 4 doesn't have to know if it's a short or long variant
                     self.LivingHinge4((x+(Z/2), y + (dy/2) - thickness), ((x+(Z/2)+(self.EllipseCircumference(X/2, Z/2)/4)), y + dy), True, 1, hingeThick)
+
+
+        # Revert parent back to original parent
+        self.parent = p
 
