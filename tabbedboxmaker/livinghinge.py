@@ -204,34 +204,31 @@ class LivingHinge(inkex.Effect):
     def draw_SVG_ellipse(self, a1, a2, start_end):
         (centerx, centery), (radiusx, radiusy) = a1, a2
 
+
+        line = PathElement.arc((centerx, centery), radiusx, ry=radiusy, start=start_end[0], end=start_end[1], open=True)
+
         if self.line_thickness == self.raw_hairline_thickness:
-            style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
         else:
-            style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
 
-        ell_attribs = {'style': str(inkex.Style(style)),
-            inkex.addNS('cx','sodipodi')        :str(centerx),
-            inkex.addNS('cy','sodipodi')        :str(centery),
-            inkex.addNS('rx','sodipodi')        :str(radiusx),
-            inkex.addNS('ry','sodipodi')        :str(radiusy),
-            inkex.addNS('start','sodipodi')     :str(start_end[0]),
-            inkex.addNS('end','sodipodi')       :str(start_end[1]),
-            inkex.addNS('open','sodipodi')      :'true',    #all ellipse sectors we will draw are open
-            inkex.addNS('type','sodipodi')      :'arc',
-            'transform'                         :''
-                }
-
-        ell = inkex.etree.SubElement(self.parent, inkex.addNS('path','svg'), ell_attribs )
+        self.parent.add(line)
 
     def draw_SVG_line(self, a1, a2, parent):
         """draw an SVG line segment between the given (raw) points"""
         (x1, y1), (x2, y2) = a1, a2
-        style = { 'stroke': '#000000', 'fill': 'none' }
 
-        line_attribs = {'style' : str(inkex.Style(style)),
-                        'd' : 'M '+str(x1)+','+str(y1)+' L '+str(x2)+','+str(y2)}
+        line = PathElement()
 
-        line = inkex.etree.SubElement(parent, inkex.addNS('path','svg'), line_attribs )
+
+        if self.line_thickness == self.raw_hairline_thickness:
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+        else:
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
+
+        line.path = 'M '+str(x1)+','+str(y1)+' L '+str(x2)+','+str(y2)
+
+        parent.add(line)
 
     def EllipseCircumference(self, a, b):
         """
@@ -391,9 +388,8 @@ class LivingHinge(inkex.Effect):
 
         space = width / horizontalSlots
 
-        grp_name = 'Living Hinge'
-        grp_attribs = {inkex.addNS('label','inkscape'):grp_name }
-        grp = inkex.etree.SubElement(self.parent, 'g', grp_attribs)#the group to put everything in
+        grp = Group()
+        self.parent.add(grp)
 
         for n in range(0,horizontalSlots+1):
             if n%2:  #odd, exterior slot (slot should go all the way to the part edge)
@@ -429,9 +425,8 @@ class LivingHinge(inkex.Effect):
 
         horizontalSlots = int(round(horizontalSlots * 1/2)) #We do 2 passes per render, so divide slots requirement in half
 
-        grp_name = 'Living Hinge'
-        grp_attribs = {inkex.addNS('label','inkscape'):grp_name }
-        grp = inkex.etree.SubElement(self.parent, 'g', grp_attribs)#the group to put everything in
+        grp = Group()
+        self.parent.add(grp)
 
         centerX = Sx + (width/2)
         centerY = Sy + (height/2)
@@ -477,9 +472,8 @@ class LivingHinge(inkex.Effect):
             space = height / horizontalSlots
             skew = 0 #Don't paint the first and last lines, as they're on the cut already, and double cuts on a laser are messy
 
-        grp_name = 'Living Hinge'
-        grp_attribs = {inkex.addNS('label','inkscape'):grp_name }
-        grp = inkex.etree.SubElement(self.parent, 'g', grp_attribs)#the group to put everything in
+        grp = Group()
+        self.parent.add(grp)
 
         for n in range(1 - skew,horizontalSlots + skew):
             if not rotate:
@@ -504,21 +498,16 @@ class LivingHinge(inkex.Effect):
     def effect(self):
         global nomTab,equalTabs,thickness,correction, Z, unit
 
-            # Get access to main SVG document element and get its dimensions.
+        # Get access to main SVG document element and get its dimensions.
         svg = self.document.getroot()
 
-            # Get the attibutes:
+        # Get the attibutes:
         widthDoc  = self.svg.unittouu(svg.get('width'))
         heightDoc = self.svg.unittouu(svg.get('height'))
 
-            # Create a new layer.
-        layer = inkex.etree.SubElement(svg, 'g')
-        layer.set(inkex.addNS('label', 'inkscape'), 'newlayer')
-        layer.set(inkex.addNS('groupmode', 'inkscape'), 'layer')
-
         self.parent=self.svg.get_current_layer()
 
-            # Get script's option values.
+        # Get script's option values.
         unit=self.options.unit
 
         if unit == 'document':
