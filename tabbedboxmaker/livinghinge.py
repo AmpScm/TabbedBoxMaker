@@ -28,7 +28,9 @@ from inkex import Effect, Group, PathElement
 from inkex.paths import Path
 from inkex.paths.lines import Line, Move, ZoneClose
 
+from tabbedboxmaker.InkexShapely import try_attach_paths
 from tabbedboxmaker.boxmaker import IntBoolean
+
 _ = gettext.gettext
 
 class LivingHinge(inkex.Effect):
@@ -191,7 +193,22 @@ class LivingHinge(inkex.Effect):
             help="Line Color",
             choices=["black", "red", "blue", "green"]
         )
-
+        self.arg_parser.add_argument(
+            "--combine",
+            type=IntBoolean,
+            dest="combine",
+            default=True,
+            help="Combine and clean paths",
+            choices=[True, False, '0', '1'],
+        )
+        self.arg_parser.add_argument(
+            "--cutout",
+            type=IntBoolean,
+            dest="cutout",
+            default=True,
+            help="Cut holes from parent pieces",
+            choices=[True, False, '0', '1'],
+        )
 
 
     def makeId(self, prefix: str | None) -> str:
@@ -418,6 +435,9 @@ class LivingHinge(inkex.Effect):
                 self.draw_SVG_line((Sx + (space * n), Sy+solidGap), (Sx + (space * n), Sy+(height/2)-(solidGap/2)), grp)
                 self.draw_SVG_line((Sx + (space * n), Ey-(height/2)+(solidGap/2)), (Sx + (space * n), (Ey-solidGap)), grp)
 
+        if self.options.combine:
+            try_attach_paths(grp)
+
     def LivingHinge3(self, a1, a2, reverse = 1, space = 2):
         """
         The sprial based designs are built from multiple calls of this function.
@@ -456,6 +476,10 @@ class LivingHinge(inkex.Effect):
             self.draw_SVG_line(((centerX + newX ), centerY - (space/2) - (space * n)), ((centerX + newX ), centerY + (space * 1.5) + (space * n)), grp)
             if horizontalSlots - 1 != n: #Last line in center should be omited
                 self.draw_SVG_line(((centerX + (space + (space/2 * -reverse)) + (space*n) ), centerY + (space * 1.5) + (space * n)), ((centerX - (space + (space/2 * reverse)) - (space*n) ), centerY + (space * 1.5) + (space * n)), grp)
+
+
+        if self.options.combine:
+            try_attach_paths(grp)
 
     def LivingHinge4(self, a1, a2, rotate = False, mirror = 0, space = 2, solidGap = 5):
         """
@@ -508,6 +532,10 @@ class LivingHinge(inkex.Effect):
         elif mirror:
             self.draw_SVG_line((Sx, Sy + space), (Sx, Ey), grp)
             self.draw_SVG_line((Ex, Sy), (Ex, Ey - space), grp)
+
+
+        if self.options.combine:
+            try_attach_paths(grp)
 
 
 
@@ -688,6 +716,9 @@ class LivingHinge(inkex.Effect):
                 elif hingeOpt == 5: #Double snake design
                     self.LivingHinge4((x+(Z/2), y), ((x+(Z/2)+(self.EllipseCircumference(X/2, Z/2)/4)), y + (dy/2) + thickness), True, 0, hingeThick) #Add thickness as a cheat so design 4 doesn't have to know if it's a short or long variant
                     self.LivingHinge4((x+(Z/2), y + (dy/2) - thickness), ((x+(Z/2)+(self.EllipseCircumference(X/2, Z/2)/4)), y + dy), True, 1, hingeThick)
+
+            if self.options.combine:
+                try_attach_paths(grp)
 
 
         # Revert parent back to original parent

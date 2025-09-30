@@ -26,13 +26,17 @@
                         <option value="False">Outside/External</option>
                     </param>
 
-                    <param name="length"    type="float" precision="3" min="0.0" max="10000.0" gui-text="  Length (X)">100</param>
-                    <param name="width"     type="float" precision="3" min="0.0" max="10000.0" gui-text="  Width (Y)">200</param>
-                    <param name="depth"     type="float" precision="3" min="0.0" max="10000.0" gui-text="  Height (Z)">50</param>
-                    <param name="thickness" type="float" precision="3" min="0.0" max="10000.0" gui-text="  Material Thickness">3.0</param>
+                    <param name="length"    type="float" precision="2" min="0.0" max="10000.0" gui-text="  Length (X)">100</param>
+                    <param name="width"     type="float" precision="2" min="0.0" max="10000.0" gui-text="  Width (Y)">200</param>
+                    <param name="depth"     type="float" precision="2" min="0.0" max="10000.0" gui-text="  Height (Z)">50</param>
+                    <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" gui-text="  Material Thickness">3.0</param>
 
                     <spacer/>
+                    <param name="combine" type="boolean" gui-text="Combine and clean paths">true</param>
+                    <param name="cutout" type="boolean" gui-text="Cut holes from parent pieces">true</param>
 
+                    <spacer/>
+                    <spacer/>
                     <label appearance="header">Tabs</label>
                     <separator/>
                     <param name="equal" type="optiongroup" gui-text="Width">
@@ -54,8 +58,8 @@
                         <option value="4">Perpendicular snake</option>
                         <option value="5">Double perpendicular snake</option>
                     </param>
-                    <param name="hingeThick" type="float" precision="3" min="0.0" max="10000.0" gui-text="Hinge remaining wood thickness">2.0</param>
-                    <param name="thumbTab" type="float" precision="3" min="0.0" max="10000.0" gui-text="Lid thumb tab length (0 for no tab)">15.000</param>
+                    <param name="hingeThick" type="float" precision="2" min="0.0" max="10000.0" gui-text="Hinge remaining wood thickness">2.0</param>
+                    <param name="thumbTab" type="float" precision="2" min="0.0" max="10000.0" gui-text="Lid thumb tab length (0 for no tab)">15.000</param>
                 </vbox>
                 <spacer/>
                 <separator/>

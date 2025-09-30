@@ -16,7 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import math
+import sys
 import inkex
+
 from typing import List, Tuple, Set
 from inkex.paths.lines import Line, Move, ZoneClose
 
@@ -50,7 +53,7 @@ def path_to_polygon(path_obj : inkex.Path):
             continue
         else:
             raise AssertionError(f"Unexpected path segment type: {seg.letter}")
-        
+
     if len(coords) > 2:
         paths.append(coords)
 
@@ -64,19 +67,19 @@ def path_to_polygon(path_obj : inkex.Path):
 def polygon_to_path(poly):
     from shapely.geometry import Polygon, MultiPolygon, LinearRing
     # Accepts shapely Polygon or MultiPolygon, returns inkex.Path string
-    
+
     path = inkex.Path()
-    
+
     def add_polygon_to_path(polygon: Polygon, path: inkex.Path):
         coords = list(polygon.exterior.coords)
         path.append(Move(coords[0][0], coords[0][1]))
         for x, y in coords[1:]:
             path.append(Line(x, y))
         path.append(ZoneClose())
-        
+
         # Add holes in stable order
         interiors = list(polygon.interiors)
-        
+
         for i in interiors:
             coords = list(i.coords)
 
@@ -108,7 +111,7 @@ def polygon_to_path(poly):
             for x, y in coords[1:]:
                 path.append(Line(x, y))
             path.append(ZoneClose())
-    
+
     # Handle both Polygon and MultiPolygon
     if isinstance(poly, MultiPolygon):
         for polygon in poly.geoms:
@@ -169,6 +172,63 @@ def best_effort_inkex_combine_paths(paths: list[inkex.Path]):
     panel.path = inkex.Path(combined_superpath)
 
 
+def try_attach_paths(paths: list[inkex.PathElement], tolerance: float = 0.01) -> bool:
+    """Try to attach paths end-to-start if they are close enough, and close paths if start and end meet."""
+
+    if len(paths) < 2:
+        return False
+
+    paths = [x for x in paths]
+    skip_elements = []
+    updated_one = False
+    for path_element in paths:
+        path = path_element.path
+        path_last = path[-1]
+
+        if isinstance(path_last, inkex.paths.ZoneClose) or isinstance(path_last, inkex.paths.zoneClose):
+            continue  # Path is already closed
+
+        #skip_elements.append(path_element)
+
+        for other_element in paths:
+            if other_element in skip_elements or other_element == path_element:
+                continue
+
+            other_path = other_element.path
+
+            if isinstance(other_path[-1], inkex.paths.ZoneClose) or isinstance(other_path[-1], inkex.paths.zoneClose):
+                continue  # Path is already closed
+
+            other_first = other_path[0]
+
+            if not isinstance(other_first, inkex.paths.Move):
+                other_path = other_path.to_absolute()
+                other_first = other_path[0]
+
+            if math.fabs(other_first.x-path_last.x) < 0.01 and math.fabs(other_first.y - path_last.y) < tolerance:
+                new_id = min(path_element.get_id(), other_element.get_id())
+                path_element.path = path + other_path[1:]
+                other_element.getparent().remove(other_element)
+                path_element.set_id(new_id)
+                skip_elements.append(other_element)
+
+                # Update step for next iteration
+                path = path_element.path
+                path_last = path[-1]
+                updated_one = True
+
+
+        if isinstance(path_last, inkex.paths.ZoneClose) or isinstance(path_last, inkex.paths.zoneClose):
+            print(path, file=sys.stderr)
+            continue  # Path is already closed. Not sure why we only see this now
+        elif path_last.x == path[0].x and path_last.y == path[0].y:
+            path = path.reverse() # Ensure correct winding order
+            path.append(inkex.paths.ZoneClose())
+            path_element.path = path
+
+    return updated_one
+
+
 def try_combine_paths(paths: list[inkex.Path], inkscape: bool = False, no_subtract: bool = False):
     if len(paths) < 2:
         return
@@ -226,96 +286,96 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
     """
     Merge two axis-aligned rectangles into a single outer contour using only coordinate math.
     """
-    
+
     def extract_rectangle_bounds(path_elem: inkex.PathElement) -> Tuple[float, float, float, float]:
         """Extract bounding box from a rectangle path element."""
         path = path_elem.path
-        
+
         # Convert path to absolute coordinates
         path = path.to_absolute()
-        
+
         # Extract all points from the path
         points = []
         for seg in path:
             if seg.letter in ['M', 'L']:  # Move or Line commands
                 points.append((seg.x, seg.y))
-        
+
         # Validate rectangle (should have 4-5 points, with first and last being same if closed)
         if len(points) < 4:
             raise ValueError("Path does not contain enough points for a rectangle")
-        
+
         # If closed path, last point might be same as first
         if len(points) == 5 and points[0] == points[4]:
             points = points[:-1]  # Remove duplicate closing point
         elif len(points) != 4:
             raise ValueError(f"Expected 4 corner points, got {len(points)}")
-        
+
         # Extract bounding box
         x_coords = [p[0] for p in points]
         y_coords = [p[1] for p in points]
-        
+
         min_x, max_x = min(x_coords), max(x_coords)
         min_y, max_y = min(y_coords), max(y_coords)
-        
+
         # Validate it's axis-aligned (all points should be at corners)
         corner_count = 0
         for x, y in points:
             if (x == min_x or x == max_x) and (y == min_y or y == max_y):
                 corner_count += 1
-        
+
         if corner_count != 4:
             raise ValueError("Rectangle is not axis-aligned")
-        
+
         return min_x, min_y, max_x, max_y
-    
-    def rectangles_overlap(r1: Tuple[float, float, float, float], 
+
+    def rectangles_overlap(r1: Tuple[float, float, float, float],
                           r2: Tuple[float, float, float, float]) -> bool:
         """Check if two rectangles overlap."""
         x1_min, y1_min, x1_max, y1_max = r1
         x2_min, y2_min, x2_max, y2_max = r2
-        
-        return not (x1_max <= x2_min or x2_max <= x1_min or 
+
+        return not (x1_max <= x2_min or x2_max <= x1_min or
                    y1_max <= y2_min or y2_max <= y1_min)
-    
-    def compute_overlap(r1: Tuple[float, float, float, float], 
+
+    def compute_overlap(r1: Tuple[float, float, float, float],
                        r2: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
         """Compute overlap rectangle of two rectangles."""
         x1_min, y1_min, x1_max, y1_max = r1
         x2_min, y2_min, x2_max, y2_max = r2
-        
+
         overlap_min_x = max(x1_min, x2_min)
         overlap_min_y = max(y1_min, y2_min)
         overlap_max_x = min(x1_max, x2_max)
         overlap_max_y = min(y1_max, y2_max)
-        
+
         return overlap_min_x, overlap_min_y, overlap_max_x, overlap_max_y
-    
-    def fragment_rectangle(rect: Tuple[float, float, float, float], 
+
+    def fragment_rectangle(rect: Tuple[float, float, float, float],
                           overlap: Tuple[float, float, float, float]) -> List[Tuple[float, float, float, float]]:
         """Fragment a rectangle by removing the overlap area."""
         min_x, min_y, max_x, max_y = rect
         ov_min_x, ov_min_y, ov_max_x, ov_max_y = overlap
-        
+
         fragments = []
-        
+
         # Left fragment
         if min_x < ov_min_x:
             fragments.append((min_x, min_y, ov_min_x, max_y))
-        
+
         # Right fragment
         if max_x > ov_max_x:
             fragments.append((ov_max_x, min_y, max_x, max_y))
-        
+
         # Bottom fragment (excluding corners already covered)
         if min_y < ov_min_y:
             fragments.append((max(min_x, ov_min_x), min_y, min(max_x, ov_max_x), ov_min_y))
-        
+
         # Top fragment (excluding corners already covered)
         if max_y > ov_max_y:
             fragments.append((max(min_x, ov_min_x), ov_max_y, min(max_x, ov_max_x), max_y))
-        
+
         return fragments
-    
+
     def get_all_critical_points(fragments: List[Tuple[float, float, float, float]]) -> Set[Tuple[float, float]]:
         """Get all unique corner points from all fragments."""
         points = set()
@@ -325,20 +385,20 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
             points.add((max_x, min_y))
             points.add((max_x, max_y))
         return points
-    
+
     def point_on_boundary(point: Tuple[float, float], fragments: List[Tuple[float, float, float, float]]) -> bool:
         """Check if a point is on the boundary of the union."""
         x, y = point
-        
+
         # Count how many fragments contain this point
         containing_fragments = []
         for i, (min_x, min_y, max_x, max_y) in enumerate(fragments):
             if min_x <= x <= max_x and min_y <= y <= max_y:
                 containing_fragments.append(i)
-        
+
         if not containing_fragments:
             return False
-        
+
         # Check if point is on the exterior boundary
         # A point is on the boundary if it's on the edge of at least one fragment
         # and not completely interior to the union
@@ -349,32 +409,32 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
                 # Check if this edge is external (not shared with another fragment)
                 if is_external_edge(point, fragments, i):
                     return True
-        
+
         return False
-    
+
     def is_external_edge(point: Tuple[float, float], fragments: List[Tuple[float, float, float, float]], frag_idx: int) -> bool:
         """Check if a point on a fragment edge is external to the union."""
         x, y = point
         min_x, min_y, max_x, max_y = fragments[frag_idx]
-        
+
         # Determine which edge(s) the point is on
         edges = []
         if x == min_x: edges.append('left')
         if x == max_x: edges.append('right')
         if y == min_y: edges.append('bottom')
         if y == max_y: edges.append('top')
-        
+
         for edge in edges:
             if is_edge_external(point, edge, fragments):
                 return True
-        
+
         return False
-    
+
     def is_edge_external(point: Tuple[float, float], edge: str, fragments: List[Tuple[float, float, float, float]]) -> bool:
         """Check if a specific edge at a point is external."""
         x, y = point
         epsilon = 1e-9
-        
+
         # Define test points slightly outside each edge
         test_points = {
             'left': (x - epsilon, y),
@@ -382,29 +442,29 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
             'bottom': (x, y - epsilon),
             'top': (x, y + epsilon)
         }
-        
+
         test_point = test_points[edge]
-        
+
         # If test point is not contained in any fragment, then this edge is external
         for min_x, min_y, max_x, max_y in fragments:
             if min_x < test_point[0] < max_x and min_y < test_point[1] < max_y:
                 return False
-        
+
         return True
-    
+
     def get_outer_boundary_points(fragments: List[Tuple[float, float, float, float]]) -> List[Tuple[float, float]]:
         """Get the outer boundary points by walking around the perimeter."""
         # Create a grid of all critical x and y coordinates
         all_x_coords = set()
         all_y_coords = set()
-        
+
         for min_x, min_y, max_x, max_y in fragments:
             all_x_coords.update([min_x, max_x])
             all_y_coords.update([min_y, max_y])
-        
+
         x_coords = sorted(all_x_coords)
         y_coords = sorted(all_y_coords)
-        
+
         # Create a 2D grid to mark which cells are filled
         grid = {}
         for i in range(len(x_coords) - 1):
@@ -413,36 +473,36 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
                 cell_y1, cell_y2 = y_coords[j], y_coords[j + 1]
                 cell_center_x = (cell_x1 + cell_x2) / 2
                 cell_center_y = (cell_y1 + cell_y2) / 2
-                
+
                 # Check if this cell is covered by any fragment
                 cell_filled = False
                 for min_x, min_y, max_x, max_y in fragments:
                     if min_x <= cell_center_x <= max_x and min_y <= cell_center_y <= max_y:
                         cell_filled = True
                         break
-                
+
                 grid[(i, j)] = cell_filled
-        
+
         # Extract the outer boundary by walking around filled cells
         boundary_points = []
-        
+
         # Find bottom-left corner of the bounding box
         min_x_idx = 0
         min_y_idx = 0
-        
+
         # Walk around the outer boundary
         visited_edges = set()
-        
+
         def add_boundary_rectangle_points():
             """Add points by tracing the outline of filled regions."""
             boundary_segments = []
-            
+
             # Collect all edges of filled cells
             for (i, j), filled in grid.items():
                 if filled:
                     x1, x2 = x_coords[i], x_coords[i + 1]
                     y1, y2 = y_coords[j], y_coords[j + 1]
-                    
+
                     # Check each edge to see if it's on the boundary
                     # Bottom edge
                     if j == 0 or not grid.get((i, j - 1), False):
@@ -456,26 +516,26 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
                     # Right edge
                     if i == len(x_coords) - 2 or not grid.get((i + 1, j), False):
                         boundary_segments.append(((x2, y1), (x2, y2)))
-            
+
             return boundary_segments
-        
+
         segments = add_boundary_rectangle_points()
-        
+
         if not segments:
             return []
-        
+
         # Connect segments to form a continuous boundary
         # Start with leftmost-bottom point
         all_points = set()
         for seg in segments:
             all_points.add(seg[0])
             all_points.add(seg[1])
-        
+
         if not all_points:
             return []
-        
+
         start_point = min(all_points, key=lambda p: (p[1], p[0]))  # Bottom-most, then left-most
-        
+
         # Build adjacency list
         adjacency = {}
         for p1, p2 in segments:
@@ -485,41 +545,41 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
                 adjacency[p2] = []
             adjacency[p1].append(p2)
             adjacency[p2].append(p1)
-        
+
         # Trace boundary
         boundary_points = [start_point]
         current = start_point
         prev = None
-        
+
         while True:
             candidates = [p for p in adjacency.get(current, []) if p != prev]
             if not candidates:
                 break
-                
+
             # Choose next point (prefer continuing in same direction when possible)
             if len(candidates) == 1:
                 next_point = candidates[0]
             else:
                 # Choose the point that makes the smallest left turn (counterclockwise)
                 next_point = candidates[0]  # Simple fallback
-            
+
             if next_point == start_point and len(boundary_points) > 2:
                 break
-                
+
             boundary_points.append(next_point)
             prev = current
             current = next_point
-            
+
             if len(boundary_points) > len(all_points):  # Prevent infinite loops
                 break
-        
+
         return boundary_points
-    
+
     # Main algorithm
     # Extract bounds of both rectangles
     bounds1 = extract_rectangle_bounds(rect1)
     bounds2 = extract_rectangle_bounds(rect2)
-    
+
     # Check if rectangles overlap or touch
     if not rectangles_overlap(bounds1, bounds2):
         # No overlap - create union of both rectangles
@@ -527,24 +587,24 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
     else:
         # Compute overlap
         overlap = compute_overlap(bounds1, bounds2)
-        
+
         # Fragment both rectangles
         fragments1 = fragment_rectangle(bounds1, overlap)
         fragments2 = fragment_rectangle(bounds2, overlap)
-        
+
         # Combine all fragments plus the overlap
         all_fragments = fragments1 + fragments2 + [overlap]
-    
+
     # Get outer boundary points using proper boundary tracing
     boundary_points = get_outer_boundary_points(all_fragments)
-    
+
     # Create the path
     if not boundary_points:
         return inkex.Path()
-    
+
     path_data = f"M {boundary_points[0][0]},{boundary_points[0][1]}"
     for point in boundary_points[1:]:
         path_data += f" L {point[0]},{point[1]}"
     path_data += " Z"  # Close the path
-    
+
     return inkex.Path(path_data)

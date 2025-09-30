@@ -44,7 +44,8 @@ class BoxSettings:
     rail_mount_depth: float
     rail_mount_centre_offset: float
     rail_mount_radius: float
-    optimize: bool
+    cutout: bool
+    combine: bool
 
 
 @dataclass

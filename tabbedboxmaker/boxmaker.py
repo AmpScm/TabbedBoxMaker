@@ -34,7 +34,7 @@ from inkex.paths.lines import Line, Move, ZoneClose
 from copy import deepcopy
 
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying, Sides, PieceType
-from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas, try_combine_paths
+from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas, try_combine_paths, try_attach_paths
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
 from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, TabConfiguration, Piece, SchroffSettings, Side, Vec
 
@@ -355,11 +355,20 @@ class BoxMaker(Effect):
             help="Custom spacing for Y-axis dividers (semicolon separated widths)",
         )
         self.arg_parser.add_argument(
-            "--optimize",
+            "--combine",
             type=IntBoolean,
-            dest="optimize",
+            dest="combine",
             default=True,
-            help="Optimize paths",
+            help="Combine and clean paths",
+            choices=[True, False, '0', '1'],
+        )
+        self.arg_parser.add_argument(
+            "--cutout",
+            type=IntBoolean,
+            dest="cutout",
+            default=True,
+            help="Cut holes from parent pieces",
+            choices=[True, False, '0', '1'],
         )
 
 
@@ -521,7 +530,8 @@ class BoxMaker(Effect):
         keydivfloor = self.options.keydiv in [DividerKeying.ALL_SIDES, DividerKeying.FLOOR_CEILING]
         initOffsetX = 0
         initOffsetY = 0
-        optimize = self.options.optimize
+        cutout = self.options.cutout
+        combine = self.options.combine
 
         piece_types = [PieceType.Back, PieceType.Left, PieceType.Bottom, PieceType.Right, PieceType.Top, PieceType.Front]
         if box_type == BoxType.ONE_SIDE_OPEN:
@@ -563,7 +573,7 @@ class BoxMaker(Effect):
             schroff=schroff, kerf=kerf, line_thickness=line_thickness, unit=unit, rows=rows,
             rail_height=rail_height, row_spacing=row_spacing, rail_mount_depth=rail_mount_depth,
             rail_mount_centre_offset=rail_mount_centre_offset, rail_mount_radius=rail_mount_radius,
-            optimize=optimize
+            cutout=cutout, combine=combine
         )
 
     def parse_settings_to_configuration(self, settings: BoxSettings) -> BoxConfiguration:
@@ -1187,8 +1197,8 @@ class BoxMaker(Effect):
                 self.render_side(group, piece, side, settings)
 
             # All pieces drawn, now optimize the paths if required
-            if self.options.optimize:
-                self.optimizePiece(group)
+            if settings.cutout or settings.combine:
+                self.optimizePiece(group, settings)
 
     def _run_effect(self) -> None:
 
@@ -1220,49 +1230,13 @@ class BoxMaker(Effect):
         # Step 3: Generate and draw all pieces
         self.generate_pieces(pieces, config, settings)
 
-    def optimizePiece(self, group : Group) -> None:
+    def optimizePiece(self, group : Group, settings: BoxSettings) -> None:
         # Step 1: Combine paths to form the outer boundary
-        skip_elements = []
         paths = [child for child in group if isinstance(child, PathElement)]
 
-        for path_element in paths:
-            path = path_element.path
-            path_last = path[-1]
-
-            if isinstance(path_last, inkex.paths.ZoneClose):
-                continue  # Path is already closed
-
-            skip_elements.append(path_element)
-
-            for other_element in paths:
-                if other_element in skip_elements:
-                    continue
-
-                other_path = other_element.path
-
-                if isinstance(other_path[-1], inkex.paths.ZoneClose):
-                    continue  # Path is already closed
-
-                other_first = other_path[0]
-
-                if math.fabs(other_first.x-path_last.x) < 0.01 and math.fabs(other_first.y - path_last.y) < 0.01:
-                    new_id = min(path_element.get_id(), other_element.get_id())
-                    path_element.path = path + other_path[1:]
-                    group.remove(other_element)
-                    path_element.set_id(new_id)
-                    skip_elements.append(other_element)
-
-                    # Update step for next iteration
-                    path = path_element.path
-                    path_last = path[-1]
-
-            if path[-1].x == path[0].x and path[-1].y == path[0].y:
-                path = path.reverse() # Ensure correct winding order
-                path.append(inkex.paths.ZoneClose())
-                path_element.path = path
-
-        # List updated, refresh
-        paths = [child for child in group if isinstance(child, PathElement)]
+        if settings.combine:
+            try_attach_paths(paths)
+            paths = [child for child in group if isinstance(child, PathElement)]
 
         # Step 2: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
         for path_element in paths:
@@ -1435,7 +1409,7 @@ class BoxMaker(Effect):
 
         s.append(Move(*vector))
 
-        if side.has_tabs or not settings.optimize:
+        if side.has_tabs or not (settings.combine or settings.cutout):
             if (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC and piece.pieceType in [PieceType.Bottom, PieceType.Top]) or \
                 (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType ==  PieceType.Top and side.is_male and not side.prev.is_male):
                 p = vector + toInside * -(thickness + halfkerf)

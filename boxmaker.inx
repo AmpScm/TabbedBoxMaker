@@ -31,7 +31,8 @@
                     <param name="thickness" type="float" precision="3" min="0.0" max="10000.0" gui-text="  Material Thickness">3.0</param>
 
                     <spacer/>
-                    <param name="optimize" type="boolean" gui-text="Combine and clean paths">true</param>
+                    <param name="combine" type="boolean" gui-text="Combine and clean paths">true</param>
+                    <param name="cutout" type="boolean" gui-text="Cut holes from parent pieces">true</param>
 
                     <spacer/>
                     <spacer/>
