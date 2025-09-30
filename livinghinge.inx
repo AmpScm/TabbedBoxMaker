@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <name>Living Hinge</name>
+    <id>net.ampscm.tabbedboxmaker.livinghinge</id>
+
+    <param name="inkscape" type="string" value="true" gui-hidden="true" />
+    <param name="_page" type="notebook">
+        <page name="Options" gui-text="Options">
+            <hbox>
+                <vbox>
+
+                  <param name="hingeOpt" gui-text="Hinge Type" type="optiongroup" appearance="minimal">
+                    <option value="0">Standard parallel slit</option>
+                    <option value="1">Single spiral</option>
+                    <option value="2">Double spiral</option>
+                    <option value="3">Parallel snake</option>
+                    <option value="4">Perpendicular snake</option>
+                    <option value="5">Double perpendicular snake</option>
+                  </param>
+
+                  <param name="unit" gui-text="Unit" type="optiongroup" appearance="minimal">
+                    <option value="mm">mm</option>
+                    <option value="cm">cm</option>
+                    <option value="in">in</option>
+                  </param>
+
+                  <param name="inside" type="optiongroup" gui-text="Box Dimensions">
+                    <option value="1">Inside</option>
+                    <option value="0">Outside</option>
+                  </param>
+
+                  <param name="length" type="float" precision="3" min="0.0" max="10000.0" gui-text="Length">1.0</param>
+                  <param name="width" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Width">1.0</param>
+                  <param name="depth" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Height">1.0</param>
+                  <param name="tab" type="float" precision="2" min="0.0" max="10000.0" gui-text="Minimum/Preferred Tab Width">1.0</param>
+
+                  <param name="equal" type="optiongroup" gui-text="Tab Width">
+                    <option value="0">Fixed</option>
+                    <option value="1">Proportional</option>
+                  </param>
+
+                  <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" gui-text="Material Thickness">1.0</param>
+                  <param name="kerf" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Kerf (cut width)">0.1</param>
+                  <param name="clearance" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Clearance">0.01</param>
+
+                  <param name="style" gui-text="Layout/Style" type="optiongroup">
+                    <option value="0">Diagrammatic</option>
+                    <option value="1">In-line(compact)</option>
+                  </param>
+
+                  <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" gui-text="Space Between Parts">1.0</param>
+
+                  <param name="hingeThick" type="float" precision="3" min="0.0" max="10000.0" gui-text="Hinge remaining wood thickness">2.0</param>
+
+                  <param name="thumbTab" type="float" precision="3" min="0.0" max="10000.0" gui-text="Lid thumb tab length (0 for no tab)">15.000</param>
+
+                </vbox>
+            </hbox>
+        </page>
+        <page name="About" gui-text="About">
+            <label appearance="header">Tabbed Box Maker - Living</label>
+            <label>Version 2.0.0</label>
+            <label>https://github.com/ampscm/TabbedBoxMaker/</label>
+            <label>This plugin is open source software. You are free to use, modify and distribute it under the terms of the GNU General Public License (GPL) version 3 or later.</label>
+            <spacer/>
+            <spacer/>
+            <label>In 2014 Reid Borsuk (https://www.reidb.net/LaserLivingHinges.html) forked the original tabbed boxmaker by Elliot White and extended this code to
+            generate a box with living hinges for holding his engagement ring. He placed the code online under the original GPL license</label>
+            <spacer/>
+            <spacer/>
+            <label>In 2025 Bert Huijben took this boxmaker related script and refactored it to fit into the tabbedboxmaker project. The code was converteed to Python 3 and modern
+            inkscape-extension format.</label>
+            <label>In 2025 this boxmaker was forked and now maintained by a group of volunteers on https://github.com/ampscm/TabbedBoxMaker/.</label>
+        </page>
+    </param>
+
+    <effect>
+      <object-type>all</object-type>
+      <effects-menu>
+          <submenu name="Box Maker" />
+      </effects-menu>
+  </effect>
+  <script>
+      <command location="inx" interpreter="python">livinghinge-inkex.py</command>
+  </script>
+</inkscape-extension>

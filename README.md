@@ -6,35 +6,42 @@
 
 _Version 2.0 - September 2025_
 
-Original box maker by Elliot White (formerly of twot.eu, domain name now squatted)
-
-Heavily modified by [Paul Hutchison](https://github.com/paulh-rnd).
-Now maintained by [Bert Huijben](https://github.com/rhuijben).
+* Original box maker by Elliot White (formerly of twot.eu, domain name now squatted)
+* Tabbed boxmaker heavily modified by [Paul Hutchison](https://github.com/paulh-rnd).
+* Other modules added by their resp authors.
+* Now maintained by [Bert Huijben](https://github.com/rhuijben).
 
 ## About
- This tool is designed to simplify the process of making practical boxes from sheet material using almost any kind of CNC cutter (laser, plasma, water jet or mill). The box edges are "finger-jointed" or "tab-jointed", and may include press-fit dimples, internal dividers, dogbone corners (for endmill cutting), and more.
+ This tool is designed to simplify the process of making practical boxes from sheet material using almost any kind of CNC cutter (laser, plasma, water jet or mill). The
+ box edges are "tab-jointed". Depending on settings dimples may be provided to make them press-fit.
 
- The tool works by generating each side of the box with the tab and edge sizes corrected to account for the kerf (width of cut). Each box side is composed of a group of individual lines that make up each edge of the face, as well as any other cutouts for dividers. It is recommended that you join adjacent lines in your CNC software to cut efficiently.
+The tool creates svg files and works by generating each side of the box with the tab and edge sizes corrected to account for the kerf (width of cut) and dogbones are added if
+necessary. Each box side is composed of a group of individual lines that make up each edge of the face, as well as any other cutouts for dividers. Joining adjecent lines is
+optional to allow further customization.
 
- An additional extension which uses the same TabbedBoxMaker generator script is also included: Schroff Box Maker. The Schroff addition was created by [John Slee](https://github.com/jsleeio). If you create further derivative box generators, feel free to send me a pull request!
+Several users of the tabbed boxmaker and its previous versions have written extensions.
+  * Schroff Box maker (=Tabbed Boxmaker customized with schroff settings and additiona holes)
+  * Cardboard Box maker (Other box variant)
+  * Living Hinges Box maker (Very specific kind of box)
 
 ## Release Notes
 The code was completely refactored since the v1.x series. It is now a proper python package with testssuite
-and supports both plugin for Inkscape and a commandline scenarios. The plugin provides 3 extension points
+and supports both plugin for Inkscape and a commandline scenarios. The plugin provides 4 extension points
 in Inkscape.
- * Tabbed Box maker
- * Schroff Box maker (=Tabbed Boxmaker customized with schroff settings)
+ * Box maker
  * Cardboard Box maker (completely separate for now)
- 
+ * Living Hinges (completely separate for now)
+ * Schroff Box maker (=Tabbed Boxmaker customized with schroff settings)
+
 The regression tests validate if output matches what is expected and if basic mathemetical constraints hold. (E.g. kerf is calculated correctly. Parts produce enough material to really create the rectangle, etc.)
 
-The program works with Python 3 ONLY. See [issues](https://github.com/ampscm/TabbedBoxMaker/issues) for known issues, or to log issues and enhancement requests.
+The program works with Python 3 ONLY.
 
-Note that in this release the extension has *moved to the Box Maker submenu*.  This is to better reflect that this tool can be used on a wide variety of 
-CNC machinery, especially with the addition of dogbone corners: laser, water jet, milling, even 3D printing.
- 
+Note that all these extensions have moved to a single *Box Maker* submenu under extensions.
+
 ## To do
 * More cleanup
+* More validations
 * Improve input checking to restrict values to correct solutions.
 * Dogbone only works on tabbed joins, NOT divider keyholes or slots yet
 * Would be great to make shapes closed and do path subtraction to get slot cutouts and keyholes from faces, and perhaps offer to add fill colour
@@ -54,8 +61,8 @@ Parameters in order of appearance:
 * Length / Width / Height - the box dimensions
 
 * Tab Width: Fixed/Proportional - for fixed the tab width is the value given in the Tab
-                                 Width, for proportional the side of a piece is divided 
-                                 equally into tabs and 'spaces' with the tabs size 
+                                 Width, for proportional the side of a piece is divided
+                                 equally into tabs and 'spaces' with the tabs size
                                  greater or equal to the Tab Width setting
 
 * Minimum/Preferred Tab Width - the size of the tabs used to hold the pieces together
@@ -74,8 +81,8 @@ Parameters in order of appearance:
 * Line Thickness - Leave this as _Default_ unless you need hairline thickness (Use for Epilog lasers)
 
 * Material Thickness - as it says
- 
-* Kerf - this is the diameter/width of the cut. Typical laser cutters will be between 0.1 - 0.25mm, 
+
+* Kerf - this is the diameter/width of the cut. Typical laser cutters will be between 0.1 - 0.25mm,
   for CNC mills, this will be your end mill diameter. A larger kerf will assume more material is removed,
   hence joints will be tighter. Smaller or zero kerf will result in looser joints.
 
@@ -88,21 +95,21 @@ Parameters in order of appearance:
     * Three sides open (LxW, LxH, HxW) - one of each panel omitted
     * Opposite ends open (LxW) - an open-ended "tube" with the LxW panels omitted
     * Two panels only (LxW and LxH) - two panels with a single joint down the Length axis
-             
-* Dividers (Length axis) - use this to create additional LxH panels that mount inside the box 
+
+* Dividers (Length axis) - use this to create additional LxH panels that mount inside the box
   along the length axis and have finger joints into the side panels
   and slots for Width dividers to slot into
-                
-* Dividers (Width axis) - use this to create additional WxH panels that mount inside the box 
+
+* Dividers (Width axis) - use this to create additional WxH panels that mount inside the box
                          along the width axis and have finger joints into the side panels
                          and slots for Length dividers to slot into
-                         
+
 * Key the dividers into - this allows you to choose if/how the dividers are keyed into the sides of the box. Options are:
     * None - no keying, dividers will be free to slide in and out
     * Walls - dividers will only be keyed into the side walls of the box
     * Floor/Ceiling - dividers will only be keyed into the top/bottom of the box
     * All Sides
-                
+
 * Space Between Parts - how far apart the pieces are in the drawing produced
 
 * Live Preview - you may need to turn this off when changing tab style, box type, or layout
@@ -121,20 +128,17 @@ Much the same as for regular enclosures, except some options are removed, and so
 
 ## Installation
 
-### For End Users
-
-#### Option 1: Installing as Inkscape Extension (Recommended)
+#### Installing as Inkscape Extension (Recommended)
 
 1. Download the extension from this GitHub page using the *[Clone or download > Download ZIP](archive/refs/heads/master.zip)* link. If you are using an older version of Inkscape, you will need to download the correct version of the extension (see [Version History](#version-history) below)
 2. Extract the zip file
-3. Copy all files except README.md and LICENSE into the Inkscape extensions directory.  The directory location varies depending on your operating system, and may be customised. The easiest way to find the directory is to open Inkscape, go to _Edit > Preferences > System_ (Win/Linux) or _Inkscape > Preferences > System_ (Mac).
-4. You can either copy the files to the _User extensions_ directory or the _Inkscape extensions_ directory.  The former will install this extension for just the current user, the latter will install it for all users of the machine.
-5. Inkscape *must* be restarted after copying the extension files.
-6. If it has been installed correctly, you should find the extension under the _Extensions > Box Maker_ menu. Enjoy!
+3. Copy all files into a new subdirectory of the system or per-user Inkscape extensions directory.  On Windows that would be something like `C:\Program Files\Inkscape\share\inkscape\extensions` or `%appdata%\inkscape\extensions`. Under linux or MacOS something like `/usr/share/inkscape/extensions` or `~/.config/inkscape/extensions`. The easiest way to find the directory is to open Inkscape, go to _Edit > Preferences > System_ (Win/Linux) or _Inkscape > Preferences > System_ (Mac).
+4. Inkscape *must* be restarted after copying the extension files.
+5. If it has been installed correctly, you should find the extension under the _Extensions > Box Maker_ menu. Enjoy!
 
-#### Option 2: Installing as Python Package
+#### Running from the shell
 
-You can install TabbedBoxMaker as a standalone Python package:
+You can use the files and create svg files using the tools
 
 ```bash
 pip install tabbedboxmaker
@@ -144,10 +148,16 @@ This allows you to use it from the command line:
 
 ```bash
 # Generate a basic box
-tabbedboxmaker --length=100 --width=80 --depth=60 --thickness=3 --output=mybox.svg
+$ boxmaker.py --length=100 --width=80 --depth=60 --thickness=3 --output=mybox.svg
 
 # Generate a Schroff enclosure
-schroffmaker --hp=42 --rows=2 --depth=160 --thickness=3 --output=schroff.svg
+$ schroff.py --hp=42 --rows=2 --depth=160 --thickness=3 --output=schroff.svg
+
+# Generate a cardboard box
+$ cardboard.py --length=100 --width=80 --depth=60 --thickness=3 --output=cardboardbox.svg
+
+# Generate a living hinge
+$  livinghinge.py  --length=100 --width=80 --depth=60 --thickness=3 --output=hinge.svg
 ```
 
 ### For Developers
@@ -183,56 +193,7 @@ schroffmaker --hp=42 --rows=2 --depth=160 --thickness=3 --output=schroff.svg
 ```bash
 # Run tests
 python -m pytest -v
-
-# Run all tests
-make test-all
 ```
-
-#### Code Quality
-
-```bash
-# Format code
-make format
-
-# Check formatting
-make format-check
-
-# Run linting
-make lint
-
-# Run all checks
-make check
-```
-
-#### Building and Publishing
-
-```bash
-# Build package
-make build
-
-# Upload to Test PyPI
-make upload-test
-
-# Upload to PyPI (maintainers only)
-make upload
-```
-
-Default installation directories are given below:
-
-### Windows
-
-* User: `%APPDATA%\inkscape\extensions`
-* Machine: `C:\Program Files\Inkscape\share\extensions`
-
-### Mac
-
-* User: `~/Library/Application Support/org.inkscape.Inkscape/config/inkscape/extensions`
-* Machine: `/Applications/Inkscape.app/Contents/Resources/share/inkscape/extensions`
-
-### Linux
-
-* User: `~/.config/inkscape/extensions`
-* Machine: Depends on installation method
 
 ## Contributing
 
@@ -241,15 +202,14 @@ Contributions are welcome! Please feel free to submit a Pull Request. Before con
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run the test suite (`make test-all`)
-5. Run code quality checks (`make check`)
+4. Run the test suite (python -m pytest -v`)
 6. Commit your changes (`git commit -m 'Add some amazing feature'`)
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request
 
 ### Development Guidelines
 
-- Follow PEP 8 style guidelines (enforced by black and flake8)
+- Follow python sstyle guidelines (e.g. PEP 8)
 - Add tests for new functionality
 - Update documentation as needed
 - Ensure all tests pass before submitting PR
@@ -277,7 +237,7 @@ version | Date | Notes
 0.86 | (19 Dec 2014) | updates to allow different box types and internal dividers
 0.86a | (23 June 2015) | Updated for compatibility with Inkscape 0.91
 0.87 | (28 July 2015) | Schroff enclosure add-on
-0.93 | (21 Sept 2015) | Updated versioning to match original author's updated v0.91 plus adding my 0.02 
+0.93 | (21 Sept 2015) | Updated versioning to match original author's updated v0.91 plus adding my 0.02
 0.93a | (21 Sept 2015) | Added hairline line thickness option for Epilog lasers
 0.94 | (4 Jan 2017) | Divider keying options
 0.95 | (20 Apr 2017) | Added optional dimples on tabs

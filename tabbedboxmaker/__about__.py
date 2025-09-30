@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0
 """
 Changelog:
+Original Tabbed Box Maker Copyright (C) 2011 Elliot White
+
 19/12/2014 Paul Hutchison:
  - Ability to generate 6, 5, 4, 3 or 2-panel cutouts
  - Ability to also generate evenly spaced dividers within the box

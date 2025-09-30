@@ -9,7 +9,7 @@ import xml.dom.minidom
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
 from collections.abc import Iterable
 
-from tabbedboxmaker import TabbedBoxMaker
+from tabbedboxmaker import BoxMaker
 
 
 from shapely.affinity import translate
@@ -28,7 +28,7 @@ def mask_unstable(svgin: str) -> str:
         r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"',  re.sub(
         r'id="[^"]*"', 'id="MASKED"',  re.sub(
         r'<metadata[^>]*?/>', '<metadata />', re.sub(
-        r'([ML]) (-?\d+(\.\d+)?) (-?\d+(\.\d+)?)', round_points, 
+        r'([ML]) (-?\d+(\.\d+)?) (-?\d+(\.\d+)?)', round_points,
         svgin, flags=re.DOTALL),
         flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL
         ).replace('\r\n', '\n')
@@ -586,7 +586,7 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
 
     outfh = io.BytesIO()
 
-    boxMaker = TabbedBoxMaker(cli=True)
+    boxMaker = BoxMaker(cli=True)
     boxMaker.parse_arguments(args)
     boxMaker.options.output = outfh
     boxMaker.options.optimize = optimize
@@ -654,7 +654,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
         with open(expected_file[:-6] + '.n.svg', "r") as f:
             expected = f.read()
 
-    tbm = TabbedBoxMaker()
+    tbm = BoxMaker()
 
     blank_svg = os.path.join(os.path.dirname(__file__), "blank.svg")
 
@@ -1164,14 +1164,14 @@ def test_output_area_dividers():
 
         # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
         base_expected_area = {
-            101: 5664.0, #FULLY_ENCLOSED with dividers
+            101: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 2*16.0*36.0*thickness) / 2.0, #5664.0, #FULLY_ENCLOSED with dividers
             102: 5312.0, #ONE_SIDE_OPEN with dividers
             103: 4704.0, #TWO_SIDES_OPEN with dividers
             104: 3792.0, #THREE_SIDES_OPEN with dividers
             105: 4960.0, #OPPOSITE_ENDS_OPEN with dividers
             106: 3108.0,  #TWO_PANELS_ONLY with dividers
 
-            201: 5448.0, #FULLY_ENCLOSED with dividers
+            201: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 26.0*36.0*thickness) / 2.0, # 5448.0, #FULLY_ENCLOSED with dividers
             202: 5084.0, #ONE_SIDE_OPEN with dividers
             203: 4554.0, #TWO_SIDES_OPEN with dividers
             204: 3488.0, #THREE_SIDES_OPEN with dividers

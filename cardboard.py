@@ -22,7 +22,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from tabbedboxmaker.cardboard import main
+import sys
+
+from tabbedboxmaker import CardboardBoxMaker
 
 if __name__ == "__main__":
-    main(cli=True)
+    args = sys.arv[1:]
+    inkscape = any(a, lambda a: a.startswith('--inkscape='))
+    args =[a for a in sys.argv[1:] if (not a.startswith("--_") and not a.startswith('--inkscape='))]
+    effect = CardboardBoxMaker(cli=not inkscape, inkscape=inkscape)
+    effect.run(args)
