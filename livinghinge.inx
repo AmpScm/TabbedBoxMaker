@@ -1,58 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
-    <name>Living Hinge</name>
+    <name>Create Living Hinge</name>
     <id>net.ampscm.tabbedboxmaker.livinghinge</id>
 
-    <param name="inkscape" type="string" value="true" gui-hidden="true" />
+    <param name="inkscape" type="string" gui-hidden="true">true</param>
     <param name="_page" type="notebook">
         <page name="Options" gui-text="Options">
             <hbox>
                 <vbox>
+                    <label appearance="header">Dimensions</label>
+                    <separator/>
 
-                  <param name="hingeOpt" gui-text="Hinge Type" type="optiongroup" appearance="minimal">
-                    <option value="0">Standard parallel slit</option>
-                    <option value="1">Single spiral</option>
-                    <option value="2">Double spiral</option>
-                    <option value="3">Parallel snake</option>
-                    <option value="4">Perpendicular snake</option>
-                    <option value="5">Double perpendicular snake</option>
-                  </param>
+                    <param name="unit" gui-text="  Units" type="optiongroup" appearance="combo">
+                        <option value="document" selected="true">Document</option>
+                        <option value="cm">cm</option>
+                        <option value="in">in</option>
+                        <option value="pt">pt</option>
+                        <option value="pc">pc</option>
+                        <option value="mm">mm</option>
+                        <option value="px">px</option>
+                    </param>
 
-                  <param name="unit" gui-text="Unit" type="optiongroup" appearance="minimal">
-                    <option value="mm">mm</option>
-                    <option value="cm">cm</option>
-                    <option value="in">in</option>
-                  </param>
+                    <param name="inside" type="optiongroup" gui-text="Dimensions" appearance="combo">
+                        <option value="True">Inside</option>
+                        <option value="False">Outside/External</option>
+                    </param>
 
-                  <param name="inside" type="optiongroup" gui-text="Box Dimensions">
-                    <option value="1">Inside</option>
-                    <option value="0">Outside</option>
-                  </param>
+                    <param name="length"    type="float" precision="3" min="0.0" max="10000.0" gui-text="  Length (X)">100</param>
+                    <param name="width"     type="float" precision="3" min="0.0" max="10000.0" gui-text="  Width (Y)">200</param>
+                    <param name="depth"     type="float" precision="3" min="0.0" max="10000.0" gui-text="  Height (Z)">50</param>
+                    <param name="thickness" type="float" precision="3" min="0.0" max="10000.0" gui-text="  Material Thickness">3.0</param>
 
-                  <param name="length" type="float" precision="3" min="0.0" max="10000.0" gui-text="Length">1.0</param>
-                  <param name="width" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Width">1.0</param>
-                  <param name="depth" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Height">1.0</param>
-                  <param name="tab" type="float" precision="2" min="0.0" max="10000.0" gui-text="Minimum/Preferred Tab Width">1.0</param>
+                    <spacer/>
 
-                  <param name="equal" type="optiongroup" gui-text="Tab Width">
-                    <option value="0">Fixed</option>
-                    <option value="1">Proportional</option>
-                  </param>
+                    <label appearance="header">Tabs</label>
+                    <separator/>
+                    <param name="equal" type="optiongroup" gui-text="Width">
+                        <option value="0">Fixed</option>
+                        <option value="1">Proportional</option>
+                    </param>
+                    <param name="tab" type="float" precision="2" min="0.0" max="10000.0" gui-text="Min/Preferred Width">5.0</param>
 
-                  <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" gui-text="Material Thickness">1.0</param>
-                  <param name="kerf" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Kerf (cut width)">0.1</param>
-                  <param name="clearance" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Clearance">0.01</param>
 
-                  <param name="style" gui-text="Layout/Style" type="optiongroup">
-                    <option value="0">Diagrammatic</option>
-                    <option value="1">In-line(compact)</option>
-                  </param>
+                    <spacer />
+                    <spacer />
+                    <label appearance="header">Hinge Settings</label>
+                    <separator/>
+                    <param name="hingeOpt" gui-text="Hinge Type" type="optiongroup" appearance="minimal">
+                        <option value="0">Standard parallel slit</option>
+                        <option value="1">Single spiral</option>
+                        <option value="2">Double spiral</option>
+                        <option value="3">Parallel snake</option>
+                        <option value="4">Perpendicular snake</option>
+                        <option value="5">Double perpendicular snake</option>
+                    </param>
+                    <param name="hingeThick" type="float" precision="3" min="0.0" max="10000.0" gui-text="Hinge remaining wood thickness">2.0</param>
+                    <param name="thumbTab" type="float" precision="3" min="0.0" max="10000.0" gui-text="Lid thumb tab length (0 for no tab)">15.000</param>
+                </vbox>
+                <spacer/>
+                <separator/>
+                <spacer/>
+                <vbox>
+                    <label appearance="header">Design</label>
+                    <separator/>
+                    <param name="hairline" type="optiongroup" gui-text="Line Type" appearance="radio">
+                        <option value="True" selected="True">Hairline</option>
+                        <option value="False">Custom</option>
+                    </param>
+                    <param name="line-thickness" type="float" precision="3" min="0.0" max="100.0" gui-text="Custom Thickness">0.1</param>
+                    <param name="line-color" type="optiongroup" gui-text="Line Color" appearance="combo">
+                        <option value="black" selected="true">Black</option>
+                        <option value="red">Red</option>
+                        <option value="green">Green</option>
+                        <option value="blue">Blue</option>
+                    </param>
 
-                  <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" gui-text="Space Between Parts">1.0</param>
 
-                  <param name="hingeThick" type="float" precision="3" min="0.0" max="10000.0" gui-text="Hinge remaining wood thickness">2.0</param>
+                    <spacer />
+                    <spacer />
+                    <label appearance="header">Cutting settings</label>
+                    <separator/>
+                    <param name="kerf" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Kerf (cut width)">0.1</param>
+                    <param name="clearance" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Clearance">0.01</param>
 
-                  <param name="thumbTab" type="float" precision="3" min="0.0" max="10000.0" gui-text="Lid thumb tab length (0 for no tab)">15.000</param>
+                    <spacer/>
+                    <spacer/>
+                    <label appearance="header">Layout</label>
+                    <separator/>
+                    <param name="style" gui-text="Layout/Style" type="optiongroup">
+                        <option value="0">Diagrammatic</option>
+                        <option value="1">In-line(compact)</option>
+                    </param>
+                    <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" gui-text="Space Between Parts">1.0</param>
 
                 </vbox>
             </hbox>
@@ -70,7 +109,7 @@
             <spacer/>
             <label>In 2025 Bert Huijben took this boxmaker related script and refactored it to fit into the tabbedboxmaker project. The code was converteed to Python 3 and modern
             inkscape-extension format.</label>
-            <label>In 2025 this boxmaker was forked and now maintained by a group of volunteers on https://github.com/ampscm/TabbedBoxMaker/.</label>
+            <label>In 2025 this boxmaker was forked and now maintained by volunteers on https://github.com/ampscm/TabbedBoxMaker/.</label>
         </page>
     </param>
 
@@ -81,6 +120,6 @@
       </effects-menu>
   </effect>
   <script>
-      <command location="inx" interpreter="python">livinghinge-inkex.py</command>
+      <command location="inx" interpreter="python">livinghinge.py</command>
   </script>
 </inkscape-extension>

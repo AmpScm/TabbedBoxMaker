@@ -36,7 +36,7 @@ from copy import deepcopy
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying, Sides, PieceType
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas, try_combine_paths
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
-from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, BoxFaces, TabConfiguration, Piece, SchroffSettings, Side, Vec
+from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, TabConfiguration, Piece, SchroffSettings, Side, Vec
 
 _ = gettext.gettext
 

@@ -60,17 +60,6 @@ class SchroffSettings:
 
 
 @dataclass
-class BoxFaces:
-    """Which faces the box has based on the box type"""
-    hasTp: bool  # top
-    hasBm: bool  # bottom
-    hasFt: bool  # front
-    hasBk: bool  # back
-    hasLt: bool  # left
-    hasRt: bool  # right
-
-
-@dataclass
 class TabConfiguration:
     """Tab information for each face"""
     tpTabInfo: int
@@ -199,7 +188,7 @@ class Side:
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             return False # Always ends outside for rotational symmetry
         return self.is_male and self.has_tabs
-    
+
     @property
     def length(self) -> float:
 
@@ -210,7 +199,7 @@ class Side:
                 len += self.thickness
             if self.next.has_tabs:
                 len += self.thickness
-        
+
         return len
 
     def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, inside_length: float):
@@ -274,7 +263,7 @@ class Piece:
     def dx(self) -> float:
         """Outside dimension in X direction"""
         return self.sides[0].length  # Same as sides[0].length
-    
+
     @property
     def dy(self) -> float:
         """Outside dimension in Y direction"""

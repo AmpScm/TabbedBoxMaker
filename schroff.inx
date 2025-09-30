@@ -1,45 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
-    <_name>Schroff Box Maker</_name>
+    <name>Create Schroff Box</name>
     <id>net.ampscm.tabbedboxmaker.schroff</id>
 
-    <param name="inkscape" type="string" value="true" gui-hidden="true" />
+    <param name="inkscape" type="string" gui-hidden="true">true</param>
+    <param name="unit" type="string" gui-hidden="true">mm</param>
     <param name="_page" type="notebook">
         <page name="Options" gui-text="Options">
+            <hbox>
+                <vbox>
+                    <label appearance="header">Dimensions</label>
+                    <separator/>
+                    <param name="rows" type="int" min="1" max="6" gui-text="Number of 3U rows:">1</param>
+                    <param name="hp" type="int" min="4" max="168" gui-text="Width (TE/HP units):">84</param>
+                    <param name="depth" type="float" precision="3" min="30" max="300" gui-text="Depth:">65</param>
+                    <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" gui-text="Material Thickness">3.0</param>
 
-            <param name="unit" type="string" gui-hidden="true">mm</param>
-            <param name="rows" type="int" min="1" max="6" _gui-text="Number of 3U rows:">1</param>
-            <param name="hp" type="int" min="4" max="168" _gui-text="Width (TE/HP units):">84</param>
-            <param name="length" type="float" precision="3" gui-hidden="true">0.0</param>
-            <param name="width" type="float" precision="3" gui-hidden="true">0.0</param>
-            <param name="depth" type="float" precision="3" min="30" max="300" _gui-text="Depth:">65</param>
+                    <!-- these defaults are suitable for the rails sold by Elby Designs -->
+                    <param name="rail_height" type="float" precision="3" min="7.0" max="10.0" gui-text="Rail height:">10.0</param>
+                    <param name="rail_mount_depth" type="float" precision="3" min="5" max="30" gui-text="Rail mounting hole depth:">17.4</param>
+                    <param name="rail_mount_centre_offset" type="float" precision="3" min="0.0" max="5.0" gui-text="Rail mount hole centre-offset:">0.0</param>
+                    <param name="row_spacing" type="float" precision="3" min="0.0" max="50.0" gui-text="Spacing between rows:">0.0</param>
 
-            <!-- these defaults are suitable for the rails sold by Elby Designs -->
-            <param name="rail_height" type="float" precision="3" min="7.0" max="10.0" _gui-text="Rail height:">10.0</param>
-            <param name="rail_mount_depth" type="float" precision="3" min="5" max="30" _gui-text="Rail mounting hole depth:">17.4</param>
-            <param name="rail_mount_centre_offset" type="float" precision="3" min="0.0" max="5.0" _gui-text="Rail mount hole centre-offset:">0.0</param>
-            <param name="row_spacing" type="float" precision="3" min="0.0" max="50.0" _gui-text="Spacing between rows:">0.0</param>
+                    <param name="tab" type="float" precision="2" min="0.0" max="10000.0" gui-text="Minimum/Prefered Tab Width">6.0</param>
+                    <param name="equal" type="optiongroup" gui-text="Tab Width">
+                        <option value="0">Fixed</option>
+                        <option value="1">Proportional</option>
+                    </param>
+                </vbox>
+                <spacer/>
+                <separator/>
+                <spacer/>
+                <vbox>
+                    <label appearance="header">Line and kerf</label>
+                    <separator/>
+                    <param name="hairline" type="optiongroup" gui-text="Line Type" appearance="radio">
+                        <option value="True" selected="True">Hairline</option>
+                        <option value="False">Custom</option>
+                    </param>
+                    <param name="line-thickness" type="float" precision="3" min="0.0" max="100.0" gui-text="Custom Thickness">0.1</param>
+                    <param name="line-color" type="optiongroup" gui-text="Line Color" appearance="combo">
+                        <option value="black" selected="true">Black</option>
+                        <option value="red">Red</option>
+                        <option value="green">Green</option>
+                        <option value="blue">Blue</option>
+                    </param>
 
-            <param name="tab" type="float" precision="2" min="0.0" max="10000.0" _gui-text="Minimum/Prefered Tab Width">6.0</param>
-            <param name="equal" type="optiongroup" _gui-text="Tab Width">
-                <_option value="0">Fixed</_option>
-                <_option value="1">Proportional</_option>
-            </param>
+                    <spacer />
+                    <spacer />
+                    <label appearance="header">Cutting settings</label>
+                    <separator/>
+                    <param name="tabtype" type="optiongroup" gui-text="Type" appearance="radio">
+                        <option value="0">Regular (Laser)</option>
+                        <option value="1">Dogbone (Mill)</option>
+                    </param>
+                    <param name="kerf" type="float" precision="3"  min="0.0" max="10000.0" gui-text="Kerf (cut width)">0.1</param>
 
-            <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" _gui-text="Material Thickness">3.0</param>
-            <param name="kerf" type="float" precision="3"  min="0.0" max="10000.0" _gui-text="Kerf (cut width)">0.1</param>
-            <param name="div_l" type="int" gui-hidden="true">0</param>
-            <param name="div_w" type="int" gui-hidden="true">0</param>
 
-            <param name="style" type="string" gui-hidden="true">1</param>
-            <param name="boxtype" type="int" gui-hidden="true">2</param>
+                    <param name="style" type="string" gui-hidden="true">1</param>
+                    <param name="boxtype" type="int" gui-hidden="true">2</param>
 
-            <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" _gui-text="Space Between Parts">1.0</param>
+                    <spacer/>
+                    <spacer/>
+                    <label appearance="header">Layout</label>
+                    <separator/>
+                    <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" gui-text="Space Between Parts">1.0</param>
+                </vbox>
+            </hbox>
         </page>
         <page name="About" gui-text="About">
+            <label appearance="header">Tabbed Box Maker - Schroff Box Maker</label>
+            <label>Version 2.0.0</label>
+            <label>https://github.com/ampscm/TabbedBoxMaker/</label>
+            <label>This plugin is open source software. You are free to use, modify and distribute it under the terms of the GNU General Public License (GPL) version 3 or later.</label>
+            <spacer/>
+            <spacer/>
             <label>Schroff Box Maker is a customized version of the Tabbed Box Maker Inkscape extension, tailored for creating Schroff-style electronic equipment enclosures.</label>
             <spacer/>
-            <label>[John Slee](https://github.com/jsleeio)</label>
+            <label>The Schroff Box Maker extension was originally developed by John Slee (https://github.com/jsleeio) and integrated in the code by Paul Hutchison.</label>
         </page>
     </param>
     <effect>

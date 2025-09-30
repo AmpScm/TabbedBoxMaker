@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
-    <name>Box Maker</name>
+    <name>Create Box</name>
     <id>net.ampscm.tabbedboxmaker.boxmaker</id>
 
-    <param name="inkscape" type="string" value="true" gui-hidden="true" />
+    <param name="inkscape" type="string" gui-hidden="true">true</param>
     <param name="_page" type="notebook">
         <page name="Options" gui-text="Options">
             <hbox>
@@ -20,7 +20,7 @@
                         <option value="px">px</option>
                     </param>
 
-                    <param name="inside" type="optiongroup" gui-text="  Box Dimensions" appearance="combo">
+                    <param name="inside" type="optiongroup" gui-text="Dimensions" appearance="combo">
                         <option value="True">Inside</option>
                         <option value="False">Outside/External</option>
                     </param>
@@ -37,38 +37,38 @@
                     <spacer/>
                     <label appearance="header">Tabs</label>
                     <separator/>
-                    <param name="tabsymmetry" type="optiongroup" gui-text="    Symmetry" appearance="combo">
-                        <option value="0">XY Symmetric</option>
+                    <param name="tabsymmetry" type="optiongroup" gui-text="Symmetry" appearance="combo">
+                        <option value="0" selected="true">XY Symmetric</option>
                         <option value="1">Rotate Symmetric</option>
                         <option value="2">Antisymmetric</option>
                     </param>
 
-                    <param name="equal" type="optiongroup" gui-text="    Width">
+                    <param name="equal" type="optiongroup" gui-text="Width">
                         <option value="0">Fixed</option>
                         <option value="1">Proportional</option>
                     </param>
 
-                    <param name="tab" type="float" precision="2" min="0.0" max="10000.0" gui-text="    Min/Preferred Width">5.0</param>
+                    <param name="tab" type="float" precision="2" min="0.0" max="10000.0" gui-text="Min/Preferred Width">5.0</param>
 
                     <spacer/>
                     <spacer/>
                     <label appearance="header">Dimples</label>
                     <separator/>
                     <param name="dimpleheight" type="float" precision="2" min="0.0" max="10000.0"
-                            gui-text="    Dimple Height">0.0</param>
+                            gui-text="Dimple Height">0.0</param>
                     <param name="dimplelength" type="float" precision="2" min="0.0" max="10000.0"
-                            gui-text="    Dimple Length">0.0</param>
+                            gui-text="Dimple Length">0.0</param>
                 </vbox>
                 <spacer/>
                 <separator/>
                 <vbox>
                     <label appearance="header">Design</label>
                     <separator/>
-                    <param name="hairline" type="optiongroup" gui-text="Line Type" appearance="combo">
+                    <param name="hairline" type="optiongroup" gui-text="Line Type" appearance="radio">
                         <option value="True" selected="True">Hairline</option>
                         <option value="False">Custom</option>
                     </param>
-                    <param name="line-thickness" type="float" precision="3" min="0.0" max="100.0" gui-text="Line Thickness">0.1</param>
+                    <param name="line-thickness" type="float" precision="3" min="0.0" max="100.0" gui-text="Custom Thickness">0.1</param>
                     <param name="line-color" type="optiongroup" gui-text="Line Color" appearance="combo">
                         <option value="black" selected="true">Black</option>
                         <option value="red">Red</option>
@@ -90,13 +90,13 @@
                     <spacer/>
                     <label appearance="header">Layout</label>
                     <separator/>
-                    <param name="style" gui-text="    Layout" type="optiongroup" appearance="combo">
+                    <param name="style" gui-text="Layout" type="optiongroup" appearance="combo">
                         <option value="1">Diagramatic</option>
                         <option value="2">3 piece</option>
                         <option value="3">Inline(compact)</option>
                     </param>
 
-                    <param name="boxtype" gui-text="    Box Type" type="optiongroup" appearance="combo">
+                    <param name="boxtype" gui-text="Box Type" type="optiongroup" appearance="combo">
                         <option value="1">Fully enclosed</option>
                         <option value="2" selected="true">One side open (LxW)</option>
                         <option value="3">Two sides open (LxW and LxH)</option>
@@ -105,7 +105,7 @@
                         <option value="6">Two panels only (LxW and LxH)</option>
                     </param>
 
-                    <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" gui-text="    Space between parts">1.0</param>
+                    <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" gui-text="Space between parts">1.0</param>
                 </vbox>
                 <spacer/>
                 <separator/>
@@ -114,15 +114,15 @@
                     <label appearance="header">Dividers</label>
                     <param name="div-l" type="int" min="0" max="20" gui-text="Dividers (Length axis)">2</param>
                     <param name="div-w" type="int" min="0" max="20" gui-text="Dividers (Width axis)">3</param>
+                    <param name="div-l-spacing" type="string" gui-text="Custom Length Compartments"></param>
+                    <param name="div-w-spacing" type="string" gui-text="Custom Width Compartments"></param>
+                    <label>Fill in compartment sizes separated with semi-colon. Leave empty for equal spacing.</label>
                     <param name="keydiv" gui-text="Key the dividers into" type="optiongroup" appearance="combo">
                         <option value="3">None</option>
                         <option value="2" selected="True">Walls</option>
                         <option value="1">Floor / Ceiling</option>
                         <option value="0">All sides</option>
                     </param>
-                    <param name="div-l-spacing" type="string" gui-text="Custom Length Compartments"></param>
-                    <param name="div-w-spacing" type="string" gui-text="Custom Width Compartments"></param>
-                    <label>Fill in compartment sizes separated with semi-colon. Leave empty for equal spacing.</label>
                 </vbox>
             </hbox>
         </page>
@@ -137,7 +137,7 @@
             <spacer/>
             <label>Based on the original tabbed box maker by Elliot White, this version has been significantly enhanced and maintained by Paul Hutchison. Additional patche Jim McBeath and many others</label>
             <spacer/>
-            <label>In 2025 this boxmaker (originally at https://github.com/paulh-rnd/TabbedBoxMaker) was forked and severely refactored by Bert Huijben and now maintained by a group of volunteers on https://github.com/ampscm/TabbedBoxMaker/.</label>
+            <label>In 2025 this boxmaker (originally at https://github.com/paulh-rnd/TabbedBoxMaker) was forked and refactored by Bert Huijben and now maintained by volunteers on https://github.com/ampscm/TabbedBoxMaker/.</label>
         </page>
     </param>
     <effect>

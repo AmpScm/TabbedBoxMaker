@@ -19,19 +19,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-__version__ = "0.8rb"
 
-import sys
 import inkex
-import simplestyle
 import gettext
 import math
+
+from inkex import Effect, Group, PathElement
+from inkex.paths import Path
+from inkex.paths.lines import Line, Move, ZoneClose
+
 from tabbedboxmaker.boxmaker import IntBoolean
 _ = gettext.gettext
 
 class LivingHinge(inkex.Effect):
     cli = True
     inkscape = False
+    hairline_thickness : float = None
+    raw_hairline_thickness : float = None
+    parent = None
+    line_color = None
 
     def __init__(self, cli=True, inkscape=False):
 
@@ -57,11 +63,12 @@ class LivingHinge(inkex.Effect):
             type=str,
             dest='unit',
             default='mm',
-            help='Measure Units'
+            help='Measure Units',
+            choices=["mm", "cm", "in", "ft", "px", "pt", "pc"] + (["document"] if self.inkscape else []),
             )
         self.arg_parser.add_argument(
             '--inside',
-            type=int,
+            type=IntBoolean,
             dest='inside',
             default=0,
             help='Int/Ext Dimension'
@@ -157,20 +164,51 @@ class LivingHinge(inkex.Effect):
             default=0,
             help='Add a thumb tab'
         )
+        self.arg_parser.add_argument(
+            "--hairline",
+            type=IntBoolean,
+            dest="hairline",
+            default=False,
+            help="Line Thickness (True/False)",
+            choices=[True, False, '0', '1'],
+        )
+        self.arg_parser.add_argument(
+            "--line-thickness",
+            type=float,
+            dest="line_thickness",
+            default=0.1,
+            help="Line Thickness (if not hairline)",
+        )
+        self.arg_parser.add_argument(
+            "--line-color",
+            type=str,
+            dest="color",
+            default="black",
+            help="Line Color",
+            choices=["black", "red", "blue", "green"]
+        )
 
 
     def drawS(self, XYstring : str):         # Draw lines from a list
-        global parent
-        name='part'
-        style = { 'stroke': '#000000', 'fill': 'none' }
-        drw = {'style':str(inkex.Style(style)),inkex.addNS('label','inkscape'):name,'d':XYstring}
-        inkex.etree.SubElement(parent, inkex.addNS('path','svg'), drw )
+        line = PathElement()
+
+        if self.line_thickness == self.raw_hairline_thickness:
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+        else:
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
+
+        line.path = Path(XYstring)
+
+        self.parent.add(line)
 
     def draw_SVG_ellipse(self, a1, a2, start_end):
         (centerx, centery), (radiusx, radiusy) = a1, a2
 
-        style = {   'stroke'        : '#000000',
-                    'fill'          : 'none'            }
+        if self.line_thickness == self.raw_hairline_thickness:
+            style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+        else:
+            style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
+
         ell_attribs = {'style': str(inkex.Style(style)),
             inkex.addNS('cx','sodipodi')        :str(centerx),
             inkex.addNS('cy','sodipodi')        :str(centery),
@@ -183,7 +221,7 @@ class LivingHinge(inkex.Effect):
             'transform'                         :''
                 }
 
-        ell = inkex.etree.SubElement(parent, inkex.addNS('path','svg'), ell_attribs )
+        ell = inkex.etree.SubElement(self.parent, inkex.addNS('path','svg'), ell_attribs )
 
     def draw_SVG_line(self, a1, a2, parent):
         """draw an SVG line segment between the given (raw) points"""
@@ -355,7 +393,7 @@ class LivingHinge(inkex.Effect):
 
         grp_name = 'Living Hinge'
         grp_attribs = {inkex.addNS('label','inkscape'):grp_name }
-        grp = inkex.etree.SubElement(parent, 'g', grp_attribs)#the group to put everything in
+        grp = inkex.etree.SubElement(self.parent, 'g', grp_attribs)#the group to put everything in
 
         for n in range(0,horizontalSlots+1):
             if n%2:  #odd, exterior slot (slot should go all the way to the part edge)
@@ -393,7 +431,7 @@ class LivingHinge(inkex.Effect):
 
         grp_name = 'Living Hinge'
         grp_attribs = {inkex.addNS('label','inkscape'):grp_name }
-        grp = inkex.etree.SubElement(parent, 'g', grp_attribs)#the group to put everything in
+        grp = inkex.etree.SubElement(self.parent, 'g', grp_attribs)#the group to put everything in
 
         centerX = Sx + (width/2)
         centerY = Sy + (height/2)
@@ -441,7 +479,7 @@ class LivingHinge(inkex.Effect):
 
         grp_name = 'Living Hinge'
         grp_attribs = {inkex.addNS('label','inkscape'):grp_name }
-        grp = inkex.etree.SubElement(parent, 'g', grp_attribs)#the group to put everything in
+        grp = inkex.etree.SubElement(self.parent, 'g', grp_attribs)#the group to put everything in
 
         for n in range(1 - skew,horizontalSlots + skew):
             if not rotate:
@@ -464,7 +502,7 @@ class LivingHinge(inkex.Effect):
 
 
     def effect(self):
-        global parent,nomTab,equalTabs,thickness,correction, Z, unit
+        global nomTab,equalTabs,thickness,correction, Z, unit
 
             # Get access to main SVG document element and get its dimensions.
         svg = self.document.getroot()
@@ -478,10 +516,21 @@ class LivingHinge(inkex.Effect):
         layer.set(inkex.addNS('label', 'inkscape'), 'newlayer')
         layer.set(inkex.addNS('groupmode', 'inkscape'), 'layer')
 
-        parent=self.svg.get_current_layer()
+        self.parent=self.svg.get_current_layer()
 
             # Get script's option values.
         unit=self.options.unit
+
+        if unit == 'document':
+            unit = svg.document_unit
+
+        hairline = self.options.hairline
+        self.line_thickness = self.hairline_thickness if hairline else self.svg.unittouu(str(self.options.line_thickness) + unit)
+        if self.line_thickness == 1.0:
+            self.line_thickness = 1 # Reproduce old output
+
+        self.line_color = {'black': '#000000', 'red': '#FF0000', 'green': '#00FF00', 'blue': '#0000FF'}.get(str(self.options.color).lower(), "#000000")
+
         inside=self.options.inside
         X = self.svg.unittouu( str(self.options.length)  + unit )
         Y = self.svg.unittouu( str(self.options.width) + unit )
@@ -493,7 +542,6 @@ class LivingHinge(inkex.Effect):
         clearance = self.svg.unittouu( str(self.options.clearance)  + unit )
         layout=self.options.style
         spacing = self.svg.unittouu( str(self.options.spacing)  + unit )
-        ring = 1
         hingeOpt = self.options.hingeOpt
         hingeThick = self.options.hingeThick
         thumbTab = self.svg.unittouu( str(self.options.thumbTab) + unit ) if self.options.thumbTab else 0.0

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
-    <name>Cardboard Box Maker</name>
+    <name>Create Cardboard Box</name>
     <id>net.ampscm.tabbedboxmaker.cardboard</id>
 
-    <param name="inkscape" type="string" value="true" gui-hidden="true" />
+    <param name="inkscape" type="string" gui-hidden="true">true</param>
     <param name="_page" type="notebook">
         <page name="Options" gui-text="Options">
             <hbox>
                 <vbox>
-                    <label>Dimensions</label>
+                    <label appearance="header">Dimensions</label>
                     <separator/>
                     <param name="unit" gui-text="    Units" type="optiongroup" appearance="combo">
                         <option value="in">in</option>
@@ -19,19 +19,21 @@
                     <param name="height" type="float" precision="2" min="0.0" max="10000.0" gui-text="    Height">3</param>
                     <param name="width" type="float" precision="2"  min="0.0" max="10000.0" gui-text="    Width">4</param>
                     <param name="depth" type="float" precision="2"  min="0.0" max="10000.0" gui-text="    Depth">5</param>
+                    <param name="thickness" type="float" precision="3" min="0.0" max="10000.0" gui-text="    Material Thickness">0.125</param>
                 </vbox>
                 <spacer/>
                 <separator/>
                 <spacer/>
                 <vbox>
-                    <label>Line and kerf</label>
+                    <label appearance="header">Line and kerf</label>
                     <separator/>
-                    <param name="hairline" type="optiongroup" gui-text="    Line Thickness" appearance="combo">
-                        <option value="0">Default</option>
-                        <option value="1" selected="true">Hairline</option>
+                    <param name="hairline" type="optiongroup" gui-text="Line Type" appearance="radio">
+                        <option value="True" selected="True">Hairline</option>
+                        <option value="False">Custom</option>
                     </param>
+                    <param name="line-thickness" type="float" precision="3" min="0.0" max="100.0" gui-text="Custom Thickness">0.1</param>
 
-                    <param name="thickness" type="float" precision="3" min="0.0" max="10000.0" gui-text="    Material Thickness">0.125</param>
+
                     <param name="kerf" type="float" precision="3"  min="0.0" max="10000.0" gui-text="    Kerf (cut width)">0.015</param>
 
                     <spacer/>
@@ -69,7 +71,7 @@
             existing tabbed boxmaker project on https://github.com/paulh-rnd/TabbedBoxMaker/ to allow further development and maintenance by others.</label>
             <spacer/>
             <spacer/>
-            <label>In 2025 this boxmaker was forked and now maintained by a group of volunteers on https://github.com/ampscm/TabbedBoxMaker/.</label>
+            <label>In 2025 this boxmaker was forked and now maintained by volunteers on https://github.com/ampscm/TabbedBoxMaker/.</label>
         </page>
     </param>
     <effect>

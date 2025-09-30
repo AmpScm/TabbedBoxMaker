@@ -27,8 +27,8 @@ import sys
 from tabbedboxmaker import CardboardBoxMaker
 
 if __name__ == "__main__":
-    args = sys.arv[1:]
-    inkscape = any(a, lambda a: a.startswith('--inkscape='))
+    args = sys.argv[1:]
+    inkscape = any(a.startswith('--inkscape=') for a in args)
     args =[a for a in sys.argv[1:] if (not a.startswith("--_") and not a.startswith('--inkscape='))]
     effect = CardboardBoxMaker(cli=not inkscape, inkscape=inkscape)
     effect.run(args)
