@@ -27,16 +27,17 @@ import os
 import gettext
 import sys
 
-from inkex import Effect, Group, PathElement, Metadata
+from inkex import Group, PathElement, Metadata, GenerateExtension
 from inkex.paths import Path
 from inkex.paths.lines import Line, Move, ZoneClose
 
 from copy import deepcopy
 
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying, Sides, PieceType
-from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path, adjust_canvas, try_combine_paths, try_attach_paths
+from tabbedboxmaker.InkexShapely import try_combine_paths, try_attach_paths, try_clean_paths
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
 from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, TabConfiguration, Piece, SchroffSettings, Side, Vec
+from tabbedboxmaker.Generators import CliEnabledGenerator
 
 _ = gettext.gettext
 
@@ -56,50 +57,30 @@ def IntBoolean(value):
             return True
     return b
 
-class BoxMaker(Effect):
-    nextId: dict[str, int]
+class BoxMaker(CliEnabledGenerator):
     line_thickness: float = 1
-    nextId: dict[str, int]
     version = BOXMAKER_VERSION
     settings : BoxSettings
     raw_hairline_thickness: float = None
     hairline_thickness: float = None
-    cli = False
     schroff = False
-    inkscape = False
     line_color = '#000000'
     no_subtract = False
 
     def __init__(self, cli=True, schroff=False, inkscape=False):
-        self.cli = cli
+        """Initialize the BoxMaker extension."""
         self.schroff = schroff
-        self.inkscape = inkscape
+
+        self.container_label = "Tabbed Box" if not schroff else "Schroff Box"
+        self.container_no_transform = True
         # Call the base class constructor.
-        super().__init__()
-
-        self.nextId = {}
-
-
-    def makeId(self, prefix: str | None) -> str:
-        """Generate a new unique ID with the given prefix."""
-
-        prefix = prefix if prefix is not None else "id"
-        if prefix not in self.nextId:
-            id = self.nextId[prefix] = 0
-
-        self.nextId[prefix] = id = self.nextId[prefix] + 1
-
-        return f"{prefix}_{id:03d}"
-
+        super().__init__(cli=cli, inkscape=inkscape)
 
     def makeGroup(self, id="piece") -> Group:
         # Create a new group and add element created from line string
         group = Group(id=self.makeId(id))
 
-        self.svg.get_current_layer().add(group)
         return group
-
-
 
     def makeLine(self, path , id : str = "line") -> PathElement:
         line = PathElement(id=self.makeId(id))
@@ -381,23 +362,7 @@ class BoxMaker(Effect):
         if not hasattr(self.options, 'input_file'):
             self.options.input_file = os.path.join(os.path.dirname(__file__), "blank.svg")
 
-
-    def effect(self) -> None:
-        """Runs the effect. Public api"""
-        svg = self.document.getroot()
-
-        if not self.hairline_thickness:
-            self.raw_hairline_thickness = self.hairline_thickness = round(self.svg.unittouu("1px"), 6)
-
-        layer = svg.get_current_layer()
-        layer.add(Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}"))
-
-        self._run_effect()
-
-        # If generated from CLI, adjust canvas to fit contents. Otherwise keep user setting
-        if not self.inkscape:
-            adjust_canvas(svg, unit=self.options.unit)
-
+        self.document_unit = self.options.unit
 
     @staticmethod
     def parse_divider_spacing(spacing_str: str, available_width: float,
@@ -1138,7 +1103,7 @@ class BoxMaker(Effect):
 
         return pieces
 
-    def generate_pieces(self, pieces: list[Piece], config: BoxConfiguration, settings: BoxSettings) -> None:
+    def generate_pieces(self, pieces: list[Piece], config: BoxConfiguration, settings: BoxSettings):
         """Generate and draw all pieces based on the configuration"""
 
         for piece in pieces:  # generate and draw each piece of the box
@@ -1200,7 +1165,19 @@ class BoxMaker(Effect):
             if settings.cutout or settings.combine:
                 self.optimizePiece(group, settings)
 
-    def _run_effect(self) -> None:
+            # Last step: If the group now just contains one path, remove
+            # the group around this path
+            if len(group) == 1:
+                item = group[0]
+                group.remove(item)  # Detach item before replacing to avoid issues
+                item.set_id(group.get_id())
+                yield item
+            else:
+                yield group
+
+    def generate(self):
+
+        yield Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
 
         # Step 1: Parse options into settings
         settings = self.parse_options_to_settings()
@@ -1214,12 +1191,11 @@ class BoxMaker(Effect):
 
         # Add comments and metadata to SVG
         svg = self.document.getroot()
-        layer = svg.get_current_layer()
 
         # Allow hiding version for testing purposes
         if self.version:
-            layer.add(inkex.etree.Comment(f" Generated by BoxMaker version {self.version} "))
-            layer.add(inkex.etree.Comment(f" {str(settings).replace('--', '-')} "))
+            yield inkex.etree.Comment(f" Generated by BoxMaker version {self.version} ")
+            yield inkex.etree.Comment(f" {str(settings).replace('--', '-')} ")
 
 
         tabs = self.create_tabs_configuration(settings, config.piece_types)
@@ -1228,9 +1204,10 @@ class BoxMaker(Effect):
         pieces = self.apply_layout(pieces, settings)
 
         # Step 3: Generate and draw all pieces
-        self.generate_pieces(pieces, config, settings)
+        for i in self.generate_pieces(pieces, config, settings):
+            yield i
 
-    def optimizePiece(self, group : Group, settings: BoxSettings) -> None:
+    def optimizePiece(self, group: Group, settings: BoxSettings) -> None:
         # Step 1: Combine paths to form the outer boundary
         paths = [child for child in group if isinstance(child, PathElement)]
 
@@ -1238,77 +1215,12 @@ class BoxMaker(Effect):
             try_attach_paths(paths, reverse=True)
             paths = [child for child in group if isinstance(child, PathElement)]
 
-        # Step 2: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
-        for path_element in paths:
-            path = path_element.path
-
-            simplified_path = []
-            prev = None  # Previous point
-            current_dir = None  # Current direction
-
-            for segment in path:
-                if isinstance(segment, inkex.paths.ZoneClose):
-                    simplified_path.append(segment)
-                elif isinstance(segment, inkex.paths.Line):
-                    if isinstance(prev, inkex.paths.Line):
-                        dx = round(segment.x - prev.x, 8)
-                        dy = round(segment.y - prev.y, 8)
-                        if dx == 0 and dy == 0:
-                            continue  # Skip node
-                        # Determine the direction
-                        direction = (
-                            0 if dx == 0 else math.copysign(1, dx),
-                            0 if dy == 0 else math.copysign(1, dy),
-                        )
-                        if (dx == 0 or dy == 0) and direction == current_dir:
-                            # Skip redundant points on straight lines
-                            # Replace the last point with the current point
-                            simplified_path[-1] = segment
-                        else:
-                            simplified_path.append(segment)
-                        current_dir = direction
-                    else:
-                        if prev is not None:
-                            dx = round(segment.x - prev.x, 8)
-                            dy = round(segment.y - prev.y, 8)
-                            if dx == 0 and dy == 0:
-                                continue  # Skip node
-
-                            # Determine the direction
-                            direction = (
-                                0 if dx == 0 else math.copysign(1, dx),
-                                0 if dy == 0 else math.copysign(1, dy),
-                            )
-                            current_dir = direction
-                        else:
-                            current_dir = None
-                        simplified_path.append(segment)
-                    prev = segment
-                elif isinstance(segment, inkex.paths.Move):
-                    simplified_path.append(segment)
-                    prev = segment
-                    current_dir = None
-                    direction = None
-                else:
-                    simplified_path.append(segment)
-                    prev = None
-                    current_dir = None
-                    direction = None
-
-            path_element.path = simplified_path
+        if settings.combine:
+            try_clean_paths(paths)
 
         # Step 3: Include gaps in the panel outline by removing them from the panel path
         if len(paths) > 1:
             try_combine_paths(paths, inkscape=self.inkscape, no_subtract=self.no_subtract)
-
-        # Last step: If the group now just contains one path, remove
-        # the group around this path
-        if len(group) == 1:
-            parent = group.getparent()
-            group_id = group.get_id()
-            item = group[0]
-            parent.replace(group, item)
-            item.set_id(group_id)
 
     @staticmethod
     def dimpleStr(

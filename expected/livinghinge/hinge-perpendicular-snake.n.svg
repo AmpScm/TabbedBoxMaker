@@ -1,8 +1,8 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="423.252mm" height="322.00000000006236mm" viewBox="0 0 423.252 322.00000000006236" version="1.1" id="svg5" inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)" sodipodi:docname="blank.svg">
-  <sodipodi:namedview id="namedview7" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:document-units="mm" showgrid="false" inkscape:zoom="0.64052329" inkscape:cx="397.33138" inkscape:cy="561.25984" inkscape:window-width="2086" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="layer1"/>
-  <defs id="defs2"/>
-  <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="423.252mm" height="322.00000000006236mm" viewBox="0 0 423.252 322.00000000006236" version="1.1" sodipodi:docname="blank.svg">
+  <sodipodi:namedview/>
+  <defs id="defaults"/>
+  <g inkscape:label="Living Hinge Box" id="livinghingebox_001">
     <metadata text="$ livinghinge.py --unit=mm --inside=True --length=100.00 --width=100.00 --depth=100.00 --thickness=3.00 --equal=0 --tab=5.00 --hingeOpt=4 --hingeThick=2.00 --thumbTab=15.00 --hairline=True --line-thickness=0.100 --line-color=black --kerf=0.100 --clearance=0.010 --style=0 --spacing=1.00"/>
     <g id="piece_001">
       <path id="line_001" style="fill:none;stroke:#000000;stroke-width:0.1" d="M 108 218 L 113.046 218 L 113.046 215 L 118.136 215 L 118.136 218 L 123.137 218 L 123.137 215 L 128.227 215 L 128.227 218 L 133.228 218 L 133.228 215 L 138.318 215 L 138.318 218 L 143.319 218 L 143.319 215 L 148.409 215 L 148.409 218 L 153.41 218 L 153.41 215 L 158.5 215 L 158.5 218 L 163.5 218 L 163.5 215 L 168.59 215 L 168.59 218 L 173.591 218 L 173.591 215 L 178.681 215 L 178.681 218 L 183.682 218 L 183.682 215 L 188.772 215 L 188.772 218 L 193.773 218 L 193.773 215 L 198.863 215 L 198.863 218 L 203.864 218 L 203.864 215 L 208.954 215 L 208.954 218 L 214 218"/>

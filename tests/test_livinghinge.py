@@ -23,15 +23,21 @@ def mask_unstable(svgin: str) -> str:
         y = round(float(m.group(4)), 3)
         return f'{m.group(1)} {x} {y}'
 
-    return re.sub(
-        r'<!--.*?-->', '<!-- MASKED -->', re.sub(
-        r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"',  re.sub(
-        r'id="[^"]*"', 'id="MASKED"',  re.sub(
-        r'<metadata[^>]*?/>', '<metadata />', re.sub(
-        r'([ML]) (-?\d+(\.\d+)?) (-?\d+(\.\d+)?)', round_points,
-        svgin, flags=re.DOTALL),
-        flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL
-        ).replace('\r\n', '\n')
+    regexes = [
+        (r'<!--.*?-->', '<!-- MASKED -->'),
+        (r' inkscape:version="[^"]*"', ''),
+        (r' inkscape:groupmode="layer"', ''),
+        (r' inkscape:label="[^"]*"', ''),
+        (r' id="[^"]*"', ''),
+        (r'<metadata[^>]*?/>', '<metadata />'),
+        (r'<sodipodi:namedview[^>]*?/>', '<sodipodi:namedview />'),
+        (r'([ML]) (-?\d+(\.\d+)?) (-?\d+(\.\d+)?)', round_points),
+    ]
+
+    for pattern, replacement in regexes:
+        svgin = re.sub(pattern, replacement, svgin, flags=re.DOTALL)
+
+    return svgin.replace('\r', '')
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
@@ -255,8 +261,6 @@ def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Poly
 def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple[str, str]:
     """Run one test case and return (output, expected) strings."""
 
-    outfh = io.BytesIO()
-
     expected_file = os.path.join(expected_output_dir, name + ".svg")
     expected_dir = os.path.dirname(expected_file)
     os.makedirs(expected_dir, exist_ok=True)
@@ -283,9 +287,13 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
         output = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
         expected = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
 
-        if not os.path.exists(expected_file):
+        if len(expected) and not os.path.exists(expected_file):
             with open(expected_file, "w", encoding="utf-8") as f:
                 f.write(expected)
+
+    if not os.path.exists(expected_file):
+        with open(expected_file, "w", encoding="utf-8") as f:
+            f.write(output)
 
     with open(actual_file, "w", encoding="utf-8") as f:
         f.write(output)
@@ -295,7 +303,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
     return (output, expected)
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
-def test_boxmaker(case):
+def test_hinge(case):
     name = case["label"]
     args = case["args"]
 
@@ -307,7 +315,7 @@ def test_boxmaker(case):
     ), f"Test case {name} failed - output doesn't match expected"
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
-def test_boxmaker_relative(case):
+def test_hinge_relative(case):
     name = case["label"]
     args = case["args"]
 
@@ -319,7 +327,7 @@ def test_boxmaker_relative(case):
     ), f"Test case {name} failed - output doesn't match expected"
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
-def test_boxmaker_optimized(case):
+def test_hinge_optimized(case):
     name = case["label"]
     args = case["args"]
 

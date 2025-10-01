@@ -33,27 +33,25 @@ from inkex.paths.lines import Line, Move, ZoneClose
 
 from tabbedboxmaker.InkexShapely import try_attach_paths, adjust_canvas
 from tabbedboxmaker.boxmaker import IntBoolean
+from tabbedboxmaker.Generators import CliEnabledGenerator
 
 _ = gettext.gettext
 
-class LivingHinge(inkex.Effect):
-    cli = True
-    inkscape = False
+class LivingHinge(CliEnabledGenerator):
     hairline_thickness : float = None
     raw_hairline_thickness : float = None
     parent = None
     line_color = None
-    nextId = {}
 
 
     def __init__(self, cli=True, inkscape=False):
 
-        self.cli = cli
-        self.inkscape = inkscape
-        # Call the base class constructor.
-        super().__init__()  # Call the base class constructor
 
-        self.nextId = {}
+        self.container_label = "Living Hinge Box"
+        self.container_no_transform = True
+        # Call the base class constructor.
+        super().__init__(cli=cli, inkscape=inkscape)  # Call the base class constructor
+
 
     def add_arguments(self, pars) -> None:
         """Define options"""
@@ -223,17 +221,7 @@ class LivingHinge(inkex.Effect):
         if not hasattr(self.options, 'input_file'):
             self.options.input_file = os.path.join(os.path.dirname(__file__), "blank.svg")
 
-
-    def makeId(self, prefix: str | None) -> str:
-        """Generate a new unique ID with the given prefix."""
-
-        prefix = prefix if prefix is not None else "id"
-        if prefix not in self.nextId:
-            id = self.nextId[prefix] = 0
-
-        self.nextId[prefix] = id = self.nextId[prefix] + 1
-
-        return f"{prefix}_{id:03d}"
+        self.document_unit = self.options.unit
 
     def drawS(self, XYstring : str, prefix='line'):         # Draw lines from a list
         line = PathElement(id=self.makeId(prefix))
@@ -540,7 +528,7 @@ class LivingHinge(inkex.Effect):
             self.draw_SVG_line((Ex, Sy), (Ex, Ey - space), grp)
 
 
-    def effect(self):
+    def generate(self):
         global nomTab,equalTabs,thickness,correction, Z, unit
 
         # Get access to main SVG document element and get its dimensions.
@@ -550,10 +538,7 @@ class LivingHinge(inkex.Effect):
         widthDoc  = self.svg.unittouu(svg.get('width'))
         heightDoc = self.svg.unittouu(svg.get('height'))
 
-        layer = svg.get_current_layer()
-        layer.add(Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}"))
-
-        self.parent=layer
+        yield Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
 
         # Get script's option values.
         unit=self.options.unit
@@ -655,7 +640,6 @@ class LivingHinge(inkex.Effect):
         p = self.parent
         for piece in pieces: # generate and draw each piece of the box
             grp = Group(id=self.makeId('piece'))
-            p.add(grp)
             self.parent = grp
 
             (xs,xx,xy,xz)=piece[0]
@@ -703,6 +687,10 @@ class LivingHinge(inkex.Effect):
             if piece[5] < 0:
                 self.draw_SVG_ellipse((x+(dx/2), y+(dy/2)), ((dx/2), (dy/2)), [(1.5*math.pi), 0] if piece[5] == -1 else [0, 0.5*math.pi]) #draw the curve
 
+
+            if self.options.combine:
+                try_attach_paths(grp, replace_group=True, reverse=True)
+
             if piece[5] == 1: #Piece should contain a living hinge
                 if hingeOpt == 0: #Traditional parallel slit
                     self.LivingHinge2((x+(Z/2), y), ((x+(Z/2)+(self.EllipseCircumference(X/2, Z/2)/4)), y + (dy)), hingeThick)
@@ -724,11 +712,13 @@ class LivingHinge(inkex.Effect):
             if self.options.combine:
                 try_attach_paths(grp, replace_group=True)
 
+            if len(grp) == 1:
+                item = grp[0]
+                grp.remove(item)  # Detach item before replacing to avoid issues
+                item.set_id(grp.get_id())
+                yield item
+            elif len(grp) > 1:
+                yield grp
 
         # Revert parent back to original parent
-        self.parent = p
-
-        # If generated from CLI, adjust canvas to fit contents. Otherwise keep user setting
-        if not self.inkscape:
-            adjust_canvas(svg, unit=self.options.unit)
-
+        self.parent = None

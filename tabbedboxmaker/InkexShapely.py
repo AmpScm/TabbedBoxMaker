@@ -243,22 +243,96 @@ def try_attach_paths(group: list[inkex.BaseElement], tolerance: float = 0.01, re
 
 
             if isinstance(path_last, inkex.paths.ZoneClose) or isinstance(path_last, inkex.paths.zoneClose):
-                print(path, file=sys.stderr)
                 continue  # Path is already closed. Not sure why we only see this now
             elif path_last.x == path[0].x and path_last.y == path[0].y:
                 if reverse:
                     path = path.reverse() # Ensure correct winding order
+
                 path.append(inkex.paths.ZoneClose())
                 path_element.path = path
 
+            try_clean_paths([path_element])
+
     if replace_group and isinstance(group, inkex.Group) and len(group) == 1:
         parent = group.getparent()
-        group_id = group.get_id()
-        item = group[0]
-        parent.replace(group, item)
-        item.set_id(group_id)
+        if parent is not None:
+            group_id = group.get_id()
+            item = group[0]
+            parent.replace(group, item)
+            item.set_id(group_id)
 
     return updated_one
+
+def try_clean_paths(paths: list[inkex.BaseElement]):
+    """Try to clean paths by removing duplicate points and zero-length segments."""
+            # Step 2: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
+    for path_element in paths:
+
+        if not isinstance(path_element, inkex.PathElement) or len(path_element.path) < 1:
+            continue
+
+        path = path_element.path
+
+        updated = False
+        simplified_path = []
+        prev = None  # Previous point
+        current_dir = None  # Current direction
+
+        for segment in path:
+            if isinstance(segment, inkex.paths.ZoneClose):
+                simplified_path.append(segment)
+            elif isinstance(segment, inkex.paths.Line):
+                if isinstance(prev, inkex.paths.Line):
+                    dx = round(segment.x - prev.x, 8)
+                    dy = round(segment.y - prev.y, 8)
+                    if dx == 0 and dy == 0:
+                        updated = True
+                        continue  # Skip node
+                    # Determine the direction
+                    direction = (
+                        0 if dx == 0 else math.copysign(1, dx),
+                        0 if dy == 0 else math.copysign(1, dy),
+                    )
+                    if (dx == 0 or dy == 0) and direction == current_dir:
+                        # Skip redundant points on straight lines
+                        # Replace the last point with the current point
+                        simplified_path[-1] = segment
+                        updated = True
+                    else:
+                        simplified_path.append(segment)
+                    current_dir = direction
+                else:
+                    if prev is not None:
+                        dx = round(segment.x - prev.x, 8)
+                        dy = round(segment.y - prev.y, 8)
+                        if dx == 0 and dy == 0:
+                            updated = True
+                            continue  # Skip node
+
+                        # Determine the direction
+                        direction = (
+                            0 if dx == 0 else math.copysign(1, dx),
+                            0 if dy == 0 else math.copysign(1, dy),
+                        )
+                        current_dir = direction
+                    else:
+                        current_dir = None
+                    simplified_path.append(segment)
+                prev = segment
+            elif isinstance(segment, inkex.paths.Move):
+                simplified_path.append(segment)
+                prev = segment
+                current_dir = None
+                direction = None
+            else:
+                simplified_path.append(segment)
+                prev = None
+                current_dir = None
+                direction = None
+
+        if updated:
+            path_element.path = simplified_path
+
 
 
 def try_combine_paths(paths: list[inkex.Path], inkscape: bool = False, no_subtract: bool = False):

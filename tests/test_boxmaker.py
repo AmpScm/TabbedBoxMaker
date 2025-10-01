@@ -23,15 +23,22 @@ def mask_unstable(svgin: str) -> str:
         y = round(float(m.group(4)), 3)
         return f'{m.group(1)} {x} {y}'
 
-    return re.sub(
-        r'<!--.*?-->', '<!-- MASKED -->', re.sub(
-        r'inkscape:version="[^"]*"', 'inkscape:version="MASKED"',  re.sub(
-        r'id="[^"]*"', 'id="MASKED"',  re.sub(
-        r'<metadata[^>]*?/>', '<metadata />', re.sub(
-        r'([ML]) (-?\d+(\.\d+)?) (-?\d+(\.\d+)?)', round_points,
-        svgin, flags=re.DOTALL),
-        flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL), flags=re.DOTALL
-        ).replace('\r\n', '\n')
+    regexes = [
+        (r'<!--.*?-->', '<!-- MASKED -->'),
+        (r' inkscape:version="[^"]*"', ''),
+        (r' inkscape:groupmode="layer"', ''),
+        (r' inkscape:label="[^"]*"', ''),
+        (r' id="[^"]*"', ''),
+        (r'<metadata[^>]*?/>', '<metadata />'),
+        (r'<sodipodi:namedview[^>]*?/>', '<sodipodi:namedview />'),
+        (r'([ML]) (-?\d+(\.\d+)?) (-?\d+(\.\d+)?)', round_points),
+    ]
+
+    for pattern, replacement in regexes:
+        svgin = re.sub(pattern, replacement, svgin, flags=re.DOTALL)
+
+    return svgin.replace('\r', '')
+
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
@@ -586,14 +593,18 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
 
     outfh = io.BytesIO()
 
-    boxMaker = BoxMaker(cli=True)
-    boxMaker.parse_arguments(args)
-    boxMaker.options.output = outfh
-    boxMaker.options.combine = boxMaker.options.cutout = optimize
-    boxMaker.no_subtract = no_subtract
+    boxmaker = BoxMaker(cli=True)
+    boxmaker.parse_arguments(args)
 
-    boxMaker.load_raw()
-    boxMaker.save_raw(boxMaker.effect())
+    boxmaker.options.output = outfh
+    boxmaker.options.combine = optimize
+    boxmaker.options.cutout = not no_subtract and optimize
+    boxmaker.version = None
+    boxmaker.raw_hairline_thickness = -1
+    boxmaker.hairline_thickness = 0.0508
+
+    boxmaker.load_raw()
+    boxmaker.save_raw(boxmaker.effect())
 
     output = outfh.getvalue().decode("utf-8")
     output = pretty_xml(output)
@@ -637,8 +648,6 @@ def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Poly
 def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple[str, str]:
     """Run one test case and return (output, expected) strings."""
 
-    outfh = io.BytesIO()
-
     expected_file = os.path.join(expected_output_dir, name + ".svg")
     expected_dir = os.path.dirname(expected_file)
     os.makedirs(expected_dir, exist_ok=True)
@@ -654,27 +663,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
         with open(expected_file[:-6] + '.n.svg', "r") as f:
             expected = f.read()
 
-    tbm = BoxMaker()
-
-    blank_svg = os.path.join(os.path.dirname(__file__), "blank.svg")
-
-    with open(blank_svg, "r") as f:
-        blank_data = f.read()
-
-    infh = io.BytesIO(blank_data.encode("utf-8"))
-    tbm.parse_arguments(args)
-    tbm.options.output = outfh
-    tbm.options.input_file = infh
-    tbm.options.combine = tbm.options.cutout = optimize
-    tbm.version = None
-    tbm.raw_hairline_thickness = -1
-    tbm.hairline_thickness = 0.0508
-
-    tbm.load_raw()
-    tbm.save_raw(tbm.effect())
-
-    output = outfh.getvalue().decode("utf-8")
-    output = pretty_xml(output)
+    output = make_box(args, make_relative=make_relative, optimize=optimize, mask=False, no_subtract=not optimize)
 
     if make_relative:
         def make_path_relative(m):
@@ -685,9 +674,13 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
         output = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
         expected = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
 
-        if not os.path.exists(expected_file):
+        if len(expected) and not os.path.exists(expected_file):
             with open(expected_file, "w", encoding="utf-8") as f:
                 f.write(expected)
+
+    if not os.path.exists(expected_file):
+        with open(expected_file, "w", encoding="utf-8") as f:
+            f.write(output)
 
     with open(actual_file, "w", encoding="utf-8") as f:
         f.write(output)
