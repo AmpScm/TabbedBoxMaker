@@ -25,7 +25,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from copy import deepcopy
+from inkex import PathElement, Metadata
 from inkex.utils import filename_arg
+
+from tabbedboxmaker.Generators import CliEnabledGenerator
+from tabbedboxmaker.boxmaker import IntBoolean
 
 import os
 import inkex
@@ -38,13 +42,6 @@ def log(text):
     if "SCHROFF_LOG" in os.environ:
         f = open(os.environ.get("SCHROFF_LOG"), "a")
         f.write(text + "\n")
-
-
-def newGroup(canvas):
-    # Create a new group and add element created from line string
-    panelId = canvas.svg.get_unique_id("panel")
-    group = canvas.svg.get_current_layer().add(inkex.Group(id=panelId))
-    return group
 
 # Draws each top or bottom edge
 # Sidenumber is 1-4
@@ -216,7 +213,7 @@ def boxedge(hh, ww, dd, k2, t5, t2, sidetype, topside, sidenumber):
     return h
 
 
-class CardboardBoxMaker(inkex.Effect):
+class CardboardBoxMaker(CliEnabledGenerator):
     cli = True
     inkscape = False
     hairline_thickness : float = None
@@ -224,11 +221,9 @@ class CardboardBoxMaker(inkex.Effect):
 
     def __init__(self, cli=True, inkscape=False):
 
-        self.cli = cli
-        self.inkscape = inkscape
-
+        self.container_label = "Cardboard Box"
         # Call the base class constructor.
-        super().__init__()
+        super().__init__(cli=cli, inkscape=inkscape)
         # Define options
 
 
@@ -237,23 +232,8 @@ class CardboardBoxMaker(inkex.Effect):
 
         super().add_arguments(pars)
 
-        if self.cli:
-            # We don"t need a required input file in CLI mode
-            for action in self.arg_parser._get_positional_actions():
-                self.arg_parser._remove_action(action)
-                self.arg_parser._positionals._group_actions.remove(action)
-
-        self.arg_parser.add_argument(
-            "--unit",
-            action="store",
-            type=str,
-            dest="unit",
-            default="mm",
-            help="Measure Units",
-        )
         self.arg_parser.add_argument(
             "--width",
-            action="store",
             type=float,
             dest="width",
             default=100,
@@ -261,7 +241,6 @@ class CardboardBoxMaker(inkex.Effect):
         )
         self.arg_parser.add_argument(
             "--depth",
-            action="store",
             type=float,
             dest="depth",
             default=100,
@@ -269,7 +248,6 @@ class CardboardBoxMaker(inkex.Effect):
         )
         self.arg_parser.add_argument(
             "--height",
-            action="store",
             type=float,
             dest="height",
             default=100,
@@ -277,7 +255,6 @@ class CardboardBoxMaker(inkex.Effect):
         )
         self.arg_parser.add_argument(
             "--hairline",
-            action="store",
             type=int,
             dest="hairline",
             default=0,
@@ -285,7 +262,6 @@ class CardboardBoxMaker(inkex.Effect):
         )
         self.arg_parser.add_argument(
             "--thickness",
-            action="store",
             type=float,
             dest="thickness",
             default=10,
@@ -293,7 +269,6 @@ class CardboardBoxMaker(inkex.Effect):
         )
         self.arg_parser.add_argument(
             "--kerf",
-            action="store",
             type=float,
             dest="kerf",
             default=0.5,
@@ -301,7 +276,6 @@ class CardboardBoxMaker(inkex.Effect):
         )
         self.arg_parser.add_argument(
             "--boxtype",
-            action="store",
             type=int,
             dest="boxtype",
             default=25,
@@ -309,7 +283,6 @@ class CardboardBoxMaker(inkex.Effect):
         )
         self.arg_parser.add_argument(
             "--boxtop",
-            action="store",
             type=int,
             dest="boxtop",
             default=25,
@@ -317,36 +290,32 @@ class CardboardBoxMaker(inkex.Effect):
         )
         self.arg_parser.add_argument(
             "--boxbottom",
-            action="store",
             type=int,
             dest="boxbottom",
             default=25,
             help="Box Bottom",
         )
         self.arg_parser.add_argument(
-            "--sidetab", action="store", type=str, dest="sidetab", help="Side Tab"
+            "--sidetab",
+            type=IntBoolean,
+            dest="sidetab",
+            help="Side Tab",
+            choices=[True, False, '0', '1'],
         )
         self.arg_parser.add_argument(
             "--foldlines",
-            action="store",
-            type=str,
+            type=IntBoolean,
             dest="foldlines",
             help="Add Cut Lines",
+            choices=[True, False, '0', '1'],
         )
 
-    def parse_arguments(self, args : list[str]) -> None:
-        """Parse the given arguments and set 'self.options'"""
-        
-        super().parse_arguments(args)
-        self.cli_args = deepcopy(args)
+    def generate(self):
 
-        if not hasattr(self.options, 'input_file'):
-            self.options.input_file = os.path.join(os.path.dirname(__file__), "blank.svg")
+        yield Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
 
-    def effect(self):
         # Get the attributes:
         # inkex.utils.errormsg("Testing")
-        group = newGroup(self)
         unit = self.options.unit
         boxtop = self.options.boxtop
         boxbottom = self.options.boxbottom
@@ -385,7 +354,7 @@ class CardboardBoxMaker(inkex.Effect):
         # RIGHT EDGE
 
         # Add tab along right edge if wanted (else, straight edge)
-        if self.options.sidetab == "true":
+        if self.options.sidetab:
             if boxtop == 1:
                 h += f"l {t5},{t2} l 0,{t2 * 2} "
             else:
@@ -419,7 +388,7 @@ class CardboardBoxMaker(inkex.Effect):
         h += boxedge(hh, ww, dd, k2, t5, t2, boxbottom, False, 1)
 
         h += "Z"
-        group.add(self.getLine(h, linethickness=self.linethickness))
+        yield self.getLine(h, linethickness=self.linethickness)
 
         # If we had top foldover tabs, add the slots for them
         # but ONLY if there is a box bottom to draw them on
@@ -436,7 +405,7 @@ class CardboardBoxMaker(inkex.Effect):
                 h += f"l {-wd3 + k2 - t2},0 "
                 h += f"l 0,{(-t * 1.5) + k2} "
                 h += "Z"
-                group.add(self.getLine(h, linethickness=self.linethickness))
+                yield self.getLine(h, linethickness=self.linethickness)
                 if i == 1:
                     o += dd3 + dd3 + ww3
                     wd3 = ww3
@@ -458,10 +427,10 @@ class CardboardBoxMaker(inkex.Effect):
             # Trailing Horizontal Fold Notch
             h += f"a {(t * 1.0) - k2} {(t * 1.0) - k2} 180 0 1 0,{(-t * 2.5) + k2} "
             h += "Z"
-            group.add(self.getLine(h, linethickness=self.linethickness))
+            yield self.getLine(h, linethickness=self.linethickness)
 
         # If we wanted fold lines - add them
-        if self.options.foldlines == "true":
+        if self.options.foldlines:
 
             # Draw horizontal lines for top and/or bottom tabs
             # Only needed when there is a top or bottom to fold over
@@ -477,7 +446,7 @@ class CardboardBoxMaker(inkex.Effect):
                 # First Side
                 h = f"M {t5},{yy} "
                 h += f"l {ww - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(self.getLine(h, stroke="#0000ff", linethickness=self.linethickness))
+                yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
 
                 if box == 2:
                     yy -= t
@@ -485,17 +454,17 @@ class CardboardBoxMaker(inkex.Effect):
                 # Second Side
                 h = f"M {ww + t2 + t5},{yy} "
                 h += f"l {dd - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(self.getLine(h, stroke="#0000ff", linethickness=self.linethickness))
+                yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
 
                 # Third Side
                 h = f"M {ww + t2 + t5 + dd + t2},{yy} "
                 h += f"l {ww - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(self.getLine(h, stroke="#0000ff", linethickness=self.linethickness))
+                yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
 
                 # Fourth Side
                 h = f"M {ww + t2 + t5 + dd + t2 + ww + t2},{yy} "
                 h += f"l {dd - t2 - t2 - (t2 / 2) - t5},0"
-                group.add(self.getLine(h, stroke="#0000ff", linethickness=self.linethickness))
+                yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
 
                 if box == 2:
                     # h=f"M {ww+t2+t5 + dd+t2 + ww+t2},{yy} "
@@ -503,35 +472,35 @@ class CardboardBoxMaker(inkex.Effect):
                     # group.add(self.getLine(h,stroke='#0000ff'))
                     h = f"M {t5 + t5},{-1 * (dd + t2 + (t2 / 2))} "
                     h += f"l {ww - (4 * t5)},0 "
-                    group.add(self.getLine(h, stroke="#0000ff", linethickness=self.linethickness))
+                    yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
 
             # Draw Vertical Ones
             # First Side
             h = f"M {ww + t},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(self.getLine(h, stroke="#0000ff", linethickness=self.linethickness))
+            yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
 
             h = f"M {ww + t + dd + t2},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(self.getLine(h, stroke="#0000ff", linethickness=self.linethickness))
+            yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
 
             h = f"M {ww + t + dd + t2 + ww + t2},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            group.add(self.getLine(h, stroke="#0000ff", linethickness=self.linethickness))
+            yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
 
             # Tab only if selected
-            if self.options.sidetab == "true":
+            if self.options.sidetab:
                 h = f"M {ww + t + dd + t2 + ww + t2 + dd},{t5 + t2} "
                 h += f"l 0,{hh - (t5 + t2 + t5 + t2)}"
-                group.add(self.getLine(h, stroke="#ff0000", linethickness=self.linethickness))
+                yield self.getLine(h, stroke="#ff0000", linethickness=self.linethickness)
 
         # End Fold Lines
 
-    def getLine(self, XYstring, stroke="#000000", linethickness : float = 1) -> inkex.PathElement:
-        line = inkex.PathElement()
+    def getLine(self, XYstring, stroke="#000000", linethickness : float = 1) -> PathElement:
+        line = PathElement()
 
         if linethickness == self.raw_hairline_thickness:
-            line.style = { "stroke": stroke, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+            line.style = { "stroke": stroke, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline" }
         else:
             line.style = { "stroke": stroke, "stroke-width"  : str(linethickness), "fill": "none" }
 

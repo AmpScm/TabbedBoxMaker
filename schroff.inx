@@ -65,6 +65,7 @@
                     <label appearance="header">Layout</label>
                     <separator/>
                     <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" gui-text="Space Between Parts">1.0</param>
+                    <param name="absolute-positioning" type="boolean" gui-text="Use Absolute Positioning">true</param>
                 </vbox>
             </hbox>
         </page>

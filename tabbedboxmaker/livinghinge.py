@@ -48,7 +48,6 @@ class LivingHinge(CliEnabledGenerator):
 
 
         self.container_label = "Living Hinge Box"
-        self.container_no_transform = True
         # Call the base class constructor.
         super().__init__(cli=cli, inkscape=inkscape)  # Call the base class constructor
 
@@ -58,21 +57,7 @@ class LivingHinge(CliEnabledGenerator):
 
         super().add_arguments(pars)
 
-        if self.cli:
-            # We don"t need a required input file in CLI mode
-            for action in self.arg_parser._get_positional_actions():
-                self.arg_parser._remove_action(action)
-                self.arg_parser._positionals._group_actions.remove(action)
-
         # Define options
-        self.arg_parser.add_argument(
-            '--unit',
-            type=str,
-            dest='unit',
-            default='mm',
-            help='Measure Units',
-            choices=["mm", "cm", "in", "ft", "px", "pt", "pc"] + (["document"] if self.inkscape else []),
-            )
         self.arg_parser.add_argument(
             '--inside',
             type=IntBoolean,
@@ -212,22 +197,11 @@ class LivingHinge(CliEnabledGenerator):
             choices=[True, False, '0', '1'],
         )
 
-    def parse_arguments(self, args: list[str]) -> None:
-        """Parse the given arguments and set 'self.options'"""
-
-        super().parse_arguments(args)
-        self.cli_args = deepcopy(args)
-
-        if not hasattr(self.options, 'input_file'):
-            self.options.input_file = os.path.join(os.path.dirname(__file__), "blank.svg")
-
-        self.document_unit = self.options.unit
-
     def drawS(self, XYstring : str, prefix='line'):         # Draw lines from a list
         line = PathElement(id=self.makeId(prefix))
 
         if self.line_thickness == self.raw_hairline_thickness:
-            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline" }
         else:
             line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
 
@@ -238,11 +212,11 @@ class LivingHinge(CliEnabledGenerator):
     def draw_SVG_ellipse(self, a1, a2, start_end, prefix='arc'):
         (centerx, centery), (radiusx, radiusy) = a1, a2
 
-
-        line = PathElement.arc((centerx, centery), radiusx, ry=radiusy, start=start_end[0], end=start_end[1], arctype='arc', open=True, id=self.makeId(prefix)) # open is for inkscape. arc to create a proper arc path
+        # open is for inkscape. arc to create a proper arc path
+        line = PathElement.arc((centerx, centery), radiusx, ry=radiusy, start=start_end[0], end=start_end[1], arctype='arc', open=True, id=self.makeId(prefix))
 
         if self.line_thickness == self.raw_hairline_thickness:
-            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline" }
         else:
             line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
 
@@ -256,7 +230,7 @@ class LivingHinge(CliEnabledGenerator):
 
 
         if self.line_thickness == self.raw_hairline_thickness:
-            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline" }
         else:
             line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
 

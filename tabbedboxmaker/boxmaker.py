@@ -72,7 +72,7 @@ class BoxMaker(CliEnabledGenerator):
         self.schroff = schroff
 
         self.container_label = "Tabbed Box" if not schroff else "Schroff Box"
-        self.container_no_transform = True
+
         # Call the base class constructor.
         super().__init__(cli=cli, inkscape=inkscape)
 
@@ -86,7 +86,7 @@ class BoxMaker(CliEnabledGenerator):
         line = PathElement(id=self.makeId(id))
 
         if self.line_thickness == self.raw_hairline_thickness:
-            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline"}
         else:
             line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
         line.path = Path(path)
@@ -99,7 +99,7 @@ class BoxMaker(CliEnabledGenerator):
         log("putting circle at (%d,%d)" % (cx,cy))
         line = PathElement.arc((cx, cy), r, id=self.makeId(id))
         if self.line_thickness == self.hairline_thickness:
-            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
+            line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline" }
         else:
             line.style = { "stroke": self.line_color, "stroke-width"  : str(self.line_thickness), "fill": "none" }
         return line
@@ -109,20 +109,7 @@ class BoxMaker(CliEnabledGenerator):
     def add_arguments(self, pars) -> None:
         """Define options"""
 
-        if self.cli:
-            # We don"t need a required input file in CLI mode
-            for action in self.arg_parser._get_positional_actions():
-                self.arg_parser._remove_action(action)
-                self.arg_parser._positionals._group_actions.remove(action)
-
-        self.arg_parser.add_argument(
-            "--unit",
-            type=str,
-            dest="unit",
-            default="mm",
-            help="Measure Units",
-            choices=["mm", "cm", "in", "ft", "px", "pt", "pc"] + (["document"] if self.inkscape else []),
-        )
+        super().add_arguments(pars)
 
         if self.schroff:
             self.arg_parser.add_argument(
@@ -352,18 +339,6 @@ class BoxMaker(CliEnabledGenerator):
             choices=[True, False, '0', '1'],
         )
 
-
-    def parse_arguments(self, args: list[str]) -> None:
-        """Parse the given arguments and set 'self.options'"""
-
-        super().parse_arguments(args)
-        self.cli_args = deepcopy(args)
-
-        if not hasattr(self.options, 'input_file'):
-            self.options.input_file = os.path.join(os.path.dirname(__file__), "blank.svg")
-
-        self.document_unit = self.options.unit
-
     @staticmethod
     def parse_divider_spacing(spacing_str: str, available_width: float,
                             thickness: float, num_dividers: int, reverse: bool=False) -> list[float]:
@@ -429,7 +404,6 @@ class BoxMaker(CliEnabledGenerator):
 
         if unit == 'document':
             unit = svg.document_unit
-
 
         kerf = self.svg.unittouu(str(self.options.kerf) + unit)
 
@@ -1177,7 +1151,7 @@ class BoxMaker(CliEnabledGenerator):
 
     def generate(self):
 
-        yield Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
+        yield Metadata(text=f"$ {os.path.basename(__file__) if not self.schroff else 'schroff.py'} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
 
         # Step 1: Parse options into settings
         settings = self.parse_options_to_settings()

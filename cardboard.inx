@@ -10,10 +10,14 @@
                 <vbox>
                     <label appearance="header">Dimensions</label>
                     <separator/>
-                    <param name="unit" gui-text="    Units" type="optiongroup" appearance="combo">
-                        <option value="in">in</option>
-                        <option value="mm">mm</option>
+                    <param name="unit" gui-text="  Units" type="optiongroup" appearance="combo">
+                        <option value="document" selected="true">Document</option>
                         <option value="cm">cm</option>
+                        <option value="in">in</option>
+                        <option value="pt">pt</option>
+                        <option value="pc">pc</option>
+                        <option value="mm">mm</option>
+                        <option value="px">px</option>
                     </param>
 
                     <param name="height" type="float" precision="2" min="0.0" max="10000.0" gui-text="    Height">3</param>
@@ -56,7 +60,7 @@
 
                     <param name="sidetab" type="bool"  gui-text="Side Tab"></param>
                     <param name="foldlines" type="bool"  gui-text="Add Fold Lines"></param>
-
+                    <param name="absolute-positioning" type="boolean" gui-text="Use Absolute Positioning">true</param>
                 </vbox>
             </hbox>
         </page>

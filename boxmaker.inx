@@ -107,6 +107,7 @@
                     </param>
 
                     <param name="spacing" type="float" precision="2" min="0.0" max="10000.0" gui-text="Space between parts">1.0</param>
+                    <param name="absolute-positioning" type="boolean" gui-text="Use Absolute Positioning">true</param>
                 </vbox>
                 <spacer/>
                 <separator/>
