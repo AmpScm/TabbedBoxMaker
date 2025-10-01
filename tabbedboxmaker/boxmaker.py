@@ -340,8 +340,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
         )
 
     @staticmethod
-    def parse_divider_spacing(spacing_str: str, available_width: float,
-                            thickness: float, num_dividers: int, reverse: bool=False) -> list[float]:
+    def parse_divider_spacing(spacing_str: str, available_width: float, thickness: float, num_dividers: int, reverse: bool=False) -> list[float]:
         """Parse semicolon-separated spacing values and validate them"""
         if num_dividers <= 0:
             return []
@@ -1302,7 +1301,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
         if side.has_tabs or not (settings.combine or settings.cutout):
             if (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC and piece.pieceType in [PieceType.Bottom, PieceType.Top]) or \
-                (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType ==  PieceType.Top and side.is_male and not side.prev.is_male):
+                    (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType ==  PieceType.Top and side.is_male and not side.prev.is_male):
                 p = vector + toInside * -(thickness + halfkerf)
                 s.append(Line(*p))
 
@@ -1341,8 +1340,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
             for tabDivision in range(1, int(divisions)):
                 if tabDivision % 2:
                     # draw the gap
-                    vector += direction * (gapWidth
-                                            + (kerf if dogbone and isMale else 0))
+                    vector += direction * (gapWidth + (kerf if dogbone and isMale else 0))
                     s.append(Line(*vector))
                     if dogbone and isMale:
                         vector -= vecHalfKerf

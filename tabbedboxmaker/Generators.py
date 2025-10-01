@@ -90,7 +90,7 @@ class CliEnabledGenerator(GenerateExtension):
             if self.options.unit == "document":
                 self.document_unit = self.options.unit = self.svg.document_unit
         elif self.document_unit == "document":
-                self.document_unit = self.svg.document_unit
+            self.document_unit = self.svg.document_unit
 
         super().effect()
 

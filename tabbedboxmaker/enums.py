@@ -80,13 +80,13 @@ class PieceType(Enum):
     Left = 4,
     Right = 8,
 
-    Bottom = 16,    
+    Bottom = 16,
     Top = 32,
-    
-    DividerX = 256 + 1 # Back + 256
-    DividerY = 256 + 4 # Left + 256
 
-   
+    DividerX = 256 + 1  # Back + 256
+    DividerY = 256 + 4  # Left + 256
+
+
 class Sides(IntEnum):
     A = 0
     B = 1

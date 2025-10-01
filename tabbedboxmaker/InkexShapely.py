@@ -160,7 +160,7 @@ def best_effort_inkex_combine_paths(paths: list[inkex.Path]):
 
         # Skip if touching or outside panel
         if (hole_bb.left <= panel_bb.left or hole_bb.right >= panel_bb.right or
-            hole_bb.top <= panel_bb.top or hole_bb.bottom >= panel_bb.bottom):
+                hole_bb.top <= panel_bb.top or hole_bb.bottom >= panel_bb.bottom):
             continue
 
         if any(hole_bb & dont for dont in dont_touch):
@@ -264,8 +264,8 @@ def try_attach_paths(group: list[inkex.BaseElement], tolerance: float = 0.01, re
     return updated_one
 
 def try_clean_paths(paths: list[inkex.BaseElement]):
-    """Try to clean paths by removing duplicate points and zero-length segments."""
-            # Step 2: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)
+    """Try to clean paths by removing unneeded nodes (duplicates and intermediates on h/v lines)."""
+
     for path_element in paths:
 
         if not isinstance(path_element, inkex.PathElement) or len(path_element.path) < 1:
@@ -434,17 +434,14 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
 
         return min_x, min_y, max_x, max_y
 
-    def rectangles_overlap(r1: Tuple[float, float, float, float],
-                          r2: Tuple[float, float, float, float]) -> bool:
+    def rectangles_overlap(r1: Tuple[float, float, float, float], r2: Tuple[float, float, float, float]) -> bool:
         """Check if two rectangles overlap."""
         x1_min, y1_min, x1_max, y1_max = r1
         x2_min, y2_min, x2_max, y2_max = r2
 
-        return not (x1_max <= x2_min or x2_max <= x1_min or
-                   y1_max <= y2_min or y2_max <= y1_min)
+        return not (x1_max <= x2_min or x2_max <= x1_min or y1_max <= y2_min or y2_max <= y1_min)
 
-    def compute_overlap(r1: Tuple[float, float, float, float],
-                       r2: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
+    def compute_overlap(r1: Tuple[float, float, float, float], r2: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
         """Compute overlap rectangle of two rectangles."""
         x1_min, y1_min, x1_max, y1_max = r1
         x2_min, y2_min, x2_max, y2_max = r2
@@ -456,8 +453,7 @@ def merge_two_rectangles_to_outer_path(rect1: inkex.PathElement, rect2: inkex.Pa
 
         return overlap_min_x, overlap_min_y, overlap_max_x, overlap_max_y
 
-    def fragment_rectangle(rect: Tuple[float, float, float, float],
-                          overlap: Tuple[float, float, float, float]) -> List[Tuple[float, float, float, float]]:
+    def fragment_rectangle(rect: Tuple[float, float, float, float], overlap: Tuple[float, float, float, float]) -> List[Tuple[float, float, float, float]]:
         """Fragment a rectangle by removing the overlap area."""
         min_x, min_y, max_x, max_y = rect
         ov_min_x, ov_min_y, ov_max_x, ov_max_y = overlap

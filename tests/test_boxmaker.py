@@ -2,11 +2,10 @@ import io
 import os
 import pytest
 import re
-import sys
 from inkex.paths import Path
 
 import xml.dom.minidom
-from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
+from tabbedboxmaker.InkexShapely import path_to_polygon
 from collections.abc import Iterable
 
 from tabbedboxmaker import TabbedBoxMaker
@@ -14,6 +13,7 @@ from tabbedboxmaker import TabbedBoxMaker
 
 from shapely.affinity import translate
 from shapely.geometry import Polygon
+
 
 def mask_unstable(svgin: str) -> str:
     """Mask out unstable parts of SVG output that may vary between runs."""
@@ -584,7 +584,7 @@ cases = [
     },
 ]
 
-expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected")
+expected_output_dir = os.path.join(os.path.dirname(__file__), "..", "expected")
 actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual")
 
 
@@ -617,11 +617,11 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
 
         output = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
 
-
     if mask:
         output = mask_unstable(output)
 
     return output
+
 
 def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
     """Run one test case and return a map of id -> Path."""
@@ -634,6 +634,7 @@ def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
 
     return map
 
+
 def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Polygon]:
     """Run one test case and return a map of id -> Shapely Polygon."""
 
@@ -644,6 +645,7 @@ def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Poly
         map[k] = path_to_polygon(v)
 
     return map
+
 
 def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple[str, str]:
     """Run one test case and return (output, expected) strings."""
@@ -689,6 +691,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
         output, expected = mask_unstable(output), mask_unstable(expected)
     return (output, expected)
 
+
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_boxmaker(case):
     name = case["label"]
@@ -700,6 +703,7 @@ def test_boxmaker(case):
     assert (
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
+
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_boxmaker_relative(case):
@@ -713,6 +717,7 @@ def test_boxmaker_relative(case):
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
 
+
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_boxmaker_optimized(case):
     name = case["label"]
@@ -723,6 +728,7 @@ def test_boxmaker_optimized(case):
         output == expected
     ), f"Test case {name} failed - optimized output doesn't match expected"
 
+
 gen_args = [
     ('unit', ["mm", "in"]),
     ('inside', [1, 0]),
@@ -731,20 +737,20 @@ gen_args = [
     ('depth', [40, 60]),
     ('equal', [0, 1]),
     ('tab', [6, 10]),
-    ('tabtype', [0, 1]), # regular, dogbone
-    ('tabsymmetry', [0, 1, 2]), # mirror, rotate, antisymmetric
+    ('tabtype', [0, 1]),  # regular, dogbone
+    ('tabsymmetry', [0, 1, 2]),  # mirror, rotate, antisymmetric
     (['dimpleheight', 'dimplelength'], [[0, 0], [0.1, 0.2]]),
     ('hairline', [1, 0]),
     ('thickness', [3, 6]),
     ('kerf', [0, 0.1, 0.5]),
-    ('style', [1, 2, 3]), # diagrammatic, three-piece, inline
-    ('boxtype', [1, 2, 3, 4, 5, 6]), # fully enclosed, open top, two sides open, three sides open, opposite ends open, two panels only
+    ('style', [1, 2, 3]),  # diagrammatic, three-piece, inline
+    ('boxtype', [1, 2, 3, 4, 5, 6]),  # fully enclosed, open top, two sides open, three sides open, opposite ends open, two panels only
     (['div-l', 'div-w'], [[1, 1], [0, 0], [0, 1], [1, 0], [2, 3]]),
-    ('keydiv', [0, 1, 2, 3]), # all sides, floor/ceiling only, walls only, none
+    ('keydiv', [0, 1, 2, 3]),  # all sides, floor/ceiling only, walls only, none
     ('spacing', [2, 1, 3]),
 ]
 
-arg_cases : list[list[str]]= []
+arg_cases : list[list[str]] = []
 for i in range(len(gen_args)):
 
     n = 0
@@ -779,11 +785,12 @@ for i in range(len(gen_args)):
 
         arg_cases.append([s, sa, na])
 
+
 @pytest.mark.parametrize("cp", arg_cases, ids=[c[2] for c in arg_cases])
 def test_params(cp):
     prefix, suffix, name = cp
 
-    name = suffix.replace('--', '').replace('-', '_').replace(' ','')
+    name = suffix.replace('--', '').replace('-', '_').replace(' ', '')
 
     output, expected = run_one(os.path.join('p', name + '.n'), list((prefix + '  ' + suffix).split()))
 
@@ -792,11 +799,12 @@ def test_params(cp):
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
 
+
 @pytest.mark.parametrize("cp", arg_cases, ids=[c[2] for c in arg_cases])
 def test_params_relative(cp):
     prefix, suffix, name = cp
 
-    name = suffix.replace('--', '').replace('-', '_').replace(' ','')
+    name = suffix.replace('--', '').replace('-', '_').replace(' ', '')
 
     output, expected = run_one(os.path.join('p', name + '.r'), list((prefix + '  ' + suffix).split()), make_relative=True)
 
@@ -810,7 +818,7 @@ def test_params_relative(cp):
 def test_params_optimized(cp):
     prefix, suffix, name = cp
 
-    name = suffix.replace('--', '').replace('-', '_').replace(' ','')
+    name = suffix.replace('--', '').replace('-', '_').replace(' ', '')
 
     output, expected = run_one(os.path.join('p', name + '.o'), list((prefix + '  ' + suffix).split()), optimize=True)
 
@@ -832,7 +840,7 @@ def test_inside_sizes_no_kerf():
             "--kerf=0",
             "--thickness=2"], optimize=True)
 
-    sizes=[]
+    sizes = []
 
     for i in re.findall(r'(?<=\bd=")M [^"]*(?=")', output):
         bbox = Path(i).bounding_box()
@@ -843,6 +851,7 @@ def test_inside_sizes_no_kerf():
 
     sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
     assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
+
 
 def test_inside_sizes_kerf():
     output, expected = run_one(os.path.join('v', 'sizes-20-30-40-kerf'), [
@@ -856,7 +865,7 @@ def test_inside_sizes_kerf():
             "--kerf=0.5",
             "--thickness=2"], optimize=True)
 
-    sizes=[]
+    sizes = []
 
     for i in re.findall(r'(?<=\bd=")M [^"]*(?=")', output):
         bbox = Path(i).bounding_box()
@@ -867,6 +876,7 @@ def test_inside_sizes_kerf():
 
     sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
     assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
+
 
 def test_outside_sizes_no_kerf():
     output, expected = run_one(os.path.join('v', 'sizes-20-30-40-outside'), [
@@ -880,7 +890,7 @@ def test_outside_sizes_no_kerf():
             "--kerf=0",
             "--thickness=2"], optimize=True)
 
-    sizes=[]
+    sizes = []
 
     for i in re.findall(r'(?<=\bd=")M [^"]*(?=")', output):
         bbox = Path(i).bounding_box()
@@ -891,6 +901,7 @@ def test_outside_sizes_no_kerf():
 
     sizes.sort(key=lambda p: p[0]*p[1], reverse=True)
     assert sizes == [(30, 40), (30, 40) , (20, 40), (20, 40), (20, 30), (20, 30)], f"Sizes incorrect: {sizes}"
+
 
 def test_outside_sizes_kerf():
     output, expected = run_one(os.path.join('v', 'sizes-20-30-40-outside-kerf'), [
@@ -904,7 +915,7 @@ def test_outside_sizes_kerf():
             "--kerf=0.5",
             "--thickness=2"], optimize=True)
 
-    sizes=[]
+    sizes = []
 
     for i in re.findall(r'(?<=\bd=")M [^"]*(?=")', output):
         bbox = Path(i).bounding_box()
@@ -958,7 +969,7 @@ def test_output_kerf():
 
         poly = poly.normalize()
         poly_kerf = poly_kerf.normalize()
-        shapely_kerf = shapely_kerf.normalize() # Somehow needed
+        shapely_kerf = shapely_kerf.normalize()  # Somehow needed
 
         print(f'Piece:{k}')
         print(f'Original:\n{poly}')
@@ -967,14 +978,14 @@ def test_output_kerf():
 
         if not shapely_kerf.equals(poly_kerf):
             assert shapely_kerf.exterior == poly_kerf.exterior, f"Kerf output for {k} does not match expected (shell)"
-            assert len(shapely_kerf.interiors) ==len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
+            assert len(shapely_kerf.interiors) == len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
             for h in range(len(shapely_kerf.interiors)):
                 assert shapely_kerf.interiors[h] == poly_kerf.interiors[h], f"Kerf output for {k} does not match expected (interior {h})"
 
 
 def test_output_kerf_dividers():
     kerf = 0.5
-    args =[
+    args = [
             "--unit=mm",
             "--inside=0",
             "--length=20",
@@ -1015,7 +1026,7 @@ def test_output_kerf_dividers():
 
         poly = poly.normalize()
         poly_kerf = poly_kerf.normalize()
-        shapely_kerf = shapely_kerf.normalize() # Somehow needed
+        shapely_kerf = shapely_kerf.normalize()  # Somehow needed
 
         print(f'Piece:{k}')
         print(f'Original:\n{poly}')
@@ -1024,10 +1035,9 @@ def test_output_kerf_dividers():
 
         if not shapely_kerf.equals(poly_kerf):
             assert shapely_kerf.exterior == poly_kerf.exterior, f"Kerf output for {k} does not match expected (shell)"
-            assert len(shapely_kerf.interiors) ==len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
+            assert len(shapely_kerf.interiors) == len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
             for h in range(len(shapely_kerf.interiors)):
                 assert shapely_kerf.interiors[h] == poly_kerf.interiors[h], f"Kerf output for {k} does not match expected (interior {h})"
-
 
 
 def test_output_kerf_divider_holes():
@@ -1074,7 +1084,7 @@ def test_output_kerf_divider_holes():
 
         poly = poly.normalize()
         poly_kerf = poly_kerf.normalize()
-        shapely_kerf = shapely_kerf.normalize() # Somehow needed
+        shapely_kerf = shapely_kerf.normalize()  # Somehow needed
 
         print(f'Piece:{k}')
         print(f'Original:\n{poly}')
@@ -1083,7 +1093,7 @@ def test_output_kerf_divider_holes():
 
         if not shapely_kerf.equals(poly_kerf):
             assert shapely_kerf.exterior == poly_kerf.exterior, f"Kerf output for {k} does not match expected (shell)"
-            assert len(shapely_kerf.interiors) ==len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
+            assert len(shapely_kerf.interiors) == len(poly_kerf.interiors), f"Kerf output for {k} does not match expected (holes count)"
             for h in range(len(shapely_kerf.interiors)):
                 assert shapely_kerf.interiors[h] == poly_kerf.interiors[h], f"Kerf output for {k} does not match expected (interior {h})"
 
@@ -1106,12 +1116,12 @@ def test_output_area():
 
         # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
         expected_area = {
-            1: (20.0*30.0*40.0 - 16.0*26.0*36.0) / 2.0, # 4512.0, #FULLY_ENCLOSED
-            2: 4096.0, #ONE_SIDE_OPEN
-            3: 3488.0, #TWO_SIDES_OPEN
-            4: 2424.0, #THREE_SIDES_OPEN
-            5: 3680.0, #OPPOSITE_ENDS_OPEN
-            6: 1740.0,  #TWO_PANELS_ONLY
+            1: (20.0*30.0*40.0 - 16.0*26.0*36.0) / 2.0,  # 4512.0, #FULLY_ENCLOSED
+            2: 4096.0,  # ONE_SIDE_OPEN
+            3: 3488.0,  # TWO_SIDES_OPEN
+            4: 2424.0,  # THREE_SIDES_OPEN
+            5: 3680.0,  # OPPOSITE_ENDS_OPEN
+            6: 1740.0,  # TWO_PANELS_ONLY
         }.get(boxtype, 0)
 
         for sym in [0, 1, 2]:
@@ -1120,16 +1130,15 @@ def test_output_area():
             polies = make_box_polygons(args, optimize=True)
             area = 0.0
 
-            for k,p in polies.items():
+            for k, p in polies.items():
                 if p.area == 0:
-                    print(f"Warning: zero area polygon for ({boxtype,sym}: {" " .join(args)}")
+                    print(f"Warning: zero area polygon for ({boxtype, sym}: {" " .join(args)}")
                 area += p.area
 
             area = round(area, 3)
             expected_area = round(expected_area, 3)
 
-            assert area == expected_area, f"Area mismatch for ({boxtype,sym}: {" " .join(args)}: {area} != {expected_area}"
-
+            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"
 
 
 def test_output_area_dividers():
@@ -1144,11 +1153,9 @@ def test_output_area_dividers():
             "--tabtype=0",
             f"--thickness={thickness}"]
 
-
     for boxtype in [101, 102, 103, 104, 105, 106, 201, 202, 203, 204, 205, 206]:
         b_args = arg_base.copy()
         b_args.append(f'--boxtype={boxtype % 100}')
-
 
         if boxtype > 200:
             b_args += ['--div-w=1', '--keydiv=1']
@@ -1157,19 +1164,19 @@ def test_output_area_dividers():
 
         # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
         base_expected_area = {
-            101: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 2*16.0*36.0*thickness) / 2.0, #5664.0, #FULLY_ENCLOSED with dividers
-            102: 5312.0, #ONE_SIDE_OPEN with dividers
-            103: 4704.0, #TWO_SIDES_OPEN with dividers
-            104: 3792.0, #THREE_SIDES_OPEN with dividers
-            105: 4960.0, #OPPOSITE_ENDS_OPEN with dividers
-            106: 3108.0,  #TWO_PANELS_ONLY with dividers
+            101: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 2*16.0*36.0*thickness) / 2.0,  # 5664.0, #FULLY_ENCLOSED with dividers
+            102: 5312.0,  # ONE_SIDE_OPEN with dividers
+            103: 4704.0,  # TWO_SIDES_OPEN with dividers
+            104: 3792.0,  # THREE_SIDES_OPEN with dividers
+            105: 4960.0,  # OPPOSITE_ENDS_OPEN with dividers
+            106: 3108.0,  # TWO_PANELS_ONLY with dividers
 
-            201: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 26.0*36.0*thickness) / 2.0, # 5448.0, #FULLY_ENCLOSED with dividers
-            202: 5084.0, #ONE_SIDE_OPEN with dividers
-            203: 4554.0, #TWO_SIDES_OPEN with dividers
-            204: 3488.0, #THREE_SIDES_OPEN with dividers
-            205: 4720.0, #OPPOSITE_ENDS_OPEN with dividers
-            206: 2880.0,  #TWO_PANELS_ONLY with dividers
+            201: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 26.0*36.0*thickness) / 2.0,  # 5448.0, #FULLY_ENCLOSED with dividers
+            202: 5084.0,  # ONE_SIDE_OPEN with dividers
+            203: 4554.0,  # TWO_SIDES_OPEN with dividers
+            204: 3488.0,  # THREE_SIDES_OPEN with dividers
+            205: 4720.0,  # OPPOSITE_ENDS_OPEN with dividers
+            206: 2880.0,  # TWO_PANELS_ONLY with dividers
         }.get(boxtype, 0)
 
         for sym in [0, 1, 2]:
@@ -1179,25 +1186,24 @@ def test_output_area_dividers():
             area = 0.0
 
             offset = {
-                (104,1): 4,
-                (104,2): 8,
-                (202,2): -12,
-                (201,2): -16,
-                (203,0): -2,
-                (203,2): -14,
-                (204,1): 2,
-                (206,1): +4,
+                (104, 1): 4,
+                (104, 2): 8,
+                (202, 2): -12,
+                (201, 2): -16,
+                (203, 0): -2,
+                (203, 2): -14,
+                (204, 1): 2,
+                (206, 1): +4,
             }.get((boxtype, sym), 0)
 
+            expected_area = base_expected_area + offset
 
-            expected_area = base_expected_area +offset
-
-            for k,p in polies.items():
+            for k, p in polies.items():
                 if p.area == 0:
-                    print(f"Warning: zero area polygon for ({boxtype,sym}: {" " .join(args)}")
+                    print(f"Warning: zero area polygon for ({boxtype, sym}: {" " .join(args)}")
                 area += p.area
 
             area = round(area, 3)
             expected_area = round(expected_area, 3)
 
-            assert area == expected_area, f"Area mismatch for ({boxtype,sym}: {" " .join(args)}: {area} != {expected_area}"
+            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"

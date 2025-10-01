@@ -2,18 +2,15 @@ import io
 import os
 import pytest
 import re
-import sys
 from inkex.paths import Path
 
 import xml.dom.minidom
-from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
-from collections.abc import Iterable
 
+from tabbedboxmaker.InkexShapely import path_to_polygon
 from tabbedboxmaker import LivingHingeBoxMaker
 
-
-from shapely.affinity import translate
 from shapely.geometry import Polygon
+
 
 def mask_unstable(svgin: str) -> str:
     """Mask out unstable parts of SVG output that may vary between runs."""
@@ -38,6 +35,7 @@ def mask_unstable(svgin: str) -> str:
         svgin = re.sub(pattern, replacement, svgin, flags=re.DOTALL)
 
     return svgin.replace('\r', '')
+
 
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
@@ -199,7 +197,7 @@ cases = [
 
 ]
 
-expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected", "livinghinge")
+expected_output_dir = os.path.join(os.path.dirname(__file__), "..", "expected", "livinghinge")
 actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual", "livinghinge")
 
 
@@ -230,11 +228,11 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
 
         output = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
 
-
     if mask:
         output = mask_unstable(output)
 
     return output
+
 
 def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
     """Run one test case and return a map of id -> Path."""
@@ -247,6 +245,7 @@ def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
 
     return map
 
+
 def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Polygon]:
     """Run one test case and return a map of id -> Shapely Polygon."""
 
@@ -257,6 +256,7 @@ def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Poly
         map[k] = path_to_polygon(v)
 
     return map
+
 
 def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple[str, str]:
     """Run one test case and return (output, expected) strings."""
@@ -302,6 +302,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
         output, expected = mask_unstable(output), mask_unstable(expected)
     return (output, expected)
 
+
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_hinge(case):
     name = case["label"]
@@ -313,6 +314,7 @@ def test_hinge(case):
     assert (
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
+
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_hinge_relative(case):
@@ -326,6 +328,7 @@ def test_hinge_relative(case):
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
 
+
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_hinge_optimized(case):
     name = case["label"]
@@ -335,4 +338,3 @@ def test_hinge_optimized(case):
     assert (
         output == expected
     ), f"Test case {name} failed - optimized output doesn't match expected"
-

@@ -4,6 +4,7 @@ from typing import Optional
 from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, Sides, PieceType
 from typing import Union
 
+
 @dataclass
 class BoxSettings:
     X: float
@@ -76,6 +77,7 @@ class TabConfiguration:
     ftTabbed: int
     bkTabbed: int
 
+
 class Vec(tuple):
     """Simple 2D vector class for basic operations"""
     x: float
@@ -133,6 +135,7 @@ class Vec(tuple):
             v *= -1j
         return Vec(v.real, v.imag)
 
+
 @dataclass
 class Side:
     name: Sides
@@ -172,7 +175,7 @@ class Side:
         """
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            return self.has_tabs # Always use offset for rotational symmetry (starts inside)
+            return self.has_tabs  # Always use offset for rotational symmetry (starts inside)
         return self.is_male and self.has_tabs
 
     @property
@@ -187,7 +190,7 @@ class Side:
         """
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            return False # Always ends outside for rotational symmetry
+            return False  # Always ends outside for rotational symmetry
         return self.is_male and self.has_tabs
 
     @property
@@ -229,10 +232,10 @@ class Side:
 
         if pieceType == PieceType.DividerY and self.name in (Sides.B, Sides.D):
             # Special case for DividerX
-            length = self.inside_length + 2 * self.thickness # Same tabs as same piece with outside tabs
+            length = self.inside_length + 2 * self.thickness  # Same tabs as same piece with outside tabs
         elif pieceType == PieceType.DividerX and self.name in (Sides.A, Sides.C):
             # Special case for DividerX
-            length = self.inside_length + 2 * self.thickness # Same tabs as same piece with outside tabs
+            length = self.inside_length + 2 * self.thickness  # Same tabs as same piece with outside tabs
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             self.divisions = int((length - 2 * self.thickness) // self.base_tab_width)
@@ -252,6 +255,7 @@ class Side:
         else:
             self.tab_width = self.base_tab_width
             self.gap_width = (length - tabs * self.tab_width) / (self.divisions - tabs)
+
 
 @dataclass
 class Piece:
@@ -329,4 +333,3 @@ class BoxConfiguration:
     schroff_settings: Optional[SchroffSettings]
     piece_types: list[PieceType]
     tabs: TabConfiguration
-

@@ -2,18 +2,15 @@ import io
 import os
 import pytest
 import re
-import sys
 from inkex.paths import Path
 
 import xml.dom.minidom
-from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
-from collections.abc import Iterable
+from tabbedboxmaker.InkexShapely import path_to_polygon
 
 from tabbedboxmaker import CardboardBoxMaker as Cardboard
 
-
-from shapely.affinity import translate
 from shapely.geometry import Polygon
+
 
 def mask_unstable(svgin: str) -> str:
     """Mask out unstable parts of SVG output that may vary between runs."""
@@ -39,8 +36,10 @@ def mask_unstable(svgin: str) -> str:
 
     return svgin.replace('\r', '')
 
+
 def pretty_xml(xml_str: str) -> str:
     """Return a consistently pretty-printed XML string."""
+
     dom = xml.dom.minidom.parseString(xml_str)
     pretty = dom.toprettyxml(indent="  ")
 
@@ -57,12 +56,11 @@ def pretty_xml(xml_str: str) -> str:
     return "\n".join(lines)
 
 
-base_cases =[]
-for top in [1,2,3,4,5]:
-    for bottom in [1,2,3,4,5]:
+base_cases = []
+for top in [1, 2, 3, 4, 5]:
+    for bottom in [1, 2, 3, 4, 5]:
         names = {1: "None", 2: "FlatTopWithSidefolds", 3: "StandardFold", 4: "LockingFold", 5: "LockingTopNoSidefolds"}
-        base_cases.append(
-        {
+        base_cases.append({
             "label": f"top-{names.get(top)}-bottom-{names.get(bottom)}",
             "args": [
                 "--unit=mm",
@@ -78,7 +76,7 @@ for top in [1,2,3,4,5]:
 
 cases = base_cases + [
     {
-        "label": f"with-sidetab",
+        "label": "with-sidetab",
         "args": [
             "--unit=mm",
             "--length=100.00",
@@ -92,7 +90,7 @@ cases = base_cases + [
         ],
     },
     {
-        "label": f"with-foldlines",
+        "label": "with-foldlines",
         "args": [
             "--unit=mm",
             "--length=100.00",
@@ -106,7 +104,7 @@ cases = base_cases + [
         ],
     },
     {
-        "label": f"with-sidetab-foldlines",
+        "label": "with-sidetab-foldlines",
         "args": [
             "--unit=mm",
             "--length=100.00",
@@ -122,7 +120,7 @@ cases = base_cases + [
     },
 ]
 
-expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected", "cardboard")
+expected_output_dir = os.path.join(os.path.dirname(__file__), "..", "expected", "cardboard")
 actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual", "cardboard")
 
 
@@ -153,11 +151,11 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
 
         output = re.sub(r'(?<=\bd=")M [^"]*(?=")', make_path_relative, output, flags=re.DOTALL)
 
-
     if mask:
         output = mask_unstable(output)
 
     return output
+
 
 def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
     """Run one test case and return a map of id -> Path."""
@@ -170,6 +168,7 @@ def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
 
     return map
 
+
 def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Polygon]:
     """Run one test case and return a map of id -> Shapely Polygon."""
 
@@ -180,6 +179,7 @@ def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Poly
         map[k] = path_to_polygon(v)
 
     return map
+
 
 def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple[str, str]:
     """Run one test case and return (output, expected) strings."""
@@ -225,6 +225,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
         output, expected = mask_unstable(output), mask_unstable(expected)
     return (output, expected)
 
+
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_cardboard(case):
     name = case["label"]
@@ -236,6 +237,7 @@ def test_cardboard(case):
     assert (
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
+
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
 def test_cardboard_relative(case):
@@ -249,8 +251,9 @@ def test_cardboard_relative(case):
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
 
-#@pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
-#def test_cardboard_optimized(case):
+
+# @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
+# def test_cardboard_optimized(case):
 #    name = case["label"]
 #    args = case["args"]
 #
@@ -258,4 +261,3 @@ def test_cardboard_relative(case):
 #    assert (
 #        output == expected
 #    ), f"Test case {name} failed - optimized output doesn't match expected"
-
