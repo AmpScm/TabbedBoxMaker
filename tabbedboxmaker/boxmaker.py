@@ -27,7 +27,7 @@ import os
 import gettext
 import sys
 
-from inkex import Effect, Group, PathElement
+from inkex import Effect, Group, PathElement, Metadata
 from inkex.paths import Path
 from inkex.paths.lines import Line, Move, ZoneClose
 
@@ -390,7 +390,7 @@ class BoxMaker(Effect):
             self.raw_hairline_thickness = self.hairline_thickness = round(self.svg.unittouu("1px"), 6)
 
         layer = svg.get_current_layer()
-        layer.add(inkex.etree.Element("metadata", text=f"createArgs={self.cli_args}"))
+        layer.add(Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}"))
 
         self._run_effect()
 
@@ -1235,7 +1235,7 @@ class BoxMaker(Effect):
         paths = [child for child in group if isinstance(child, PathElement)]
 
         if settings.combine:
-            try_attach_paths(paths)
+            try_attach_paths(paths, reverse=True)
             paths = [child for child in group if isinstance(child, PathElement)]
 
         # Step 2: Remove unneeded generated nodes (duplicates and intermediates on h/v lines)

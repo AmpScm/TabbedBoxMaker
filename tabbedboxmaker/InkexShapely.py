@@ -20,6 +20,8 @@ import math
 import sys
 import inkex
 
+from inkex import Path, PathElement
+
 from typing import List, Tuple, Set
 from inkex.paths.lines import Line, Move, ZoneClose
 
@@ -172,59 +174,89 @@ def best_effort_inkex_combine_paths(paths: list[inkex.Path]):
     panel.path = inkex.Path(combined_superpath)
 
 
-def try_attach_paths(paths: list[inkex.PathElement], tolerance: float = 0.01) -> bool:
+def try_attach_paths(group: list[inkex.BaseElement], tolerance: float = 0.01, reverse: bool = False, replace_group=False) -> bool:
     """Try to attach paths end-to-start if they are close enough, and close paths if start and end meet."""
-
-    if len(paths) < 2:
-        return False
-
-    paths = [x for x in paths]
-    skip_elements = []
     updated_one = False
-    for path_element in paths:
-        path = path_element.path
-        path_last = path[-1]
-
-        if isinstance(path_last, inkex.paths.ZoneClose) or isinstance(path_last, inkex.paths.zoneClose):
-            continue  # Path is already closed
-
-        #skip_elements.append(path_element)
-
-        for other_element in paths:
-            if other_element in skip_elements or other_element == path_element:
-                continue
-
-            other_path = other_element.path
-
-            if isinstance(other_path[-1], inkex.paths.ZoneClose) or isinstance(other_path[-1], inkex.paths.zoneClose):
-                continue  # Path is already closed
-
-            other_first = other_path[0]
-
-            if not isinstance(other_first, inkex.paths.Move):
-                other_path = other_path.to_absolute()
-                other_first = other_path[0]
-
-            if math.fabs(other_first.x-path_last.x) < 0.01 and math.fabs(other_first.y - path_last.y) < tolerance:
-                new_id = min(path_element.get_id(), other_element.get_id())
-                path_element.path = path + other_path[1:]
-                other_element.getparent().remove(other_element)
-                path_element.set_id(new_id)
-                skip_elements.append(other_element)
-
-                # Update step for next iteration
-                path = path_element.path
-                path_last = path[-1]
+    for i in group:
+        if isinstance(i, inkex.Group):
+            if try_attach_paths(i, tolerance=tolerance, reverse=reverse, replace_group=True):
                 updated_one = True
 
+    if len(group) > 1:
+        paths = [x for x in group if isinstance(x, inkex.PathElement) and len(x.path) > 1]
+        skip_elements = []
 
-        if isinstance(path_last, inkex.paths.ZoneClose) or isinstance(path_last, inkex.paths.zoneClose):
-            print(path, file=sys.stderr)
-            continue  # Path is already closed. Not sure why we only see this now
-        elif path_last.x == path[0].x and path_last.y == path[0].y:
-            path = path.reverse() # Ensure correct winding order
-            path.append(inkex.paths.ZoneClose())
-            path_element.path = path
+        for path_element in paths:
+            path = path_element.path
+
+            if any(i is path_element for i in skip_elements):
+                continue
+            elif any(el for el in path if isinstance(el, inkex.paths.RelativePathCommand)):
+                path_element.path = path = other_path = other_path.to_absolute()
+
+            path_last = path[-1]
+
+            if isinstance(path_last, inkex.paths.ZoneClose):
+                continue  # Path is already closed
+
+            loop = True
+            while loop:
+                loop = False
+
+                for other_element in paths:
+                    if any(i is other_element for i in skip_elements) or other_element is path_element:
+                        continue
+
+                    other_path = Path(other_element.path)
+
+                    if any(el for el in other_path if isinstance(el, inkex.paths.RelativePathCommand)):
+                        other_element.path = other_path = Path(other_path.to_absolute())
+
+                    if isinstance(other_path[-1], inkex.paths.ZoneClose):
+                        continue  # Path is already closed
+
+                    (other_first, other_last) = (other_path[0], other_path[-1])
+
+                    if math.fabs(other_first.x-path_last.x) < 0.01 and math.fabs(other_first.y - path_last.y) < tolerance:
+                        new_id = min(path_element.get_id(), other_element.get_id())
+                        path_element.path = path = Path(path + other_path[1:])
+                        other_element.getparent().remove(other_element)
+                        path_element.set_id(new_id)
+                        skip_elements.append(other_element)
+
+                        # Update step for next iteration
+                        path_last = path[-1]
+                        updated_one = loop = True
+                        break
+                    elif math.fabs(other_last.x-path_last.x) < 0.01 and math.fabs(other_last.y - path_last.y) < tolerance:
+                        new_id = min(path_element.get_id(), other_element.get_id())
+                        path_element.path = path = Path(path + other_path.reverse()[1:])
+                        #print(other_element.get_id(), file=sys.stderr)
+                        other_element.getparent().remove(other_element)
+                        path_element.set_id(new_id)
+                        skip_elements.append(other_element)
+
+                        # Update step for next iteration
+                        path_last = path[-1]
+                        updated_one = loop = True
+                        break
+
+
+            if isinstance(path_last, inkex.paths.ZoneClose) or isinstance(path_last, inkex.paths.zoneClose):
+                print(path, file=sys.stderr)
+                continue  # Path is already closed. Not sure why we only see this now
+            elif path_last.x == path[0].x and path_last.y == path[0].y:
+                if reverse:
+                    path = path.reverse() # Ensure correct winding order
+                path.append(inkex.paths.ZoneClose())
+                path_element.path = path
+
+    if replace_group and isinstance(group, inkex.Group) and len(group) == 1:
+        parent = group.getparent()
+        group_id = group.get_id()
+        item = group[0]
+        parent.replace(group, item)
+        item.set_id(group_id)
 
     return updated_one
 

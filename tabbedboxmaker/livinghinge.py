@@ -20,15 +20,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from copy import deepcopy
 import inkex
 import gettext
 import math
+import os
+import sys
 
-from inkex import Effect, Group, PathElement
+from inkex import Effect, Group, PathElement, Metadata
 from inkex.paths import Path
 from inkex.paths.lines import Line, Move, ZoneClose
 
-from tabbedboxmaker.InkexShapely import try_attach_paths
+from tabbedboxmaker.InkexShapely import try_attach_paths, adjust_canvas
 from tabbedboxmaker.boxmaker import IntBoolean
 
 _ = gettext.gettext
@@ -139,8 +142,9 @@ class LivingHinge(inkex.Effect):
             '--style',
             type=int,
             dest='style',
-            default=25,
-            help='Layout/Style'
+            default=0,
+            help='Layout/Style',
+            choices=[0, 1]
         )
         self.arg_parser.add_argument(
             '--spacing',
@@ -160,7 +164,7 @@ class LivingHinge(inkex.Effect):
             '--hingeThick',
             type=float,
             dest='hingeThick',
-            default=0,
+            default=2.0,
             help='Hinge thickness'
         )
         self.arg_parser.add_argument(
@@ -210,6 +214,15 @@ class LivingHinge(inkex.Effect):
             choices=[True, False, '0', '1'],
         )
 
+    def parse_arguments(self, args: list[str]) -> None:
+        """Parse the given arguments and set 'self.options'"""
+
+        super().parse_arguments(args)
+        self.cli_args = deepcopy(args)
+
+        if not hasattr(self.options, 'input_file'):
+            self.options.input_file = os.path.join(os.path.dirname(__file__), "blank.svg")
+
 
     def makeId(self, prefix: str | None) -> str:
         """Generate a new unique ID with the given prefix."""
@@ -238,7 +251,7 @@ class LivingHinge(inkex.Effect):
         (centerx, centery), (radiusx, radiusy) = a1, a2
 
 
-        line = PathElement.arc((centerx, centery), radiusx, ry=radiusy, start=start_end[0], end=start_end[1], open=True, id=self.makeId(prefix))
+        line = PathElement.arc((centerx, centery), radiusx, ry=radiusy, start=start_end[0], end=start_end[1], arctype='arc', open=True, id=self.makeId(prefix)) # open is for inkscape. arc to create a proper arc path
 
         if self.line_thickness == self.raw_hairline_thickness:
             line.style = { "stroke": self.line_color, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline", "stroke-dasharray": "none" }
@@ -435,9 +448,6 @@ class LivingHinge(inkex.Effect):
                 self.draw_SVG_line((Sx + (space * n), Sy+solidGap), (Sx + (space * n), Sy+(height/2)-(solidGap/2)), grp)
                 self.draw_SVG_line((Sx + (space * n), Ey-(height/2)+(solidGap/2)), (Sx + (space * n), (Ey-solidGap)), grp)
 
-        if self.options.combine:
-            try_attach_paths(grp)
-
     def LivingHinge3(self, a1, a2, reverse = 1, space = 2):
         """
         The sprial based designs are built from multiple calls of this function.
@@ -476,10 +486,6 @@ class LivingHinge(inkex.Effect):
             self.draw_SVG_line(((centerX + newX ), centerY - (space/2) - (space * n)), ((centerX + newX ), centerY + (space * 1.5) + (space * n)), grp)
             if horizontalSlots - 1 != n: #Last line in center should be omited
                 self.draw_SVG_line(((centerX + (space + (space/2 * -reverse)) + (space*n) ), centerY + (space * 1.5) + (space * n)), ((centerX - (space + (space/2 * reverse)) - (space*n) ), centerY + (space * 1.5) + (space * n)), grp)
-
-
-        if self.options.combine:
-            try_attach_paths(grp)
 
     def LivingHinge4(self, a1, a2, rotate = False, mirror = 0, space = 2, solidGap = 5):
         """
@@ -534,11 +540,6 @@ class LivingHinge(inkex.Effect):
             self.draw_SVG_line((Ex, Sy), (Ex, Ey - space), grp)
 
 
-        if self.options.combine:
-            try_attach_paths(grp)
-
-
-
     def effect(self):
         global nomTab,equalTabs,thickness,correction, Z, unit
 
@@ -549,7 +550,10 @@ class LivingHinge(inkex.Effect):
         widthDoc  = self.svg.unittouu(svg.get('width'))
         heightDoc = self.svg.unittouu(svg.get('height'))
 
-        self.parent=self.svg.get_current_layer()
+        layer = svg.get_current_layer()
+        layer.add(Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}"))
+
+        self.parent=layer
 
         # Get script's option values.
         unit=self.options.unit
@@ -625,7 +629,7 @@ class LivingHinge(inkex.Effect):
         # layout format:(rootx),(rooty),Xlength,Ylength,tabInfo
         # root= (spacing,X,Y,Z) * values in tuple
         # tabInfo= <abcd> 0=holes 1=tabs
-        if   layout==0: # Diagramatic Layout TRBL
+        if layout==0: # Diagramatic Layout TRBL
             pieces=[         #center low row
                     [(2,0,0,1),(3,0,1,1),X,Z,0b1000,-2],
                             #left middle row
@@ -718,9 +722,13 @@ class LivingHinge(inkex.Effect):
                     self.LivingHinge4((x+(Z/2), y + (dy/2) - thickness), ((x+(Z/2)+(self.EllipseCircumference(X/2, Z/2)/4)), y + dy), True, 1, hingeThick)
 
             if self.options.combine:
-                try_attach_paths(grp)
+                try_attach_paths(grp, replace_group=True)
 
 
         # Revert parent back to original parent
         self.parent = p
+
+        # If generated from CLI, adjust canvas to fit contents. Otherwise keep user setting
+        if not self.inkscape:
+            adjust_canvas(svg, unit=self.options.unit)
 

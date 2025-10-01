@@ -589,7 +589,7 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
     boxMaker = BoxMaker(cli=True)
     boxMaker.parse_arguments(args)
     boxMaker.options.output = outfh
-    boxMaker.options.optimize = optimize
+    boxMaker.options.combine = boxMaker.options.cutout = optimize
     boxMaker.no_subtract = no_subtract
 
     boxMaker.load_raw()
@@ -665,7 +665,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
     tbm.parse_arguments(args)
     tbm.options.output = outfh
     tbm.options.input_file = infh
-    tbm.options.optimize = optimize
+    tbm.options.combine = tbm.options.cutout = optimize
     tbm.version = None
     tbm.raw_hairline_thickness = -1
     tbm.hairline_thickness = 0.0508
