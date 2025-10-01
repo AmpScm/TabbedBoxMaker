@@ -37,7 +37,7 @@ from tabbedboxmaker.Generators import CliEnabledGenerator
 
 _ = gettext.gettext
 
-class LivingHinge(CliEnabledGenerator):
+class LivingHingeBoxMaker(CliEnabledGenerator):
     hairline_thickness : float = None
     raw_hairline_thickness : float = None
     parent = None

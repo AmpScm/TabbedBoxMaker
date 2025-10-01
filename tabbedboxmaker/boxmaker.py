@@ -57,7 +57,7 @@ def IntBoolean(value):
             return True
     return b
 
-class BoxMaker(CliEnabledGenerator):
+class TabbedBoxMaker(CliEnabledGenerator):
     line_thickness: float = 1
     version = BOXMAKER_VERSION
     settings : BoxSettings

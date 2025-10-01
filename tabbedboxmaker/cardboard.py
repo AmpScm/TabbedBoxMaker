@@ -25,7 +25,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from copy import deepcopy
-from inkex import PathElement, Metadata
+from inkex import PathElement, Metadata, Transform
+from inkex.paths import Path
 from inkex.utils import filename_arg
 
 from tabbedboxmaker.Generators import CliEnabledGenerator
@@ -233,6 +234,13 @@ class CardboardBoxMaker(CliEnabledGenerator):
         super().add_arguments(pars)
 
         self.arg_parser.add_argument(
+            "--length",
+            type=float,
+            dest="length",
+            default=100,
+            help="Height of Box",
+        )
+        self.arg_parser.add_argument(
             "--width",
             type=float,
             dest="width",
@@ -247,18 +255,19 @@ class CardboardBoxMaker(CliEnabledGenerator):
             help="Depth of Box",
         )
         self.arg_parser.add_argument(
-            "--height",
-            type=float,
-            dest="height",
-            default=100,
-            help="Height of Box",
-        )
-        self.arg_parser.add_argument(
             "--hairline",
-            type=int,
+            type=IntBoolean,
             dest="hairline",
             default=0,
-            help="Line Thickness",
+            help="Hairline",
+            choices=[True, False, '0', '1'],
+        )
+        self.arg_parser.add_argument(
+            "--line-thickness",
+            type=float,
+            dest="line_thickness",
+            default=0.1,
+            help="Line Thickness (if not hairline)",
         )
         self.arg_parser.add_argument(
             "--thickness",
@@ -282,18 +291,20 @@ class CardboardBoxMaker(CliEnabledGenerator):
             help="Box type",
         )
         self.arg_parser.add_argument(
-            "--boxtop",
+            "--box-top",
             type=int,
             dest="boxtop",
             default=25,
             help="Box Top",
+            choices=[1, 2, 3, 4, 5],
         )
         self.arg_parser.add_argument(
-            "--boxbottom",
+            "--box-bottom",
             type=int,
             dest="boxbottom",
             default=25,
             help="Box Bottom",
+            choices=[1, 2, 3, 4, 5],
         )
         self.arg_parser.add_argument(
             "--sidetab",
@@ -329,8 +340,8 @@ class CardboardBoxMaker(CliEnabledGenerator):
         else:
             self.linethickness = 1
 
-        hh = self.svg.unittouu(str(self.options.height) + unit)
-        ww = self.svg.unittouu(str(self.options.width) + unit)
+        hh = self.svg.unittouu(str(self.options.width) + unit)
+        ww = self.svg.unittouu(str(self.options.length) + unit)
         dd = self.svg.unittouu(str(self.options.depth) + unit)
         t2 = self.svg.unittouu(str(self.options.thickness * 2) + unit)
         t5 = self.svg.unittouu(str(self.options.thickness * 5) + unit)
@@ -388,7 +399,13 @@ class CardboardBoxMaker(CliEnabledGenerator):
         h += boxedge(hh, ww, dd, k2, t5, t2, boxbottom, False, 1)
 
         h += "Z"
-        yield self.getLine(h, linethickness=self.linethickness)
+
+        h= Path(h).to_absolute()
+
+        bb = h.bounding_box()
+        transform = Transform(translate=(-bb.left, -bb.top))
+
+        yield self.getLine(h.transform(transform, inplace=True), linethickness=self.linethickness)
 
         # If we had top foldover tabs, add the slots for them
         # but ONLY if there is a box bottom to draw them on
@@ -405,7 +422,8 @@ class CardboardBoxMaker(CliEnabledGenerator):
                 h += f"l {-wd3 + k2 - t2},0 "
                 h += f"l 0,{(-t * 1.5) + k2} "
                 h += "Z"
-                yield self.getLine(h, linethickness=self.linethickness)
+                h = Path(h).to_absolute()
+                yield self.getLine(h.transform(transform, inplace=True), linethickness=self.linethickness)
                 if i == 1:
                     o += dd3 + dd3 + ww3
                     wd3 = ww3
@@ -427,7 +445,8 @@ class CardboardBoxMaker(CliEnabledGenerator):
             # Trailing Horizontal Fold Notch
             h += f"a {(t * 1.0) - k2} {(t * 1.0) - k2} 180 0 1 0,{(-t * 2.5) + k2} "
             h += "Z"
-            yield self.getLine(h, linethickness=self.linethickness)
+            h = Path(h).to_absolute()
+            yield self.getLine(h.transform(transform, inplace=True), linethickness=self.linethickness)
 
         # If we wanted fold lines - add them
         if self.options.foldlines:
@@ -446,7 +465,8 @@ class CardboardBoxMaker(CliEnabledGenerator):
                 # First Side
                 h = f"M {t5},{yy} "
                 h += f"l {ww - t2 - t2 - (t2 / 2) - t5},0"
-                yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
+                h = Path(h).to_absolute()
+                yield self.getLine(h.transform(transform, inplace=True), stroke="#0000ff", linethickness=self.linethickness)
 
                 if box == 2:
                     yy -= t
@@ -454,17 +474,20 @@ class CardboardBoxMaker(CliEnabledGenerator):
                 # Second Side
                 h = f"M {ww + t2 + t5},{yy} "
                 h += f"l {dd - t2 - t2 - (t2 / 2) - t5},0"
-                yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
+                h = Path(h).to_absolute()
+                yield self.getLine(h.transform(transform, inplace=True), stroke="#0000ff", linethickness=self.linethickness)
 
                 # Third Side
                 h = f"M {ww + t2 + t5 + dd + t2},{yy} "
                 h += f"l {ww - t2 - t2 - (t2 / 2) - t5},0"
-                yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
+                h = Path(h).to_absolute()
+                yield self.getLine(h.transform(transform, inplace=True), stroke="#0000ff", linethickness=self.linethickness)
 
                 # Fourth Side
                 h = f"M {ww + t2 + t5 + dd + t2 + ww + t2},{yy} "
                 h += f"l {dd - t2 - t2 - (t2 / 2) - t5},0"
-                yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
+                h = Path(h).to_absolute()
+                yield self.getLine(h.transform(transform, inplace=True), stroke="#0000ff", linethickness=self.linethickness)
 
                 if box == 2:
                     # h=f"M {ww+t2+t5 + dd+t2 + ww+t2},{yy} "
@@ -472,32 +495,37 @@ class CardboardBoxMaker(CliEnabledGenerator):
                     # group.add(self.getLine(h,stroke='#0000ff'))
                     h = f"M {t5 + t5},{-1 * (dd + t2 + (t2 / 2))} "
                     h += f"l {ww - (4 * t5)},0 "
-                    yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
+                    h = Path(h).to_absolute()
+                    yield self.getLine(h.transform(transform, inplace=True), stroke="#0000ff", linethickness=self.linethickness)
 
             # Draw Vertical Ones
             # First Side
             h = f"M {ww + t},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
+            h = Path(h).to_absolute()
+            yield self.getLine(h.transform(transform, inplace=True), stroke="#0000ff", linethickness=self.linethickness)
 
             h = f"M {ww + t + dd + t2},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
+            h = Path(h).to_absolute()
+            yield self.getLine(h.transform(transform, inplace=True), stroke="#0000ff", linethickness=self.linethickness)
 
             h = f"M {ww + t + dd + t2 + ww + t2},{t5} "
             h += f"l 0,{hh - (2 * t5)}"
-            yield self.getLine(h, stroke="#0000ff", linethickness=self.linethickness)
+            h = Path(h).to_absolute()
+            yield self.getLine(h.transform(transform, inplace=True), stroke="#0000ff", linethickness=self.linethickness)
 
             # Tab only if selected
             if self.options.sidetab:
                 h = f"M {ww + t + dd + t2 + ww + t2 + dd},{t5 + t2} "
                 h += f"l 0,{hh - (t5 + t2 + t5 + t2)}"
-                yield self.getLine(h, stroke="#ff0000", linethickness=self.linethickness)
+                h = Path(h).to_absolute()
+                yield self.getLine(h.transform(transform, inplace=True), stroke="#ff0000", linethickness=self.linethickness)
 
         # End Fold Lines
 
     def getLine(self, XYstring, stroke="#000000", linethickness : float = 1) -> PathElement:
-        line = PathElement()
+        line = PathElement(id=self.makeId('line'))
 
         if linethickness == self.raw_hairline_thickness:
             line.style = { "stroke": stroke, "stroke-width"  : str(self.hairline_thickness), "fill": "none", "vector-effect": "non-scaling-stroke", "-inkscape-stroke": "hairline" }

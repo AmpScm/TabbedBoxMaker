@@ -22,11 +22,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 # For exporting
-from tabbedboxmaker.livinghinge import LivingHinge
+from tabbedboxmaker.livinghinge import LivingHingeBoxMaker
 from tabbedboxmaker.cardboard import CardboardBoxMaker
-from tabbedboxmaker.boxmaker import BoxMaker
+from tabbedboxmaker.boxmaker import TabbedBoxMaker
 
 if __name__ == "__main__":
   # Create effect instance and apply it.
-  effect = BoxMaker(cli=True)
+  effect = TabbedBoxMaker(cli=True)
   effect.run()

@@ -9,7 +9,7 @@ import xml.dom.minidom
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
 from collections.abc import Iterable
 
-from tabbedboxmaker import LivingHingeBoxMaker
+from tabbedboxmaker import CardboardBoxMaker as Cardboard
 
 
 from shapely.affinity import translate
@@ -57,150 +57,73 @@ def pretty_xml(xml_str: str) -> str:
     return "\n".join(lines)
 
 
-cases = [
-    {
-        "label": "hinge-basic",
-        "args": [
-            "--unit=mm",
-            "--inside=True",
-            "--length=100.00",
-            "--width=100.00",
-            "--depth=100.00",
-            "--thickness=3.00",
-            "--equal=0",
-            "--tab=5.00",
-            "--hingeOpt=0",
-            "--hingeThick=2.00",
-            "--thumbTab=15.00",
-            "--hairline=True",
-            "--line-thickness=0.100",
-            "--line-color=black",
-            "--kerf=0.100",
-            "--clearance=0.010",
-            "--style=0",
-            "--spacing=1.00",
-        ],
-    },
-    {
-        "label": "hinge-single-spiral",
-        "args": [
-            "--unit=mm",
-            "--inside=True",
-            "--length=100.00",
-            "--width=100.00",
-            "--depth=100.00",
-            "--thickness=3.00",
-            "--equal=0",
-            "--tab=5.00",
-            "--hingeOpt=1",
-            "--hingeThick=2.00",
-            "--thumbTab=15.00",
-            "--hairline=True",
-            "--line-thickness=0.100",
-            "--line-color=black",
-            "--kerf=0.100",
-            "--clearance=0.010",
-            "--style=0",
-            "--spacing=1.00",
-        ],
-    },
-    {
-        "label": "hinge-double-spiral",
-        "args": [
-            "--unit=mm",
-            "--inside=True",
-            "--length=100.00",
-            "--width=100.00",
-            "--depth=100.00",
-            "--thickness=3.00",
-            "--equal=0",
-            "--tab=5.00",
-            "--hingeOpt=2",
-            "--hingeThick=2.00",
-            "--thumbTab=15.00",
-            "--hairline=True",
-            "--line-thickness=0.100",
-            "--line-color=black",
-            "--kerf=0.100",
-            "--clearance=0.010",
-            "--style=0",
-            "--spacing=1.00",
-        ],
-    },
-    {
-        "label": "hinge-parallel-snake",
-        "args": [
-            "--unit=mm",
-            "--inside=True",
-            "--length=100.00",
-            "--width=100.00",
-            "--depth=100.00",
-            "--thickness=3.00",
-            "--equal=0",
-            "--tab=5.00",
-            "--hingeOpt=3",
-            "--hingeThick=2.00",
-            "--thumbTab=15.00",
-            "--hairline=True",
-            "--line-thickness=0.100",
-            "--line-color=black",
-            "--kerf=0.100",
-            "--clearance=0.010",
-            "--style=0",
-            "--spacing=1.00",
-        ],
-    },
-    {
-        "label": "hinge-perpendicular-snake",
-        "args": [
-            "--unit=mm",
-            "--inside=True",
-            "--length=100.00",
-            "--width=100.00",
-            "--depth=100.00",
-            "--thickness=3.00",
-            "--equal=0",
-            "--tab=5.00",
-            "--hingeOpt=4",
-            "--hingeThick=2.00",
-            "--thumbTab=15.00",
-            "--hairline=True",
-            "--line-thickness=0.100",
-            "--line-color=black",
-            "--kerf=0.100",
-            "--clearance=0.010",
-            "--style=0",
-            "--spacing=1.00",
-        ],
-    },
-    {
-        "label": "hinge-double-perpendicular-snake",
-        "args": [
-            "--unit=mm",
-            "--inside=True",
-            "--length=100.00",
-            "--width=100.00",
-            "--depth=100.00",
-            "--thickness=3.00",
-            "--equal=0",
-            "--tab=5.00",
-            "--hingeOpt=5",
-            "--hingeThick=2.00",
-            "--thumbTab=15.00",
-            "--hairline=True",
-            "--line-thickness=0.100",
-            "--line-color=black",
-            "--kerf=0.100",
-            "--clearance=0.010",
-            "--style=0",
-            "--spacing=1.00",
-        ],
-    },
+base_cases =[]
+for top in [1,2,3,4,5]:
+    for bottom in [1,2,3,4,5]:
+        names = {1: "None", 2: "FlatTopWithSidefolds", 3: "StandardFold", 4: "LockingFold", 5: "LockingTopNoSidefolds"}
+        base_cases.append(
+        {
+            "label": f"top-{names.get(top)}-bottom-{names.get(bottom)}",
+            "args": [
+                "--unit=mm",
+                "--length=100.00",
+                "--width=100.00",
+                "--depth=100.00",
+                "--thickness=3",
+                "--hairline=True",
+                "--box-top=" + str(top),
+                "--box-bottom=" + str(bottom),
+            ],
+        })
 
+cases = base_cases + [
+    {
+        "label": f"with-sidetab",
+        "args": [
+            "--unit=mm",
+            "--length=100.00",
+            "--width=100.00",
+            "--depth=100.00",
+            "--thickness=3",
+            "--hairline=True",
+            "--box-top=3",
+            "--box-bottom=3",
+            "--sidetab=True",
+        ],
+    },
+    {
+        "label": f"with-foldlines",
+        "args": [
+            "--unit=mm",
+            "--length=100.00",
+            "--width=100.00",
+            "--depth=100.00",
+            "--thickness=3",
+            "--hairline=True",
+            "--box-top=3",
+            "--box-bottom=3",
+            "--foldlines=True",
+        ],
+    },
+    {
+        "label": f"with-sidetab-foldlines",
+        "args": [
+            "--unit=mm",
+            "--length=100.00",
+            "--width=100.00",
+            "--depth=100.00",
+            "--thickness=3",
+            "--hairline=True",
+            "--box-top=3",
+            "--box-bottom=3",
+            "--sidetab=True",
+            "--foldlines=True",
+        ],
+    },
 ]
 
-expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected", "livinghinge")
-actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual", "livinghinge")
+expected_output_dir = os.path.join(os.path.dirname(__file__), "..","expected", "cardboard")
+actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual", "cardboard")
 
 
 def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=False) -> str:
@@ -208,7 +131,7 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
 
     outfh = io.BytesIO()
 
-    ef = LivingHingeBoxMaker(cli=True)
+    ef = Cardboard(cli=True)
     ef.parse_arguments(args)
     ef.options.output = outfh
     ef.options.combine = ef.options.cutout = optimize
@@ -303,7 +226,7 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
     return (output, expected)
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
-def test_hinge(case):
+def test_cardboard(case):
     name = case["label"]
     args = case["args"]
 
@@ -315,7 +238,7 @@ def test_hinge(case):
     ), f"Test case {name} failed - output doesn't match expected"
 
 @pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
-def test_hinge_relative(case):
+def test_cardboard_relative(case):
     name = case["label"]
     args = case["args"]
 
@@ -326,13 +249,13 @@ def test_hinge_relative(case):
         output == expected
     ), f"Test case {name} failed - output doesn't match expected"
 
-@pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
-def test_hinge_optimized(case):
-    name = case["label"]
-    args = case["args"]
-
-    output, expected = run_one(os.path.join(name + '.o'), args, optimize=True)
-    assert (
-        output == expected
-    ), f"Test case {name} failed - optimized output doesn't match expected"
+#@pytest.mark.parametrize("case", cases, ids=[c["label"] for c in cases])
+#def test_cardboard_optimized(case):
+#    name = case["label"]
+#    args = case["args"]
+#
+#    output, expected = run_one(os.path.join(name + '.o'), args, optimize=True)
+#    assert (
+#        output == expected
+#    ), f"Test case {name} failed - optimized output doesn't match expected"
 

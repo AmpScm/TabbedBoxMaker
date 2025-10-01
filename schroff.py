@@ -22,11 +22,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys
-from tabbedboxmaker import BoxMaker
+from tabbedboxmaker import TabbedBoxMaker
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     inkscape = any(a.startswith('--inkscape=') for a in args)
     args =[a for a in sys.argv[1:] if (not a.startswith("--_") and not a.startswith('--inkscape='))]
-    effect = BoxMaker(cli=not inkscape, inkscape=inkscape, schroff=True)
+    effect = TabbedBoxMaker(cli=not inkscape, inkscape=inkscape, schroff=True)
     effect.run(args)

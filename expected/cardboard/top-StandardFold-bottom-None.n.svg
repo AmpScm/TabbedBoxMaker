@@ -1,0 +1,9 @@
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="422.50000000000006mm" height="158mm" viewBox="0 0 422.50000000000006 158" version="1.1" sodipodi:docname="blank.svg">
+  <sodipodi:namedview/>
+  <defs id="defaults"/>
+  <g inkscape:label="Cardboard Box" id="cardboardbox_001">
+    <metadata text="$ cardboard.py --unit=mm --length=100.00 --width=100.00 --depth=100.00 --thickness=3 --hairline=True --box-top=3 --box-bottom=1"/>
+    <path id="line_001" style="fill:none;stroke:#000000;stroke-width:0.1" d="M 2.5 56 A 2.5 2.5 0 1 0 2.5 51 L 2.5 0 L 103.5 0 L 103.5 51 A 2.5 2.5 0 1 0 103.5 56 A 2.5 2.5 0 1 0 108.5 56 A 2.5 2.5 0 1 0 108.5 51 L 108.5 0 L 209.5 0 L 209.5 51 A 2.5 2.5 0 1 0 209.5 56 A 2.5 2.5 0 1 0 214.5 56 A 2.5 2.5 0 1 0 214.5 51 L 214.5 0 L 315.5 0 L 315.5 51 A 2.5 2.5 0 1 0 315.5 56 A 2.5 2.5 0 1 0 320.5 56 A 2.5 2.5 0 1 0 320.5 51 L 320.5 0 L 421.5 0 L 421.5 51 A 2.5 2.5 0 1 0 421.5 56 L 421.5 157 L 320.5 157 A 2.5 2.5 0 1 0 315.5 157 L 214.5 157 A 2.5 2.5 0 1 0 209.5 157 L 108.5 157 A 2.5 2.5 0 1 0 103.5 157 L 2.5 157 Z"/>
+  </g>
+</svg>

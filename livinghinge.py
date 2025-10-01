@@ -16,11 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 
-from tabbedboxmaker import LivingHinge
+from tabbedboxmaker import LivingHingeBoxMaker
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     inkscape = any(a.startswith('--inkscape=') for a in args)
     args =[a for a in sys.argv[1:] if (not a.startswith("--_") and not a.startswith('--inkscape='))]
-    effect = LivingHinge(cli=not inkscape, inkscape=inkscape)
+    effect = LivingHingeBoxMaker(cli=not inkscape, inkscape=inkscape)
     effect.run(args)

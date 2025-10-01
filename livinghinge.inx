@@ -26,10 +26,10 @@
                         <option value="False">Outside/External</option>
                     </param>
 
-                    <param name="length"    type="float" precision="2" min="0.0" max="10000.0" gui-text="  Length (X)">100</param>
-                    <param name="width"     type="float" precision="2" min="0.0" max="10000.0" gui-text="  Width (Y)">200</param>
-                    <param name="depth"     type="float" precision="2" min="0.0" max="10000.0" gui-text="  Height (Z)">50</param>
-                    <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" gui-text="  Material Thickness">3.0</param>
+                    <param name="length"    type="float" precision="2" min="0.0" max="10000.0" gui-text="Length (X)">100</param>
+                    <param name="width"     type="float" precision="2" min="0.0" max="10000.0" gui-text="Width (Y)">200</param>
+                    <param name="depth"     type="float" precision="2" min="0.0" max="10000.0" gui-text="Height (Z)">50</param>
+                    <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" gui-text="Material Thickness">3.0</param>
 
                     <spacer/>
                     <param name="combine" type="boolean" gui-text="Combine and clean paths">true</param>

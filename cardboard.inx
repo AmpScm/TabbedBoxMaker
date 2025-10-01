@@ -20,10 +20,10 @@
                         <option value="px">px</option>
                     </param>
 
-                    <param name="height" type="float" precision="2" min="0.0" max="10000.0" gui-text="    Height">3</param>
-                    <param name="width" type="float" precision="2"  min="0.0" max="10000.0" gui-text="    Width">4</param>
-                    <param name="depth" type="float" precision="2"  min="0.0" max="10000.0" gui-text="    Depth">5</param>
-                    <param name="thickness" type="float" precision="3" min="0.0" max="10000.0" gui-text="    Material Thickness">0.125</param>
+                    <param name="length"    type="float" precision="2" min="0.0" max="10000.0" gui-text="Length (X)">100</param>
+                    <param name="width"     type="float" precision="2" min="0.0" max="10000.0" gui-text="Width (Y)">200</param>
+                    <param name="depth"     type="float" precision="2" min="0.0" max="10000.0" gui-text="Height (Z)">50</param>
+                    <param name="thickness" type="float" precision="2" min="0.0" max="10000.0" gui-text="Material Thickness">3.0</param>
                 </vbox>
                 <spacer/>
                 <separator/>

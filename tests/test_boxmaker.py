@@ -9,7 +9,7 @@ import xml.dom.minidom
 from tabbedboxmaker.InkexShapely import path_to_polygon, polygon_to_path
 from collections.abc import Iterable
 
-from tabbedboxmaker import BoxMaker
+from tabbedboxmaker import TabbedBoxMaker
 
 
 from shapely.affinity import translate
@@ -593,7 +593,7 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
 
     outfh = io.BytesIO()
 
-    boxmaker = BoxMaker(cli=True)
+    boxmaker = TabbedBoxMaker(cli=True)
     boxmaker.parse_arguments(args)
 
     boxmaker.options.output = outfh
