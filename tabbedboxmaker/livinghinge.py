@@ -258,7 +258,7 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
 
         Returns string suitable for input to drawS
         """
-        (sx, sy),(ex, ey) = a1, a2
+        (sx, sy), (ex, ey) = a1, a2
         s=[]
         s='M '+str(sx)+','+str(sy)+' '
         s+='L '+str(ex)+','+str(sy)+' '
@@ -268,7 +268,7 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
             s+='L '+str(sx)+','+str(sy)+' Z'
         return s
 
-    def side(self, a1, a2, a3,tabVec,length, a4,isTab,isLongSide,truncate = False, gap = False, thumbTab = False):
+    def side(self, a1, a2, a3, tabVec, length, a4, isTab, isLongSide, truncate = False, gap = False, thumbTab = False):
         """
         Side function is used to render any of the sides so needs all this functionality:
         isLongSide -- long sides without tabs (for cover),
@@ -282,8 +282,8 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
         Returns a list of lines to draw.
         """
 
-        (rx,ry),(sox,soy),(eox,eoy) = a1, a2, a3
-        (dirx,diry) = a4
+        (rx, ry), (sox, soy), (eox, eoy) = a1, a2, a3
+        (dirx, diry) = a4
 
         #       root startOffset endOffset tabVec length  direction  isTab
 
@@ -329,7 +329,7 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
             secondVec *= 2
         dirxN=0 if dirx else 1 # used to select operation on x or y
         diryN=0 if diry else 1
-        (Vx,Vy)=(rx+sox*thickness,ry+soy*thickness)
+        (Vx, Vy)=(rx+sox*thickness, ry+soy*thickness)
         s='M '+str(Vx)+','+str(Vy)+' '
 
         if dirxN: Vy=ry # set correct line start
@@ -342,9 +342,9 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
             divs = float(divs)
 
         # generate line as tab or hole using:
-        #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
+        #   last co-ord:Vx, Vy ; tab dir:tabVec  ; direction:dirx, diry ; thickness:thickness
         #   divisions:divs ; gap width:gapWidth ; tab width:tabWidth
-        for n in range(1,int(divs)):
+        for n in range(1, int(divs)):
             if n%2:
                 Vx=Vx+dirx*gapWidth+dirxN*firstVec+first*dirx
                 Vy=Vy+diry*gapWidth+diryN*firstVec+first*diry
@@ -362,8 +362,8 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
                 Vy=Vy+diryN*secondVec
                 s+='L '+str(Vx)+','+str(Vy)+' '
                 if thumbTab:
-                    self.drawS(self.box((Vxs,Vys),(Vx,Vy)), prefix='thumbtab')
-            (secondVec,firstVec)=(-secondVec,-firstVec) # swap tab direction
+                    self.drawS(self.box((Vxs, Vys), (Vx, Vy)), prefix='thumbtab')
+            (secondVec, firstVec)=(-secondVec, -firstVec) # swap tab direction
             first=0
         if not truncate:
             s+='L '+str(rx+eox*thickness+dirx*length)+','+str(ry+eoy*thickness+diry*length)+' '
@@ -398,7 +398,7 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
         grp = Group(id=self.makeId('hinge'))
         self.parent.add(grp)
 
-        for n in range(0,horizontalSlots+1):
+        for n in range(0, horizontalSlots+1):
             if n%2:  #odd, exterior slot (slot should go all the way to the part edge)
                 self.draw_SVG_line((Sx + (space * n), Sy), (Sx + (space * n), Sy+(height/4)-(solidGap/2)), grp)
                 self.draw_SVG_line((Sx + (space * n), Sy+(height/4)+(solidGap/2)), (Sx + (space * n), Ey-(height/4)-(solidGap/2)), grp)
@@ -438,7 +438,7 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
         centerX = Sx + (width/2)
         centerY = Sy + (height/2)
 
-        for n in range(0,horizontalSlots):
+        for n in range(0, horizontalSlots):
             newX = (((space/2) + (space*n)) * reverse)
             self.draw_SVG_line(((centerX -  newX), centerY + (space/2) + (space * n)), ((centerX - newX ), centerY - (space * 1.5) - (space * n)), grp)
             if horizontalSlots - 1 != n: #Last line in center should be omited
@@ -482,7 +482,7 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
         grp = Group(id=self.makeId('hinge'))
         self.parent.add(grp)
 
-        for n in range(1 - skew,horizontalSlots + skew):
+        for n in range(1 - skew, horizontalSlots + skew):
             if not rotate:
                 if (n+mirror)%2:
                     self.draw_SVG_line((Sx + (space * n), Sy + solidGap), (Sx + (space * n), Ey), grp)
@@ -502,7 +502,7 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
 
 
     def generate(self):
-        global nomTab,equalTabs,thickness,correction, Z, unit
+        global nomTab, equalTabs, thickness, correction, Z, unit
 
         # Get access to main SVG document element and get its dimensions.
         svg = self.document.getroot()
@@ -558,13 +558,13 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
         # TODO -- Do what the origial author suggested I do. QUALITY!
         error=0
 
-        if min(X,Y,Z)==0:
+        if min(X, Y, Z)==0:
             inkex.errormsg(_('Error: Dimensions must be non zero'))
             error=1
-        if max(X,Y,Z)>max(widthDoc,heightDoc)*10: # crude test
+        if max(X, Y, Z)>max(widthDoc, heightDoc)*10: # crude test
             inkex.errormsg(_('Error: Dimensions Too Large'))
             error=1
-        if min(X,Y,Z)<3*nomTab:
+        if min(X, Y, Z)<3*nomTab:
             inkex.errormsg(_('Error: Tab size too large'))
             error=1
         if nomTab<thickness:
@@ -573,13 +573,13 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
         if thickness==0:
             inkex.errormsg(_('Error: Thickness is zero'))
             error=1
-        if thickness>min(X,Y,Z)/3: # crude test
+        if thickness>min(X, Y, Z)/3: # crude test
             inkex.errormsg(_('Error: Material too thick'))
             error=1
-        if correction>min(X,Y,Z)/3: # crude test
+        if correction>min(X, Y, Z)/3: # crude test
             inkex.errormsg(_('Error: Kerf/Clearence too large'))
             error=1
-        if spacing>max(X,Y,Z)*10: # crude test
+        if spacing>max(X, Y, Z)*10: # crude test
             inkex.errormsg(_('Error: Spacing too large'))
             error=1
         if spacing<kerf: #if spacing is less then kerf, the laser cuts will overlap and blast meaningful material.
@@ -589,30 +589,30 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
         if error:
             exit()
 
-        # layout format:(rootx),(rooty),Xlength,Ylength,tabInfo
-        # root= (spacing,X,Y,Z) * values in tuple
+        # layout format:(rootx), (rooty), Xlength, Ylength, tabInfo
+        # root= (spacing, X, Y, Z) * values in tuple
         # tabInfo= <abcd> 0=holes 1=tabs
         if layout==0: # Diagramatic Layout TRBL
             pieces=[         #center low row
-                    [(2,0,0,1),(3,0,1,1),X,Z,0b1000,-2],
+                    [(2, 0, 0, 1), (3, 0, 1, 1), X, Z, 0b1000, -2],
                             #left middle row
-                    [(1,0,0,0),(2,0,0,1),Z,Y,0b1111,0],
+                    [(1, 0, 0, 0), (2, 0, 0, 1), Z, Y, 0b1111, 0],
                             #center middle row
-                    [(2,0,0,1),(2,0,0,1),X,Y,0b0000,0],
+                    [(2, 0, 0, 1), (2, 0, 0, 1), X, Y, 0b0000, 0],
                             #right middle row
-                    [(3,1,0,1),(2,0,0,1),Z+(self.EllipseCircumference(X/2, Z/2)/4)+thickness,Y,0b1011,1],
+                    [(3, 1, 0, 1), (2, 0, 0, 1), Z+(self.EllipseCircumference(X/2, Z/2)/4)+thickness, Y, 0b1011, 1],
                             #center top row
-                    [(2,0,0,1),(1,0,0,0),X,Z,0b0010,-1]]
+                    [(2, 0, 0, 1), (1, 0, 0, 0), X, Z, 0b0010, -1]]
         elif layout==1: # Inline(compact) Layout
-            pieces=[#Base
-                    [(1,0,0,0),(1,0,0,0),X,Y,0b0000,0],
+            pieces=[  #Base
+                    [(1, 0, 0, 0), (1, 0, 0, 0), X, Y, 0b0000, 0],
                     #Front panel
-                    [(2,1,0,0),(1,0,0,0),Z,Y,0b1111,0],
+                    [(2, 1, 0, 0), (1, 0, 0, 0), Z, Y, 0b1111, 0],
                     #Sides with curves
-                    [(3,1,0,1),(1,0,0,0),X,Z,0b1000,-2],
-                    [(4,2,0,1),(1,0,0,0),X,Z,0b0010,-1],
+                    [(3, 1, 0, 1), (1, 0, 0, 0), X, Z, 0b1000, -2],
+                    [(4, 2, 0, 1), (1, 0, 0, 0), X, Z, 0b0010, -1],
                     #Long piece w/ hinge
-                    [(5,3,0,1),(1,0,0,0),Z+(self.EllipseCircumference(X/2, Z/2)/4)+thickness,Y,0b1011,1]
+                    [(5, 3, 0, 1), (1, 0, 0, 0), Z+(self.EllipseCircumference(X/2, Z/2)/4)+thickness, Y, 0b1011, 1]
                     ]
 
         p = self.parent
@@ -620,8 +620,8 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
             grp = Group(id=self.makeId('piece'))
             self.parent = grp
 
-            (xs,xx,xy,xz)=piece[0]
-            (ys,yx,yy,yz)=piece[1]
+            (xs, xx, xy, xz)=piece[0]
+            (ys, yx, yy, yz)=piece[1]
             x=xs*spacing+xx*X+xy*Y+xz*Z  # root x co-ord for piece
             y=ys*spacing+yx*X+yy*Y+yz*Z  # root y co-ord for piece
             dx=piece[2]
@@ -639,28 +639,28 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
 
             # generate and draw the sides of each piece
             if piece[5] != -1:
-                self.drawS(self.side((x,y),(d,a),(-b,a),-thickness if a else thickness,dx,(1,0),a,longSide))          # side a (top)
+                self.drawS(self.side((x, y), (d, a), (-b, a), -thickness if a else thickness, dx, (1, 0), a, longSide))          # side a (top)
             else:
-                self.drawS(self.side((x,y),(d,a),(-b,a),-thickness if a else thickness,dx/2,(1,0),a,-1))          # side a (top) when the top participates in a curve
+                self.drawS(self.side((x, y), (d, a), (-b, a), -thickness if a else thickness, dx/2, (1, 0), a, -1))          # side a (top) when the top participates in a curve
 
             if piece[5] != -1 and piece[5] != 1:
-                self.drawS(self.side((x+dx+skew,y),(-b,a),(-b,-c),thickness if b else -thickness,dy,(0,1),b,shortSide, False if piece[5] != -2 else True, False if piece[5] != 1 else True))     # side b (right) except for side with living hinge or curves
+                self.drawS(self.side((x+dx+skew, y), (-b, a), (-b, -c), thickness if b else -thickness, dy, (0, 1), b, shortSide, False if piece[5] != -2 else True, False if piece[5] != 1 else True))     # side b (right) except for side with living hinge or curves
             elif piece[5] == -1:
-                self.drawS(self.    side((x+dx+skew,y+dy),(-b,-c),(-b,a),thickness if b else -thickness,dy,(0,-1),b,shortSide, True))     # side b (right) when the right side participates in a curve
+                self.drawS(self.    side((x+dx+skew, y+dy), (-b, -c), (-b, a), thickness if b else -thickness, dy, (0, -1), b, shortSide, True))     # side b (right) when the right side participates in a curve
             else:
                 if thumbTab is not None:
-                    self.side((x+dx+skew,y),(-b,a),(-b,-c),thickness if b else -thickness,dy,(0,1),b,shortSide, False, True, True) #The one call to side that doesn't actually draw. Instead, side draws boxes on its own
-                    self.drawS(self.box((x+dx+skew,y+thickness),(x+dx+skew+thumbTab,y+dy-thickness), True))
+                    self.side((x+dx+skew, y), (-b, a), (-b, -c), thickness if b else -thickness, dy, (0, 1), b, shortSide, False, True, True) #The one call to side that doesn't actually draw. Instead, side draws boxes on its own
+                    self.drawS(self.box((x+dx+skew, y+thickness), (x+dx+skew+thumbTab, y+dy-thickness), True))
                 else:
-                    self.drawS(self.side((x+dx+skew,y),(-b,a),(-b,-c),thickness if b else -thickness,dy,(0,1),b,shortSide, False, True)) #side b (right) on the right side of a living hinge
+                    self.drawS(self.side((x+dx+skew, y), (-b, a), (-b, -c), thickness if b else -thickness, dy, (0, 1), b, shortSide, False, True)) #side b (right) on the right side of a living hinge
 
 
             if piece[5] != -2:
-                self.drawS(self.side((x,y+dy),(d,-c),(-b,-c),thickness if c else -thickness,dx,(1,0),c,longSide)) # side c (bottom)
+                self.drawS(self.side((x, y+dy), (d, -c), (-b, -c), thickness if c else -thickness, dx, (1, 0), c, longSide)) # side c (bottom)
             else:
-                self.drawS(self.side((x,y+dy),(d,-c),(-b,-c),thickness if c else -thickness,dx/2,(1,0),c,-1)) # side c (bottom) when the bottom participates in a curve
+                self.drawS(self.side((x, y+dy), (d, -c), (-b, -c), thickness if c else -thickness, dx/2, (1, 0), c, -1)) # side c (bottom) when the bottom participates in a curve
 
-            self.drawS(self.side((x,y+dy),(d,-c),(d,a),-thickness if d else thickness,dy,(0,-1),d,0))      # side d (left)
+            self.drawS(self.side((x, y+dy), (d, -c), (d, a), -thickness if d else thickness, dy, (0, -1), d, 0))      # side d (left)
 
             if piece[5] < 0:
                 self.draw_SVG_ellipse((x+(dx/2), y+(dy/2)), ((dx/2), (dy/2)), [(1.5*math.pi), 0] if piece[5] == -1 else [0, 0.5*math.pi]) #draw the curve

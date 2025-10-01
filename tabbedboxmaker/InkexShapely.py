@@ -192,7 +192,7 @@ def try_attach_paths(group: list[inkex.BaseElement], tolerance: float = 0.01, re
             if any(i is path_element for i in skip_elements):
                 continue
             elif any(el for el in path if isinstance(el, inkex.paths.RelativePathCommand)):
-                path_element.path = path = other_path = other_path.to_absolute()
+                path_element.path = path = path.to_absolute()
 
             path_last = path[-1]
 

@@ -27,6 +27,6 @@ from tabbedboxmaker.cardboard import CardboardBoxMaker
 from tabbedboxmaker.boxmaker import TabbedBoxMaker
 
 if __name__ == "__main__":
-  # Create effect instance and apply it.
-  effect = TabbedBoxMaker(cli=True)
-  effect.run()
+    # Create effect instance and apply it.
+    effect = TabbedBoxMaker(cli=True)
+    effect.run()
