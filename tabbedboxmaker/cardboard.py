@@ -24,10 +24,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from copy import deepcopy
-from inkex import PathElement, Metadata, Transform
+from inkex import PathElement, Metadata, Transform, Desc
 from inkex.paths import Path
-from inkex.utils import filename_arg
 
 from tabbedboxmaker.Generators import CliEnabledGenerator
 from tabbedboxmaker.boxmaker import IntBoolean
@@ -323,7 +321,12 @@ class CardboardBoxMaker(CliEnabledGenerator):
 
     def generate(self):
 
-        yield Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
+        if self.inkscape:
+            desc = Desc()
+            desc.text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}"
+            yield desc
+        else:
+            yield Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
 
         # Get the attributes:
         # inkex.utils.errormsg("Testing")

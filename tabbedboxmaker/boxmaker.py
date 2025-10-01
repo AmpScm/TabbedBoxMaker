@@ -27,7 +27,7 @@ import os
 import gettext
 import sys
 
-from inkex import Group, PathElement, Metadata, GenerateExtension
+from inkex import Group, PathElement, Metadata, Desc
 from inkex.paths import Path
 from inkex.paths.lines import Line, Move, ZoneClose
 
@@ -1151,7 +1151,12 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
     def generate(self):
 
-        yield Metadata(text=f"$ {os.path.basename(__file__) if not self.schroff else 'schroff.py'} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
+        if self.inkscape:
+            desc = Desc()
+            desc.text=f"$ {os.path.basename(__file__) if not self.schroff else 'schroff.py'} {" ".join(a for a in self.cli_args if a != self.options.input_file)}"
+            yield desc
+        else:
+            yield Metadata(text=f"$ {os.path.basename(__file__) if not self.schroff else 'schroff.py'} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
 
         # Step 1: Parse options into settings
         settings = self.parse_options_to_settings()

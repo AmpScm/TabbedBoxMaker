@@ -27,9 +27,8 @@ import math
 import os
 import sys
 
-from inkex import Effect, Group, PathElement, Metadata
+from inkex import Desc, Group, PathElement, Metadata
 from inkex.paths import Path
-from inkex.paths.lines import Line, Move, ZoneClose
 
 from tabbedboxmaker.InkexShapely import try_attach_paths, adjust_canvas
 from tabbedboxmaker.boxmaker import IntBoolean
@@ -512,7 +511,12 @@ class LivingHingeBoxMaker(CliEnabledGenerator):
         widthDoc  = self.svg.unittouu(svg.get('width'))
         heightDoc = self.svg.unittouu(svg.get('height'))
 
-        yield Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
+        if self.inkscape:
+            desc = Desc()
+            desc.text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}"
+            yield desc
+        else:
+            yield Metadata(text=f"$ {os.path.basename(__file__)} {" ".join(a for a in self.cli_args if a != self.options.input_file)}")
 
         # Get script's option values.
         unit=self.options.unit

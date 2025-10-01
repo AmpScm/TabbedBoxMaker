@@ -96,8 +96,8 @@ class CliEnabledGenerator(GenerateExtension):
 
         if not self.inkscape:
             container = self.svg.get_current_layer()
-            container[-1].set_id(self.makeId(re.sub(r'[^a-zA-Z]', '', str(self.container_label).lower())))
-
+            group = container[-1]
+            group.set_id(self.makeId(re.sub(r'[^a-zA-Z]', '', str(self.container_label).lower())))
 
         if not self.inkscape:
             adjust_canvas(self.svg, unit=self.document_unit)
