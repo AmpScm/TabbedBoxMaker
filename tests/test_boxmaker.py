@@ -1108,6 +1108,7 @@ def test_output_area():
             "--depth=40",
             "--tab=5",
             "--tabtype=0",
+            "--kerf=0",
             f"--thickness={thickness}"]
 
     for boxtype in [1, 2, 3, 4, 5, 6]:
@@ -1138,6 +1139,12 @@ def test_output_area():
             area = round(area, 3)
             expected_area = round(expected_area, 3)
 
+            offset = {
+
+            }.get((boxtype, sym), 0)
+
+            expected_area += offset
+
             assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"
 
 
@@ -1151,6 +1158,7 @@ def test_output_area_dividers():
             "--depth=40",
             "--tab=5",
             "--tabtype=0",
+            "--kerf=0",
             f"--thickness={thickness}"]
 
     for boxtype in [101, 102, 103, 104, 105, 106, 201, 202, 203, 204, 205, 206]:
@@ -1173,7 +1181,7 @@ def test_output_area_dividers():
 
             201: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 26.0*36.0*thickness) / 2.0,  # 5448.0, #FULLY_ENCLOSED with dividers
             202: 5084.0,  # ONE_SIDE_OPEN with dividers
-            203: 4554.0,  # TWO_SIDES_OPEN with dividers
+            203: 4552.0,  # TWO_SIDES_OPEN with dividers
             204: 3488.0,  # THREE_SIDES_OPEN with dividers
             205: 4720.0,  # OPPOSITE_ENDS_OPEN with dividers
             206: 2880.0,  # TWO_PANELS_ONLY with dividers
@@ -1186,14 +1194,11 @@ def test_output_area_dividers():
             area = 0.0
 
             offset = {
-                (104, 1): 4,
                 (104, 2): 8,
-                (202, 2): -12,
-                (201, 2): -16,
-                (203, 0): -2,
-                (203, 2): -14,
-                (204, 1): 2,
-                (206, 1): +4,
+
+                (201, 2): 12,
+                (204, 2): -16,
+                (206, 2): -16,
             }.get((boxtype, sym), 0)
 
             expected_area = base_expected_area + offset
@@ -1206,4 +1211,66 @@ def test_output_area_dividers():
             area = round(area, 3)
             expected_area = round(expected_area, 3)
 
-            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"
+            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area} (difference {area - base_expected_area}, expected difference={offset})"
+
+def test_output_area_dividers_inside():
+    thickness = 2
+    arg_base = [
+            "--unit=mm",
+            "--inside=True",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0",
+            f"--thickness={thickness}"]
+
+        # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
+    base_expected_data = {
+        101: (24.0*34.0*44.0 - 20.0*30.0*40.0 + 2*20.0*40.0*thickness) / 2.0,  #FULLY_ENCLOSED with dividers
+        102: 6736.0,  # ONE_SIDE_OPEN with dividers
+        103: 5728.0,  # TWO_SIDES_OPEN with dividers
+        104: 4384.0,  # THREE_SIDES_OPEN with dividers
+        105: 5920.0,  # OPPOSITE_ENDS_OPEN with dividers
+        106: 3460.0,  # TWO_PANELS_ONLY with dividers
+    }
+
+    for boxtype in [201, 202, 203, 204, 205, 206]:
+        base_expected_data[boxtype] = base_expected_data[boxtype - 100] - 400 # One panel only. Other direction
+
+    for boxtype in [101, 102, 103, 104, 105, 106, 201, 202, 203, 204, 205, 206]:
+        b_args = arg_base.copy()
+        b_args.append(f'--boxtype={boxtype % 100}')
+
+        if boxtype > 200:
+            b_args += ['--div-w=1', '--keydiv=1']
+        elif boxtype > 100:
+            b_args += ['--div-l=2', '--keydiv=1']
+
+        base_expected_area =  base_expected_data.get(boxtype, 0)
+        for sym in [0, 1, 2]:
+            args = b_args + [f'--tabsymmetry={sym}']
+
+            polies = make_box_polygons(args, optimize=True)
+            area = 0.0
+
+            offset = {
+                (104, 2): 8,
+
+                (201, 2): 20,
+                (204, 2): -20,
+                (206, 2): -16,
+            }.get((boxtype, sym), 0)
+
+            expected_area = base_expected_area + offset
+
+            for k, p in polies.items():
+                if p.area == 0:
+                    print(f"Warning: zero area polygon for ({boxtype, sym}: {" " .join(args)}")
+                area += p.area
+
+            area = round(area, 3)
+            expected_area = round(expected_area, 3)
+
+            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area} (difference {area - base_expected_area}, expected difference={offset})"

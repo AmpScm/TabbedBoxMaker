@@ -26,17 +26,15 @@ import math
 import os
 import gettext
 import sys
+from copy import deepcopy
 
 from inkex import Group, PathElement, Metadata, Desc
 from inkex.paths import Path
 from inkex.paths.lines import Line, Move, ZoneClose
 
-from copy import deepcopy
-
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, DividerKeying, Sides, PieceType
 from tabbedboxmaker.InkexShapely import try_combine_paths, try_attach_paths, try_clean_paths
 from tabbedboxmaker.__about__ import __version__ as BOXMAKER_VERSION
-from tabbedboxmaker.settings import BoxSettings, BoxConfiguration, TabConfiguration, Piece, SchroffSettings, Side, Vec
+from tabbedboxmaker.boxmakerSettings import BoxSettings, BoxConfiguration, TabConfiguration, Piece, SchroffSettings, Side, Vec, BoxType, Layout, TabSymmetry, DividerKeying, Sides, PieceType
 from tabbedboxmaker.Generators import CliEnabledGenerator
 
 _ = gettext.gettext
@@ -338,6 +336,46 @@ class TabbedBoxMaker(CliEnabledGenerator):
             help="Cut holes from parent pieces",
             choices=[True, False, '0', '1'],
         )
+        self.arg_parser.add_argument(
+            "--dovetail-position",
+            type=str,
+            default=None,
+            help="Where to put dovetail joints",
+            choices=["None", "All", "NoTop"]
+        )
+        self.arg_parser.add_argument(
+            "--dovetail-size",
+            type=float,
+            default=1.5,
+            help="Size of dovetail joints (in thickness units)",
+        )
+        self.arg_parser.add_argument(
+            "--dovetail-angle",
+            type=int,
+            help="Angle of dovetail joints (degrees)",
+            default=50,
+            choices=[30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80]
+        )
+        self.arg_parser.add_argument(
+            "--dovetail-spacing",
+            type=float,
+            default=2.0,
+            help="Spacing of dovetail joints (in thickness units)",
+        )
+        self.arg_parser.add_argument(
+            "--dovetail-offset",
+            type=float,
+            default=1.0,
+            help="Offset of dovetail joints (in thickness units)",
+        )
+        self.arg_parser.add_argument(
+            "--dovetail-male",
+            type=IntBoolean,
+            default=True,
+            help="Whether to use male dovetail joints",
+            choices=[True, False, '0', '1'],
+        )
+
 
     @staticmethod
     def parse_divider_spacing(spacing_str: str, available_width: float, thickness: float, num_dividers: int, reverse: bool=False) -> list[float]:
@@ -732,7 +770,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 divider_x_pos += Vec(0, settings.Z + spacing)
             if not settings.keydiv_walls:
                 divider_x_pos += Vec(settings.thickness, 0)
-            for divider in get_pieces(PieceType.DividerX):
+            for divider in get_pieces(PieceType.XDivider):
                 divider.base = divider_x_pos
                 divider_x_pos += Vec(0, spacing + divider.dy)
                 pieces_list.append(divider)
@@ -748,7 +786,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
             if not settings.keydiv_walls:
                 divider_y_pos += Vec(0, settings.thickness)
             # Add Y dividers after Left piece (as in original)
-            for divider in get_pieces(PieceType.DividerY):
+            for divider in get_pieces(PieceType.YDivider):
                 divider.base = divider_y_pos
                 divider_y_pos += Vec(spacing + divider.dx, 0)
                 pieces_list.append(divider)
@@ -800,7 +838,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
 
             # Add X dividers after Back piece (as in original)
-            for idx, divider in enumerate(get_pieces(PieceType.DividerX)):
+            for idx, divider in enumerate(get_pieces(PieceType.XDivider)):
                 # Original divider positioning: divider_y = 4 * spacing + 1 * Y + 2 * Z
                 divider_y = 4 * spacing + 1 * settings.Y + 2 * settings.Z
                 divider_x = idx * (spacing + settings.X) + spacing
@@ -812,7 +850,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 pieces_list.append(piece)
 
             # Add Y dividers after Left piece (as in original)
-            for idx, divider in enumerate(get_pieces(PieceType.DividerY)):
+            for idx, divider in enumerate(get_pieces(PieceType.YDivider)):
                 # Original divider positioning: divider_y = 5 * spacing + 1 * Y + 3 * Z
                 divider_y = 5 * spacing + 1 * settings.Y + 3 * settings.Z
                 divider_x = idx * (spacing + settings.Z) + spacing
@@ -877,7 +915,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 pieces_list.append(piece)
 
             # Add X dividers after Back piece (as in original)
-            for idx, divider in enumerate(get_pieces(PieceType.DividerX)):
+            for idx, divider in enumerate(get_pieces(PieceType.XDivider)):
                 divider_y = 4 * spacing + 1 * settings.Y + 2 * settings.Z
                 divider_x = idx * (spacing + settings.X) + spacing
                 divider.base = Vec(divider_x, divider_y)
@@ -888,7 +926,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 pieces_list.append(piece)
 
             # Add Y dividers after Left piece (as in original)
-            for idx, divider in enumerate(get_pieces(PieceType.DividerY)):
+            for idx, divider in enumerate(get_pieces(PieceType.YDivider)):
                 divider_y = 5 * spacing + 1 * settings.Y + 3 * settings.Z
                 divider_x = idx * (spacing + settings.Z)
                 divider.base = Vec(divider_x, divider_y)
@@ -927,29 +965,29 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 PieceType.Bottom: (tabs.bmTabInfo, tabs.bmTabbed),
                 PieceType.Top: (tabs.tpTabInfo, tabs.tpTabbed),
                 # Dividers use the same tab config as their corresponding face
-                PieceType.DividerX: (tabs.ftTabInfo, tabs.ftTabbed),  # Like Front face
-                PieceType.DividerY: (tabs.ltTabInfo, tabs.ltTabbed),  # Like Left face
+                PieceType.XDivider: (tabs.ftTabInfo, tabs.ftTabbed),  # Like Front face
+                PieceType.YDivider: (tabs.ltTabInfo, tabs.ltTabbed),  # Like Left face
             }
             return tab_config_mapping.get(pieceType, (0, 0))
 
-        def get_piece_dimensions(settings: BoxSettings, pieceType: PieceType) -> tuple[float, float, float, float]:
+        def get_piece_dimensions(settings: BoxSettings, pieceType: PieceType) -> tuple[float, float]:
             """Calculate outside and inside dimensions for a piece type.
-            Returns: (dx, dy, inside_dx, inside_dy)"""
+            Returns: (inside_dx, inside_dy)"""
             dimension_mapping = {
-                PieceType.Back: (settings.X, settings.Z, settings.inside_X, settings.inside_Z),
-                PieceType.Front: (settings.X, settings.Z, settings.inside_X, settings.inside_Z),
-                PieceType.Left: (settings.Z, settings.Y, settings.inside_Z, settings.inside_Y),
-                PieceType.Right: (settings.Z, settings.Y, settings.inside_Z, settings.inside_Y),
-                PieceType.Bottom: (settings.X, settings.Y, settings.inside_X, settings.inside_Y),
-                PieceType.Top: (settings.X, settings.Y, settings.inside_X, settings.inside_Y),
-                PieceType.DividerX: (settings.X, settings.Z, settings.inside_X, settings.inside_Z),
-                PieceType.DividerY: (settings.Z, settings.Y, settings.inside_Z, settings.inside_Y),
+                PieceType.Back: (settings.inside_X, settings.inside_Z),
+                PieceType.Front: (settings.inside_X, settings.inside_Z),
+                PieceType.Left: (settings.inside_Z, settings.inside_Y),
+                PieceType.Right: (settings.inside_Z, settings.inside_Y),
+                PieceType.Bottom: (settings.inside_X, settings.inside_Y),
+                PieceType.Top: (settings.inside_X, settings.inside_Y),
+                PieceType.XDivider: (settings.inside_X, settings.inside_Z),
+                PieceType.YDivider: (settings.inside_Z, settings.inside_Y),
             }
             return dimension_mapping.get(pieceType, (0, 0, 0, 0))
 
         def make_sides(settings : BoxSettings, tabs: TabConfiguration, pieceType: PieceType) -> list[Side]:
             """Create sides for a piece using dimensions and tab config from settings."""
-            dx, dy, inside_dx, inside_dy = get_piece_dimensions(settings, pieceType)
+            inside_dx, inside_dy = get_piece_dimensions(settings, pieceType)
             tabInfo, tabbed = get_piece_tab_config(tabs, pieceType)
             # Calculate face type from piece type
 
@@ -962,12 +1000,12 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 # Side B/D (vertical) gets X-axis divider spacing (div_y)"
                 horizontal_spacing = settings.div_x_spacing
                 vertical_spacing = settings.div_y_spacing
-            elif pieceType in [PieceType.Front, PieceType.Back, PieceType.DividerX]:  # Front/Back faces
+            elif pieceType in [PieceType.Front, PieceType.Back, PieceType.XDivider]:  # Front/Back faces
                 # Side A/C (horizontal) gets no dividers (Z direction)
                 # Side B/D (vertical) gets X-axis divider spacing (div_y)
                 horizontal_spacing = []
                 vertical_spacing = settings.div_y_spacing
-            elif pieceType in [PieceType.Left, PieceType.Right, PieceType.DividerY]:  # Left/Right faces
+            elif pieceType in [PieceType.Left, PieceType.Right, PieceType.YDivider]:  # Left/Right faces
                 # Side A/C (horizontal) gets Y-axis divider spacing (div_x)
                 # Side B/D (vertical) gets no dividers (Z direction)
                 horizontal_spacing = settings.div_x_spacing
@@ -991,7 +1029,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
             sides[Sides.D].divider_spacings = vertical_spacing    # D (left)
 
 
-            if pieceType not in [PieceType.DividerX, PieceType.DividerY]:
+            if pieceType not in [PieceType.XDivider, PieceType.YDivider]:
                 # Already extracted above from Side objects
                 wall = pieceType not in [PieceType.Top, PieceType.Bottom]
                 floor = pieceType in [PieceType.Bottom, PieceType.Top]
@@ -1041,37 +1079,31 @@ class TabbedBoxMaker(CliEnabledGenerator):
         # Create dividers using piece-driven approach
         if settings.div_x > 0:
             for n in range(int(settings.div_x)):
-                sides = make_sides(settings, tabs, PieceType.DividerX)
+                sides = make_sides(settings, tabs, PieceType.XDivider)
 
                 # Remove tabs from dividers if not required
                 if not settings.keydiv_floor:
                     sides[0].has_tabs = sides[2].has_tabs = False # sides A and C
-                    sides[0].is_male = sides[2].is_male = False
                 if not settings.keydiv_walls:
                     sides[1].has_tabs = sides[3].has_tabs = False # sides B and D
-                    sides[1].is_male = sides[3].is_male = False
 
-                sides[1].num_dividers = sides[3].num_dividers = settings.div_y * (settings.div_x > 0)
-                piece = Piece(sides, PieceType.DividerX)
+                sides[1].num_dividers = sides[3].num_dividers = settings.div_y
+                piece = Piece(sides, PieceType.XDivider)
 
                 pieces.append(piece)
 
         if settings.div_y > 0:
             for n in range(int(settings.div_y)):
-                sides = make_sides(settings, tabs, PieceType.DividerY)
+                sides = make_sides(settings, tabs, PieceType.YDivider)
 
                 # Remove tabs from dividers if not required
-                # NOTE: Setting is_male=True is a workaround for geometric offset calculation
-                # when has_tabs=False. This coupling should be cleaned up in future refactoring.
                 if not settings.keydiv_walls:
                     sides[0].has_tabs = sides[2].has_tabs = False # sides A and C
-                    sides[0].is_male = sides[2].is_male = False
                 if not settings.keydiv_floor:
                     sides[1].has_tabs = sides[3].has_tabs = False # sides B and D
-                    sides[1].is_male = sides[3].is_male = False
 
-                sides[0].num_dividers = sides[2].num_dividers = settings.div_x * (settings.div_x > 0)
-                piece = Piece(sides, PieceType.DividerY)
+                sides[0].num_dividers = sides[2].num_dividers = settings.div_x
+                piece = Piece(sides, PieceType.YDivider)
                 pieces.append(piece)
 
         return pieces
@@ -1082,7 +1114,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
         for piece in pieces:  # generate and draw each piece of the box
             pieceType = piece.pieceType
 
-            group = self.makeGroup("xdivider" if pieceType == PieceType.DividerX else ("ydivider" if pieceType == PieceType.DividerY else "piece"))
+            group = self.makeGroup(pieceType.name.lower())
 
             if settings.schroff and pieceType in [PieceType.Left, PieceType.Right] and config.schroff_settings:
                 aSide, bSide, cSide, dSide = piece.sides
@@ -1244,7 +1276,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
         for i in self.render_side_side(root, piece, side, settings) + \
                 ( self.render_side_slots(root, piece, side, settings)
-                    if piece.pieceType in [PieceType.DividerY, PieceType.DividerX]
+                    if piece.pieceType in [PieceType.YDivider, PieceType.XDivider]
                     else self.render_side_holes(root, piece,side, settings)):
             group.add(i)
 
@@ -1257,7 +1289,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
     ) -> list[PathElement]:
         """Draw one side of a piece"""
 
-        dirX, dirY = direction = side.direction
+        direction = side.direction
 
         length = side.length
 
@@ -1292,7 +1324,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
         toInside = direction.rotate_clockwise(1)
         s = Path()
 
-        startOffsetX, startOffsetY = startOffset = side.start_offset
+        startOffset = side.start_offset
         vecHalfKerf = direction * halfkerf
 
         vector = startOffset * thickness
@@ -1301,7 +1333,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
         if side.has_tabs or not (settings.combine or settings.cutout):
             if (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC and piece.pieceType in [PieceType.Bottom, PieceType.Top]) or \
-                    (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType ==  PieceType.Top and side.is_male and not side.prev.is_male):
+                    (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType ==  PieceType.Top and side.is_male and not (side.prev.has_tabs and side.prev.is_male)):
                 p = vector + toInside * -(thickness + halfkerf)
                 s.append(Line(*p))
 
@@ -1315,20 +1347,22 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
             # Set vector for tab generation
             if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-                vector = Vec(startOffsetX if startOffsetX else dirX, startOffsetY if startOffsetY else dirY) * thickness
+                vector = Vec(1, side.has_tabs).rotate_clockwise(side.name) * thickness
+
+                if not side.prev.has_tabs and (piece.pieceType not in [PieceType.YDivider, PieceType.XDivider] or not side.prev._originally_had_tabs):
+                    vector -= direction * thickness # Move start back by thickness
             else:
                 if toInside.x:
                     vector = Vec(vector.x, 0) # set correct line start for tab generation
                 if toInside.y:
                     vector = Vec(0, vector.y) # set correct line start for tab generation
 
-            if piece.pieceType == PieceType.DividerY and side.name in (Sides.B, Sides.D) and not side.prev.has_tabs:
+            if piece.pieceType == PieceType.YDivider and side.name in (Sides.B, Sides.D) and not side.prev.has_tabs and side.prev._originally_had_tabs:
                 # Special case for DividerY
                 vector -= direction * thickness # Move start back by thickness
-            elif piece.pieceType == PieceType.DividerX and side.name in (Sides.A, Sides.C) and not side.prev.has_tabs:
+            elif piece.pieceType == PieceType.XDivider and side.name in (Sides.A, Sides.C) and not side.prev.has_tabs and side.prev._originally_had_tabs:
                 # Special case for DividerX
                 vector -= direction * thickness # Move start back by thickness
-
 
             if not(isMale and dogbone) and first != 0:
                 vector += direction * first
@@ -1526,6 +1560,10 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             vector += direction * (side.prev.has_tabs * thickness - halfkerf)
+
+        if side.tab_symmetry != TabSymmetry.XY_SYMMETRIC:
+            if side.name in (Sides.B, Sides.D):
+                isMale = not isMale  # swap tab type for rotate symmetry.
 
         kerf_offset = Vec(1 if toInside.x else 0, -(1 if toInside.y else 0)) * halfkerf
         log(f"TabWidth {tabWidth}, GapWidth {gapWidth}, Total={gapWidth+tabWidth}, Divisions {divisions}, isMale {isMale}, numDividers {numDividers}, Spacings {dividerSpacings}, vector {vector}, dir {direction}, toInside {toInside}")

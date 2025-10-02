@@ -1,8 +1,63 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from enum import Enum, IntEnum
 from typing import Optional
-from tabbedboxmaker.enums import BoxType, Layout, TabSymmetry, Sides, PieceType
 from typing import Union
+
+
+class BoxType(IntEnum):
+    """Box type enumeration - defines which sides of the box are included."""
+
+    FULLY_ENCLOSED = 1  # 6 sides
+    ONE_SIDE_OPEN = 2  # One side open (LxW) - 5 sides
+    TWO_SIDES_OPEN = 3  # Two sides open (LxW and LxH) - 4 sides
+    THREE_SIDES_OPEN = 4  # Three sides open (LxW, LxH, HxW) - 3 sides
+    OPPOSITE_ENDS_OPEN = 5  # Opposite ends open (LxW) - 4 sides (tube)
+    TWO_PANELS_ONLY = 6  # Two panels only (LxW and LxH) - 2 sides
+
+
+class TabSymmetry(IntEnum):
+    """Tab symmetry style enumeration."""
+
+    XY_SYMMETRIC = 0  # Each piece is symmetric in both X and Y axes
+    ROTATE_SYMMETRIC = 1   # Each piece is symmetric under 180-degree rotation (waffle-block)
+    ANTISYMMETRIC = 2  # Antisymmetric style - = XY_SYMMETRIC but with different male/female positions
+
+class Layout(IntEnum):
+    """Layout style enumeration."""
+
+    DIAGRAMMATIC = 1  # Diagrammatic layout
+    THREE_PIECE = 2  # 3 piece layout
+    INLINE_COMPACT = 3  # Inline (compact) layout
+
+
+class DividerKeying(IntEnum):
+    """Divider keying options."""
+
+    ALL_SIDES = 0  # Key dividers into all sides
+    FLOOR_CEILING = 1  # Key dividers into floor/ceiling only
+    WALLS = 2  # Key dividers into walls only
+    NONE = 3  # No keying - dividers slide freely
+
+class PieceType(Enum):
+    Back = 1,
+    Front = 2,
+
+    Left = 4,
+    Right = 8,
+
+    Bottom = 16,
+    Top = 32,
+
+    XDivider = 256 + 1  # Back + 256
+    YDivider = 256 + 4  # Left + 256
+
+
+class Sides(IntEnum):
+    A = 0
+    B = 1
+    C = 2
+    D = 3
 
 
 @dataclass
@@ -163,6 +218,8 @@ class Side:
     equal_tabs: bool = False
     base_tab_width: float = 0.0
 
+    _originally_had_tabs: bool = False  # Remember if this side originally had tabs (for layout adjustments)
+
     @property
     def start_hole(self) -> bool:
         """Calculate if this side starts with a hole
@@ -209,8 +266,7 @@ class Side:
     def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, inside_length: float):
         self.name = name
         self.is_male = is_male
-        self.has_tabs = has_tabs
-        # Current length parameter (outside dimension for backward compatibility)
+        self._originally_had_tabs = self.has_tabs = has_tabs
         self.inside_length = inside_length  # Inside dimension passed explicitly
         self.divider_spacings = []
 
@@ -226,16 +282,12 @@ class Side:
 
         self.recalc()
 
-    def recalc(self, pieceType: PieceType = None):
+    def recalc(self, pieceType: PieceType = None) -> None:
 
-        length = self.length
-
-        if pieceType == PieceType.DividerY and self.name in (Sides.B, Sides.D):
-            # Special case for DividerX
-            length = self.inside_length + 2 * self.thickness  # Same tabs as same piece with outside tabs
-        elif pieceType == PieceType.DividerX and self.name in (Sides.A, Sides.C):
-            # Special case for DividerX
-            length = self.inside_length + 2 * self.thickness  # Same tabs as same piece with outside tabs
+        if self.prev is not None and self.next is not None:
+            length = self.inside_length + (self.prev._originally_had_tabs + self.next._originally_had_tabs) * self.thickness
+        else:
+            length = self.length
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             self.divisions = int((length - 2 * self.thickness) // self.base_tab_width)
@@ -249,7 +301,7 @@ class Side:
             tabs = (self.divisions - 1) // 2  # tabs for side
 
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            self.gap_width = self.tab_width = (length - 2 * self.thickness) / self.divisions
+            self.gap_width = self.tab_width = self.inside_length / self.divisions
         elif self.equal_tabs:
             self.gap_width = self.tab_width = length / self.divisions
         else:

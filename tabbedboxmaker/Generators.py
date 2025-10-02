@@ -24,7 +24,7 @@ class CliEnabledGenerator(GenerateExtension):
         super().__init__()
 
         self.cli_args = sys.argv[1:]  # Store command-line arguments for later use
-        self.nextId = {}
+        self.nextId = { 'line': 0, 'rect': 0, 'circle': 0, 'path': 0, 'text': 0, 'side': 0 }
 
         if self.cli:
             # We don"t need a required input file in CLI mode
@@ -108,8 +108,11 @@ class CliEnabledGenerator(GenerateExtension):
 
         prefix = prefix if prefix is not None else "id"
         if prefix not in self.nextId:
-            id = self.nextId[prefix] = 0
+            id = self.nextId[prefix] = -1
 
         self.nextId[prefix] = id = self.nextId[prefix] + 1
 
-        return f"{prefix}_{id:03d}"
+        if id == 0:
+            return prefix
+        else:
+            return f"{prefix}_{id:03d}"
