@@ -1194,11 +1194,8 @@ def test_output_area_dividers():
             area = 0.0
 
             offset = {
-                (104, 2): 8,
-
-                (201, 2): 12,
                 (204, 2): -16,
-                (206, 2): -16,
+                (206, 2): -20,
             }.get((boxtype, sym), 0)
 
             expected_area = base_expected_area + offset
@@ -1256,11 +1253,8 @@ def test_output_area_dividers_inside():
             area = 0.0
 
             offset = {
-                (104, 2): 8,
-
-                (201, 2): 20,
                 (204, 2): -20,
-                (206, 2): -16,
+                (206, 2): -20,
             }.get((boxtype, sym), 0)
 
             expected_area = base_expected_area + offset

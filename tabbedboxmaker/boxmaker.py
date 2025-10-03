@@ -1535,6 +1535,14 @@ class TabbedBoxMaker(CliEnabledGenerator):
         direction = side.direction
 
         isMale = side.is_male
+
+        if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
+            if side.name in (Sides.B, Sides.D):
+                isMale = not isMale  # swap tab type for rotate symmetry.
+        elif side.tab_symmetry == TabSymmetry.ANTISYMMETRIC:
+            if side.name in (Sides.B, Sides.D) and piece.pieceType == PieceType.Bottom:
+                isMale = not isMale  # swap tab type for rotate symmetry.
+
         thickness = side.thickness
 
         kerf = settings.kerf
@@ -1561,12 +1569,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             vector += direction * (side.prev.has_tabs * thickness - halfkerf)
 
-        if side.tab_symmetry != TabSymmetry.XY_SYMMETRIC:
-            if side.name in (Sides.B, Sides.D):
-                isMale = not isMale  # swap tab type for rotate symmetry.
-
         kerf_offset = Vec(1 if toInside.x else 0, -(1 if toInside.y else 0)) * halfkerf
-        log(f"TabWidth {tabWidth}, GapWidth {gapWidth}, Total={gapWidth+tabWidth}, Divisions {divisions}, isMale {isMale}, numDividers {numDividers}, Spacings {dividerSpacings}, vector {vector}, dir {direction}, toInside {toInside}")
 
         # generate line as tab or hole using:
         #   last co-ord:Vx,Vy ; tab dir:tabVec  ; direction:dirx,diry ; thickness:thickness
@@ -1575,12 +1578,15 @@ class TabbedBoxMaker(CliEnabledGenerator):
             # draw holes for divider tabs to key into side walls
             if ((tabDivision % 2) == 0) != (not isMale):
                 ww = w = gapWidth if isMale else tabWidth
+                width_correction = False
                 if (tabDivision == 0 or tabDivision == (divisions - 1)) and (side.tab_symmetry == TabSymmetry.XY_SYMMETRIC or side.tab_symmetry == TabSymmetry.ANTISYMMETRIC):
                     if tabDivision == 0 and side.prev.has_tabs:
-                        w -= thickness - halfkerf
-                    elif tabDivision > 0 and ((side.next.has_tabs and side.tab_symmetry == TabSymmetry.XY_SYMMETRIC) or \
-                                              (side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType == PieceType.Bottom)):
-                        w -= thickness - kerf
+                        width_correction = True
+                    elif tabDivision > 0 and side.next.has_tabs:
+                        width_correction = True
+
+                if width_correction:
+                    w -= thickness - (halfkerf if tabDivision == 0 else kerf)
                 holeLen = direction * (w + first)
                 for dividerNumber in range(numDividers):
                     cumulative_position = self.calculate_cumulative_position(dividerNumber + 1, dividerSpacings, thickness)
@@ -1588,7 +1594,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
                     pos = vector + divider_offset + kerf_offset
 
-                    if tabDivision == 0 and (side.tab_symmetry == TabSymmetry.XY_SYMMETRIC or (isMale and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC)):
+                    if tabDivision == 0 and width_correction:
                         pos += direction * (side.prev.has_tabs * thickness - halfkerf)
 
                     h = Path()

@@ -24,7 +24,7 @@ class CliEnabledGenerator(GenerateExtension):
         super().__init__()
 
         self.cli_args = sys.argv[1:]  # Store command-line arguments for later use
-        self.nextId = { 'line': 0, 'rect': 0, 'circle': 0, 'path': 0, 'text': 0, 'side': 0 }
+        self.nextId = { 'line': 0, 'rect': 0, 'circle': 0, 'path': 0, 'text': 0, 'side': 0, 'hole': 0, 'piece': 0, 'box': 0, 'slot': 0 }
 
         if self.cli:
             # We don"t need a required input file in CLI mode
