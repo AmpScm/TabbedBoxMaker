@@ -970,15 +970,11 @@ def test_output_kerf():
         kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
         assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1])
-        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1])
+        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1]).normalize()
+        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1]).normalize()
 
         shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
         shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
-
-        poly = poly.normalize()
-        poly_kerf = poly_kerf.normalize()
-        shapely_kerf = shapely_kerf.normalize()  # Somehow needed
 
         print(f'Piece:{k}')
         print(f'Original:\n{poly}')
@@ -1027,15 +1023,11 @@ def test_output_kerf_dividers():
         kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
         assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1])
-        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1])
+        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1]).normalize()
+        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1]).normalize()
 
         shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
         shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
-
-        poly = poly.normalize()
-        poly_kerf = poly_kerf.normalize()
-        shapely_kerf = shapely_kerf.normalize()  # Somehow needed
 
         print(f'Piece:{k}')
         print(f'Original:\n{poly}')
@@ -1085,15 +1077,11 @@ def test_output_kerf_divider_holes():
         kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
         assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1])
-        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1])
+        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1]).normalize()
+        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1]).normalize()
 
         shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
         shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
-
-        poly = poly.normalize()
-        poly_kerf = poly_kerf.normalize()
-        shapely_kerf = shapely_kerf.normalize()  # Somehow needed
 
         print(f'Piece:{k}')
         print(f'Original:\n{poly}')
@@ -1156,63 +1144,7 @@ def test_output_area():
 
             assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"
 
-
 def test_output_area_dividers():
-    thickness = 2
-    arg_base = [
-            "--unit=mm",
-            "--inside=0",
-            "--length=20",
-            "--width=30",
-            "--depth=40",
-            "--tab=5",
-            "--tabtype=0",
-            "--kerf=0",
-            f"--thickness={thickness}"]
-
-    for boxtype in [101, 102, 103, 104, 105, 106, 201, 202, 203, 204, 205, 206]:
-        b_args = arg_base.copy()
-        b_args.append(f'--boxtype={boxtype % 100}')
-
-        if boxtype > 200:
-            b_args += ['--div-w=1', '--keydiv=1']
-        elif boxtype > 100:
-            b_args += ['--div-l=2', '--keydiv=1']
-
-        # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
-        expected_area = {
-            101: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 2*16.0*36.0*thickness) / 2.0,  # 5664.0, #FULLY_ENCLOSED with dividers
-            102: 5312.0,  # ONE_SIDE_OPEN with dividers
-            103: 4704.0,  # TWO_SIDES_OPEN with dividers
-            104: 3792.0,  # THREE_SIDES_OPEN with dividers
-            105: 4960.0,  # OPPOSITE_ENDS_OPEN with dividers
-            106: 3108.0,  # TWO_PANELS_ONLY with dividers
-
-            201: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 26.0*36.0*thickness) / 2.0,  # 5448.0, #FULLY_ENCLOSED with dividers
-            202: 5084.0,  # ONE_SIDE_OPEN with dividers
-            203: 4552.0,  # TWO_SIDES_OPEN with dividers
-            204: 3488.0,  # THREE_SIDES_OPEN with dividers
-            205: 4720.0,  # OPPOSITE_ENDS_OPEN with dividers
-            206: 2880.0,  # TWO_PANELS_ONLY with dividers
-        }.get(boxtype, 0)
-
-        for sym in [0, 1, 2]:
-            args = b_args + [f'--tabsymmetry={sym}']
-
-            polies = make_box_polygons(args, optimize=True)
-            area = 0.0
-
-            for k, p in polies.items():
-                if p.area == 0:
-                    print(f"Warning: zero area polygon for ({boxtype, sym}: {" " .join(args)}")
-                area += p.area
-
-            area = round(area, 3)
-            expected_area = round(expected_area, 3)
-
-            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"
-
-def test_output_area_dividers_inside():
     thickness = 2
     arg_base = [
             "--unit=mm",
@@ -1227,39 +1159,46 @@ def test_output_area_dividers_inside():
 
         # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
     base_expected_data = {
-        101: (24.0*34.0*44.0 - 20.0*30.0*40.0 + 2*20.0*40.0*thickness) / 2.0,  #FULLY_ENCLOSED with dividers
-        102: 6736.0,  # ONE_SIDE_OPEN with dividers
-        103: 5728.0,  # TWO_SIDES_OPEN with dividers
-        104: 4384.0,  # THREE_SIDES_OPEN with dividers
-        105: 5920.0,  # OPPOSITE_ENDS_OPEN with dividers
-        106: 3460.0,  # TWO_PANELS_ONLY with dividers
+        101: (24.0*34.0*44.0 - 20.0*30.0*40.0 + 30.0*40.0*thickness) / 2.0,  #FULLY_ENCLOSED with dividers
+        102: 6336.0,  # ONE_SIDE_OPEN with dividers
+        103: 5328.0,  # TWO_SIDES_OPEN with dividers
+        104: 3984.0,  # THREE_SIDES_OPEN with dividers
+        105: 5520.0,  # OPPOSITE_ENDS_OPEN with dividers
+        106: 3060.0,  # TWO_PANELS_ONLY with dividers
     }
 
     for boxtype in [201, 202, 203, 204, 205, 206]:
-        base_expected_data[boxtype] = base_expected_data[boxtype - 100] - 400 # One panel only. Other direction
+        base_expected_data[boxtype] = base_expected_data[boxtype - 100] + 400 # One panel only. Other direction
 
-    for boxtype in [101, 102, 103, 104, 105, 106, 201, 202, 203, 204, 205, 206]:
+    for boxtype in [301, 302, 303, 304, 305, 306]:
+        base_expected_data[boxtype] = base_expected_data[boxtype - 200] + 1200
+
+    for boxtype in [101, 102, 103, 104, 105, 106, 201, 202, 203, 204, 205, 206, 301, 302, 303, 304, 305, 306]:
         b_args = arg_base.copy()
         b_args.append(f'--boxtype={boxtype % 100}')
 
-        if boxtype > 200:
-            b_args += ['--div-w=1', '--keydiv=1']
+        if boxtype > 300:
+            b_args += ['--div-w=2']
+        elif boxtype > 200:
+            b_args += ['--div-l=2']
         elif boxtype > 100:
-            b_args += ['--div-l=2', '--keydiv=1']
+            b_args += ['--div-w=1']
 
-        expected_area =  base_expected_data.get(boxtype, 0)
-        for sym in [0, 1, 2]:
-            args = b_args + [f'--tabsymmetry={sym}']
+        for keydiv in [0, 1, 2, 3]:
+            b_args_k = b_args + [f'--keydiv={keydiv}']
+            expected_area =  base_expected_data.get(boxtype, 0)
+            for sym in [0, 1, 2]:
+                args = b_args + [f'--tabsymmetry={sym}']
 
-            polies = make_box_polygons(args, optimize=True)
-            area = 0.0
+                polies = make_box_polygons(args, optimize=True)
+                area = 0.0
 
-            for k, p in polies.items():
-                if p.area == 0:
-                    print(f"Warning: zero area polygon for ({boxtype, sym}: {" " .join(args)}")
-                area += p.area
+                for k, p in polies.items():
+                    if p.area == 0:
+                        print(f"Warning: zero area polygon for ({boxtype, sym}: {" " .join(args)}")
+                    area += p.area
 
-            area = round(area, 3)
-            expected_area = round(expected_area, 3)
+                area = round(area, 3)
+                expected_area = round(expected_area, 3)
 
-            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"
+                assert area == expected_area, f"Area mismatch for ({boxtype, sym, keydiv}: {" " .join(args)}: {area} != {expected_area}"
