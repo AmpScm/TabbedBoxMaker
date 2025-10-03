@@ -1224,7 +1224,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
         # Step 3: Include gaps in the panel outline by removing them from the panel path
         if len(paths) > 1:
-            try_combine_paths(paths, inkscape=self.inkscape, no_subtract=self.no_subtract)
+            try_combine_paths(paths, inkscape=self.inkscape, no_subtract=self.no_subtract, force_interiors=hasattr(self, 'force_interiors') and self.force_interiors)
 
     @staticmethod
     def dimpleStr(
@@ -1351,11 +1351,8 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 if toInside.y:
                     vector = Vec(0, vector.y) # set correct line start for tab generation
 
-            if piece.pieceType == PieceType.YDivider and side.name in (Sides.B, Sides.D) and not side.prev.has_tabs and side.prev._originally_had_tabs:
-                # Special case for DividerY
-                vector -= direction * thickness # Move start back by thickness
-            elif piece.pieceType == PieceType.XDivider and side.name in (Sides.A, Sides.C) and not side.prev.has_tabs and side.prev._originally_had_tabs:
-                # Special case for DividerX
+            if piece.pieceType in (PieceType.YDivider, PieceType.XDivider) and not side.prev.has_tabs and side.prev._originally_had_tabs:
+                # Special case for Dividers
                 vector -= direction * thickness # Move start back by thickness
 
             if not(isMale and dogbone) and first != 0:

@@ -9,7 +9,7 @@ from tabbedboxmaker.InkexShapely import path_to_polygon
 from collections.abc import Iterable
 
 from tabbedboxmaker import TabbedBoxMaker
-
+from tabbedboxmaker.boxmakerSettings import DividerKeying
 
 from shapely.affinity import translate
 from shapely.geometry import Polygon
@@ -590,7 +590,7 @@ expected_output_dir = os.path.join(os.path.dirname(__file__), "..", "expected")
 actual_output_dir = os.path.join(os.path.dirname(__file__), "..", "actual")
 
 
-def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=False) -> str:
+def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=False, force_interiors=False) -> str:
     """Run one test case and return (output, expected) strings."""
 
     outfh = io.BytesIO()
@@ -602,6 +602,7 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
     boxmaker.options.combine = optimize
     boxmaker.options.cutout = not no_subtract and optimize
     boxmaker.version = None
+    boxmaker.force_interiors = force_interiors
     boxmaker.raw_hairline_thickness = -1
     boxmaker.hairline_thickness = 0.0508
 
@@ -625,10 +626,10 @@ def make_box(args, make_relative=False, optimize=False, mask=True, no_subtract=F
     return output
 
 
-def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
+def make_box_paths(args, optimize=False, no_subtract=False, force_interiors=False) -> dict[str, Path]:
     """Run one test case and return a map of id -> Path."""
 
-    output = make_box(args, optimize=optimize, mask=False, no_subtract=no_subtract)
+    output = make_box(args, optimize=optimize, mask=False, no_subtract=no_subtract, force_interiors=force_interiors)
 
     map = {}
     for i in re.findall(r'path id="([^"]+)".*?d="(M [^"]*(?="))', output):
@@ -637,14 +638,20 @@ def make_box_paths(args, optimize=False, no_subtract=False) -> dict[str, Path]:
     return map
 
 
-def make_box_polygons(args, optimize=False, no_subtract=False) -> dict[str, Polygon]:
+def make_box_polygons(args, optimize=False, no_subtract=False, move_origin=True, force_interiors=False) -> dict[str, Polygon]:
     """Run one test case and return a map of id -> Shapely Polygon."""
 
-    paths = make_box_paths(args, optimize=optimize, no_subtract=no_subtract)
+    paths = make_box_paths(args, optimize=optimize, no_subtract=no_subtract, force_interiors=force_interiors)
 
     map = {}
     for k, v in paths.items():
-        map[k] = path_to_polygon(v)
+        poly = path_to_polygon(v)
+
+        if move_origin:
+            minx, miny, maxx, maxy = poly.bounds
+            poly = translate(poly, xoff=-minx, yoff=-miny)
+
+        map[k] =poly
 
     return map
 
@@ -970,8 +977,8 @@ def test_output_kerf():
         kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
         assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1]).normalize()
-        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1]).normalize()
+        poly = poly.normalize()
+        poly_kerf = poly_kerf.normalize()
 
         shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
         shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
@@ -1023,8 +1030,8 @@ def test_output_kerf_dividers():
         kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
         assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1]).normalize()
-        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1]).normalize()
+        poly = poly.normalize()
+        poly_kerf = poly_kerf.normalize()
 
         shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
         shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
@@ -1077,8 +1084,8 @@ def test_output_kerf_divider_holes():
         kerf_height = poly_kerf_bb[3] - poly_kerf_bb[1]
         assert height == kerf_height - 0.5, f"Kerf output for {k} has different height ({height} vs {kerf_height})"
 
-        poly = translate(poly, xoff=-poly_bb[0], yoff=-poly_bb[1]).normalize()
-        poly_kerf = translate(poly_kerf, xoff=-poly_kerf_bb[0], yoff=-poly_kerf_bb[1]).normalize()
+        poly = poly.normalize()
+        poly_kerf = poly_kerf.normalize()
 
         shapely_kerf = poly.buffer(0.25, cap_style='square', join_style='mitre')
         shapely_kerf = translate(shapely_kerf, xoff=0.25, yoff=0.25)
@@ -1202,3 +1209,83 @@ def test_output_area_dividers():
                 expected_area = round(expected_area, 3)
 
                 assert area == expected_area, f"Area mismatch for ({boxtype, sym, keydiv}: {" " .join(args)}: {area} != {expected_area}"
+
+
+def no_test_hole_placement():
+    thickness = 3
+    arg_base = [
+            "--unit=mm",
+            "--inside=True",
+            "--length=20",
+            "--width=30",
+            "--depth=40",
+            "--tab=5",
+            "--tabtype=0",
+            "--kerf=0",
+            f"--thickness={thickness}"]
+
+    for hv in ['--div-w=1', '--div-l=1']:
+        for keydiv in [0, 1, 2]:
+            for sym in [0, 1, 2]:
+                for bt in [1, 2, 3, 4, 5, 6]:
+
+                    args = arg_base + [f'--boxtype={bt}', hv, f'--keydiv={keydiv}', f'--tabsymmetry={sym}']
+
+                    polies = make_box_polygons(args, optimize=True, force_interiors=True)
+
+                    xdiv = polies.get('xdivider')
+                    xdiv_bounds = xdiv.bounds if xdiv is not None else (0,0,0,0)
+                    ydiv = polies.get('ydivider')
+                    ydiv_bounds = ydiv.bounds if ydiv is not None else (0,0,0,0)
+
+                    if ydiv and keydiv in [1] and bt not in [6]:
+                        ydiv = translate(ydiv, yoff=thickness)
+
+                    bottom = polies.get('bottom')
+
+                    def get_out_points(p : Polygon):
+                        if p is None:
+                            return [], [], [], []
+                        bounds = p.bounds
+                        v = [round(p[0], 4) for p in p.exterior.coords[:-1] if p[1] == bounds[1]], \
+                                [round(p[1], 4) for p in p.exterior.coords[:-1] if p[0] == bounds[0]], \
+                                [round(p[0], 4) for p in p.exterior.coords[:-1] if p[1] == bounds[3]], \
+                                [round(p[1], 4) for p in p.exterior.coords[:-1] if p[0] == bounds[2]] \
+
+                        v[0].sort()
+                        v[1].sort()
+                        v[2].sort()
+                        v[3].sort()
+
+                        if bt == 1 and sym == 0 and keydiv == 0:
+                            assert v[0] == v[2]
+                            assert v[3] == v[3]
+
+                        return list(set(v[0])), list(set(v[1])), list(set(v[2])), list(set(v[3]))
+
+                    def get_hole_points(p : Polygon):
+                        if p is None:
+                            return [], [], [], []
+                        bounds = p.bounds
+                        v = [round(p[0], 4) for inter in p.interiors for p in inter.coords] , \
+                                [round(p[1], 4) for inter in p.interiors for p in inter.coords]
+
+                        v[0].sort()
+                        v[1].sort()
+
+                        return list(set(v[0])), list(set(v[1]))
+
+                    xdiv_info = get_out_points(xdiv)
+                    ydiv_info = get_out_points(ydiv)
+                    bottom_info = get_out_points(bottom)
+
+                    if bottom is not None:
+                        holes = get_hole_points(bottom)
+
+                        if ydiv and keydiv != DividerKeying.WALLS:
+                            print(f"YDIV: {ydiv_info} HOLES: {holes} for ({bt, sym, keydiv}: {" " .join(args)}")
+                            assert ydiv_info[3] == holes[1], f"Bottom holes do not match ydivider for ({bt, sym, keydiv}: {" " .join(args)}"
+                        if xdiv and keydiv != DividerKeying.WALLS:
+                            assert xdiv_info[2] == holes[0], f"Bottom holes do not match xdivider for ({bt, sym, keydiv}: {" " .join(args)}"
+
+                    #assert 1 == 0, print(f"Tested {" ".join(args)}")
