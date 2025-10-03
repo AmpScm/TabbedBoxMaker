@@ -2,19 +2,19 @@
 <svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="182mm" height="202mm" viewBox="0 0 182 202" version="1.1" sodipodi:docname="blank.svg">
   <sodipodi:namedview/>
   <defs id="defaults"/>
-  <g inkscape:label="Tabbed Box" id="tabbedbox">
+  <g inkscape:groupmode="layer" inkscape:label="Tabbed Box" id="tabbedbox">
     <metadata text="$ boxmaker.py --unit=mm --inside=1 --length=80 --width=100 --depth=43 --equal=0 --tab=6 --tabtype=0 --tabsymmetry=1 --dimpleheight=0 --dimplelength=0 --hairline=1 --thickness=3 --kerf=0 --style=1 --boxtype=2 --div-l=0 --div-w=0 --keydiv=1 --spacing=1"/>
     <g id="back">
       <path id="side_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 48 158 L 56.7143 158 L 56.7143 155 L 62.4286 155 L 62.4286 158 L 68.1429 158 L 68.1429 155 L 73.8571 155 L 73.8571 158 L 79.5714 158 L 79.5714 155 L 85.2857 155 L 85.2857 158 L 91 158 L 91 155 L 96.7143 155 L 96.7143 158 L 102.429 158 L 102.429 155 L 108.143 155 L 108.143 158 L 113.857 158 L 113.857 155 L 119.571 155 L 119.571 158 L 125.286 158 L 125.286 155 L 131 155"/>
       <path id="side_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 131 155 L 131 165.167 L 134 165.167 L 134 172.333 L 131 172.333 L 131 179.5 L 134 179.5 L 134 186.667 L 131 186.667 L 131 193.833 L 134 193.833 L 134 201"/>
-      <path id="side_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 134 201 L 125.286 201 L 125.286 201 L 119.571 201 L 119.571 201 L 113.857 201 L 113.857 201 L 108.143 201 L 108.143 201 L 102.429 201 L 102.429 201 L 96.7143 201 L 96.7143 201 L 91 201 L 91 201 L 85.2857 201 L 85.2857 201 L 79.5714 201 L 79.5714 201 L 73.8571 201 L 73.8571 201 L 68.1429 201 L 68.1429 201 L 62.4286 201 L 62.4286 201 L 56.7143 201 L 56.7143 201 L 51 201"/>
+      <path id="side_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 134 201 L 51 201"/>
       <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 51 201 L 51 193.833 L 48 193.833 L 48 186.667 L 51 186.667 L 51 179.5 L 48 179.5 L 48 172.333 L 51 172.333 L 51 165.167 L 48 165.167 L 48 158"/>
     </g>
     <g id="left">
       <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1 51 L 8.16667 51 L 8.16667 48 L 15.3333 48 L 15.3333 51 L 22.5 51 L 22.5 48 L 29.6667 48 L 29.6667 51 L 36.8333 51 L 36.8333 48 L 44 48"/>
       <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 44 48 L 44 57.25 L 47 57.25 L 47 63.5 L 44 63.5 L 44 69.75 L 47 69.75 L 47 76 L 44 76 L 44 82.25 L 47 82.25 L 47 88.5 L 44 88.5 L 44 94.75 L 47 94.75 L 47 101 L 44 101 L 44 107.25 L 47 107.25 L 47 113.5 L 44 113.5 L 44 119.75 L 47 119.75 L 47 126 L 44 126 L 44 132.25 L 47 132.25 L 47 138.5 L 44 138.5 L 44 144.75 L 47 144.75 L 47 151"/>
       <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 47 151 L 36.8333 151 L 36.8333 154 L 29.6667 154 L 29.6667 151 L 22.5 151 L 22.5 154 L 15.3333 154 L 15.3333 151 L 8.16667 151 L 8.16667 154 L 1 154"/>
-      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1 154 L 1 144.75 L 1 144.75 L 1 138.5 L 1 138.5 L 1 132.25 L 1 132.25 L 1 126 L 1 126 L 1 119.75 L 1 119.75 L 1 113.5 L 1 113.5 L 1 107.25 L 1 107.25 L 1 101 L 1 101 L 1 94.75 L 1 94.75 L 1 88.5 L 1 88.5 L 1 82.25 L 1 82.25 L 1 76 L 1 76 L 1 69.75 L 1 69.75 L 1 63.5 L 1 63.5 L 1 57.25 L 1 57.25 L 1 51"/>
+      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 1 154 L 1 51"/>
     </g>
     <g id="bottom">
       <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 48 51 L 48 48 L 51 48 L 51 51 L 56.7143 51 L 56.7143 48 L 62.4286 48 L 62.4286 51 L 68.1429 51 L 68.1429 48 L 73.8571 48 L 73.8571 51 L 79.5714 51 L 79.5714 48 L 85.2857 48 L 85.2857 51 L 91 51 L 91 48 L 96.7143 48 L 96.7143 51 L 102.429 51 L 102.429 48 L 108.143 48 L 108.143 51 L 113.857 51 L 113.857 48 L 119.571 48 L 119.571 51 L 125.286 51 L 125.286 48 L 131 48"/>
@@ -24,12 +24,12 @@
     </g>
     <g id="right">
       <path id="side_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 135 51 L 145.167 51 L 145.167 48 L 152.333 48 L 152.333 51 L 159.5 51 L 159.5 48 L 166.667 48 L 166.667 51 L 173.833 51 L 173.833 48 L 181 48"/>
-      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 181 48 L 181 57.25 L 181 57.25 L 181 63.5 L 181 63.5 L 181 69.75 L 181 69.75 L 181 76 L 181 76 L 181 82.25 L 181 82.25 L 181 88.5 L 181 88.5 L 181 94.75 L 181 94.75 L 181 101 L 181 101 L 181 107.25 L 181 107.25 L 181 113.5 L 181 113.5 L 181 119.75 L 181 119.75 L 181 126 L 181 126 L 181 132.25 L 181 132.25 L 181 138.5 L 181 138.5 L 181 144.75 L 181 144.75 L 181 151"/>
+      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 181 48 L 181 151"/>
       <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 181 151 L 173.833 151 L 173.833 154 L 166.667 154 L 166.667 151 L 159.5 151 L 159.5 154 L 152.333 154 L 152.333 151 L 145.167 151 L 145.167 154 L 138 154"/>
       <path id="side_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 138 154 L 138 144.75 L 135 144.75 L 135 138.5 L 138 138.5 L 138 132.25 L 135 132.25 L 135 126 L 138 126 L 138 119.75 L 135 119.75 L 135 113.5 L 138 113.5 L 138 107.25 L 135 107.25 L 135 101 L 138 101 L 138 94.75 L 135 94.75 L 135 88.5 L 138 88.5 L 138 82.25 L 135 82.25 L 135 76 L 138 76 L 138 69.75 L 135 69.75 L 135 63.5 L 138 63.5 L 138 57.25 L 135 57.25 L 135 51"/>
     </g>
     <g id="front">
-      <path id="side_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 48 1 L 56.7143 1 L 56.7143 1 L 62.4286 1 L 62.4286 1 L 68.1429 1 L 68.1429 1 L 73.8571 1 L 73.8571 1 L 79.5714 1 L 79.5714 1 L 85.2857 1 L 85.2857 1 L 91 1 L 91 1 L 96.7143 1 L 96.7143 1 L 102.429 1 L 102.429 1 L 108.143 1 L 108.143 1 L 113.857 1 L 113.857 1 L 119.571 1 L 119.571 1 L 125.286 1 L 125.286 1 L 131 1"/>
+      <path id="side_017" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 48 1 L 131 1"/>
       <path id="side_018" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 131 1 L 131 8.16667 L 134 8.16667 L 134 15.3333 L 131 15.3333 L 131 22.5 L 134 22.5 L 134 29.6667 L 131 29.6667 L 131 36.8333 L 134 36.8333 L 134 44"/>
       <path id="side_019" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 134 44 L 125.286 44 L 125.286 47 L 119.571 47 L 119.571 44 L 113.857 44 L 113.857 47 L 108.143 47 L 108.143 44 L 102.429 44 L 102.429 47 L 96.7143 47 L 96.7143 44 L 91 44 L 91 47 L 85.2857 47 L 85.2857 44 L 79.5714 44 L 79.5714 47 L 73.8571 47 L 73.8571 44 L 68.1429 44 L 68.1429 47 L 62.4286 47 L 62.4286 44 L 56.7143 44 L 56.7143 47 L 51 47"/>
       <path id="side_020" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 51 47 L 51 36.8333 L 48 36.8333 L 48 29.6667 L 51 29.6667 L 51 22.5 L 48 22.5 L 48 15.3333 L 51 15.3333 L 51 8.16667 L 48 8.16667 L 48 1"/>

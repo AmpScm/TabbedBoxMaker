@@ -2,40 +2,40 @@
 <svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="176mm" height="145mm" viewBox="0 0 176 145" version="1.1" sodipodi:docname="blank.svg">
   <sodipodi:namedview/>
   <defs id="defaults"/>
-  <g inkscape:label="Tabbed Box" id="tabbedbox">
+  <g inkscape:groupmode="layer" inkscape:label="Tabbed Box" id="tabbedbox">
     <metadata text="$ boxmaker.py --unit=mm --inside=1 --length=80 --width=100 --depth=40 --equal=0 --tab=6 --tabtype=0 --tabsymmetry=0 --dimpleheight=0 --dimplelength=0 --hairline=1 --thickness=3 --kerf=0 --style=1 --div-l=1 --div-w=1 --keydiv=0 --spacing=2 --boxtype=6"/>
     <g id="xdivider">
-      <path id="side_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 47 104 L 53.2857 104 L 53.2857 104 L 59.2857 104 L 59.2857 104 L 65.5714 104 L 65.5714 104 L 71.5714 104 L 71.5714 104 L 77.8571 104 L 77.8571 104 L 83.8571 104 L 83.8571 104 L 90.1429 104 L 90.1429 104 L 96.1429 104 L 96.1429 104 L 102.429 104 L 102.429 104 L 108.429 104 L 108.429 104 L 114.714 104 L 114.714 104 L 120.714 104 L 120.714 104 L 127 104"/>
-      <path id="side_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 127 104 L 127 113.333 L 127 113.333 L 127 119.333 L 127 119.333 L 127 128.667 L 127 128.667 L 127 134.667 L 127 134.667 L 127 144"/>
-      <path id="side_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 127 144 L 120.714 144 L 120.714 144 L 114.714 144 L 114.714 144 L 108.429 144 L 108.429 144 L 102.429 144 L 102.429 144 L 96.1429 144 L 96.1429 144 L 90.1429 144 L 90.1429 144 L 83.8571 144 L 83.8571 144 L 77.8571 144 L 77.8571 144 L 71.5714 144 L 71.5714 144 L 65.5714 144 L 65.5714 144 L 59.2857 144 L 59.2857 144 L 53.2857 144 L 53.2857 144 L 47 144"/>
-      <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 47 144 L 47 134.667 L 47 134.667 L 47 128.667 L 47 128.667 L 47 119.333 L 47 119.333 L 47 113.333 L 47 113.333 L 47 104"/>
-      <path id="slot" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 85.5 144 L 85.5 124 L 88.5 124 L 88.5 144 L 85.5 144 Z"/>
+      <path id="side_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 47 104 L 127 104"/>
+      <path id="side_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 127 104 L 127 144"/>
+      <path id="side_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 127 144 L 47 144"/>
+      <path id="side_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 47 144 L 47 104"/>
+      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 85.5 144 L 85.5 124 L 88.5 124 L 88.5 144 L 85.5 144 Z"/>
     </g>
     <g id="left">
-      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 2 2 L 8.25 2 L 8.25 2 L 14.25 2 L 14.25 2 L 20.5 2 L 20.5 2 L 26.5 2 L 26.5 2 L 32.75 2 L 32.75 2 L 38.75 2 L 38.75 2 L 42 2"/>
+      <path id="side_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 2 2 L 42 2"/>
       <path id="side_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 42 2 L 42 9.25 L 45 9.25 L 45 15.25 L 42 15.25 L 42 22.5 L 45 22.5 L 45 28.5 L 42 28.5 L 42 35.75 L 45 35.75 L 45 41.75 L 42 41.75 L 42 49 L 45 49 L 45 55 L 42 55 L 42 62.25 L 45 62.25 L 45 68.25 L 42 68.25 L 42 75.5 L 45 75.5 L 45 81.5 L 42 81.5 L 42 88.75 L 45 88.75 L 45 94.75 L 42 94.75 L 42 102"/>
-      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 42 102 L 38.75 102 L 38.75 102 L 32.75 102 L 32.75 102 L 26.5 102 L 26.5 102 L 20.5 102 L 20.5 102 L 14.25 102 L 14.25 102 L 8.25 102 L 8.25 102 L 2 102"/>
-      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 2 102 L 2 94.75 L 2 94.75 L 2 88.75 L 2 88.75 L 2 81.5 L 2 81.5 L 2 75.5 L 2 75.5 L 2 68.25 L 2 68.25 L 2 62.25 L 2 62.25 L 2 55 L 2 55 L 2 49 L 2 49 L 2 41.75 L 2 41.75 L 2 35.75 L 2 35.75 L 2 28.5 L 2 28.5 L 2 22.5 L 2 22.5 L 2 15.25 L 2 15.25 L 2 9.25 L 2 9.25 L 2 2"/>
+      <path id="side_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 42 102 L 2 102"/>
+      <path id="side_008" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 2 102 L 2 2"/>
     </g>
     <g id="ydivider">
-      <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 132 2 L 138.25 2 L 138.25 2 L 144.25 2 L 144.25 2 L 150.5 2 L 150.5 2 L 156.5 2 L 156.5 2 L 162.75 2 L 162.75 2 L 168.75 2 L 168.75 2 L 172 2"/>
-      <path id="slot_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 132 50.5 L 152 50.5 L 152 53.5 L 132 53.5 L 132 50.5 Z"/>
+      <path id="side_009" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 132 2 L 172 2"/>
+      <path id="slot_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 132 50.5 L 152 50.5 L 152 53.5 L 132 53.5 L 132 50.5 Z"/>
       <path id="side_010" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 172 2 L 172 9.25 L 175 9.25 L 175 15.25 L 172 15.25 L 172 22.5 L 175 22.5 L 175 28.5 L 172 28.5 L 172 35.75 L 175 35.75 L 175 41.75 L 172 41.75 L 172 49 L 175 49 L 175 55 L 172 55 L 172 62.25 L 175 62.25 L 175 68.25 L 172 68.25 L 172 75.5 L 175 75.5 L 175 81.5 L 172 81.5 L 172 88.75 L 175 88.75 L 175 94.75 L 172 94.75 L 172 102"/>
-      <path id="side_011" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 172 102 L 168.75 102 L 168.75 102 L 162.75 102 L 162.75 102 L 156.5 102 L 156.5 102 L 150.5 102 L 150.5 102 L 144.25 102 L 144.25 102 L 138.25 102 L 138.25 102 L 132 102"/>
-      <path id="side_012" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 132 102 L 132 94.75 L 132 94.75 L 132 88.75 L 132 88.75 L 132 81.5 L 132 81.5 L 132 75.5 L 132 75.5 L 132 68.25 L 132 68.25 L 132 62.25 L 132 62.25 L 132 55 L 132 55 L 132 49 L 132 49 L 132 41.75 L 132 41.75 L 132 35.75 L 132 35.75 L 132 28.5 L 132 28.5 L 132 22.5 L 132 22.5 L 132 15.25 L 132 15.25 L 132 9.25 L 132 9.25 L 132 2"/>
+      <path id="side_011" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 172 102 L 132 102"/>
+      <path id="side_012" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 132 102 L 132 2"/>
     </g>
     <g id="bottom">
-      <path id="side_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 47 2 L 53.7143 2 L 53.7143 2 L 59.7143 2 L 59.7143 2 L 66.4286 2 L 66.4286 2 L 72.4286 2 L 72.4286 2 L 79.1429 2 L 79.1429 2 L 85.1429 2 L 85.1429 2 L 91.8571 2 L 91.8571 2 L 97.8571 2 L 97.8571 2 L 104.571 2 L 104.571 2 L 110.571 2 L 110.571 2 L 117.286 2 L 117.286 2 L 123.286 2 L 123.286 2 L 130 2"/>
-      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 130 2 L 130 9.25 L 130 9.25 L 130 15.25 L 130 15.25 L 130 22.5 L 130 22.5 L 130 28.5 L 130 28.5 L 130 35.75 L 130 35.75 L 130 41.75 L 130 41.75 L 130 49 L 130 49 L 130 55 L 130 55 L 130 62.25 L 130 62.25 L 130 68.25 L 130 68.25 L 130 75.5 L 130 75.5 L 130 81.5 L 130 81.5 L 130 88.75 L 130 88.75 L 130 94.75 L 130 94.75 L 130 102"/>
-      <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 130 102 L 123.286 102 L 123.286 102 L 117.286 102 L 117.286 102 L 110.571 102 L 110.571 102 L 104.571 102 L 104.571 102 L 97.8571 102 L 97.8571 102 L 91.8571 102 L 91.8571 102 L 85.1429 102 L 85.1429 102 L 79.1429 102 L 79.1429 102 L 72.4286 102 L 72.4286 102 L 66.4286 102 L 66.4286 102 L 59.7143 102 L 59.7143 102 L 53.7143 102 L 53.7143 102 L 47 102"/>
+      <path id="side_013" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 47 2 L 130 2"/>
+      <path id="side_014" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 130 2 L 130 102"/>
+      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 9.25 L 91.5 15.25 L 88.5 15.25 L 88.5 9.25 L 91.5 9.25 Z"/>
+      <path id="hole_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 22.5 L 91.5 28.5 L 88.5 28.5 L 88.5 22.5 L 91.5 22.5 Z"/>
+      <path id="hole_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 35.75 L 91.5 41.75 L 88.5 41.75 L 88.5 35.75 L 91.5 35.75 Z"/>
+      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 49 L 91.5 55 L 88.5 55 L 88.5 49 L 91.5 49 Z"/>
+      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 62.25 L 91.5 68.25 L 88.5 68.25 L 88.5 62.25 L 91.5 62.25 Z"/>
+      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 75.5 L 91.5 81.5 L 88.5 81.5 L 88.5 75.5 L 91.5 75.5 Z"/>
+      <path id="hole_007" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 91.5 88.75 L 91.5 94.75 L 88.5 94.75 L 88.5 88.75 L 91.5 88.75 Z"/>
+      <path id="side_015" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 130 102 L 47 102"/>
       <path id="side_016" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 47 102 L 47 94.75 L 50 94.75 L 50 88.75 L 47 88.75 L 47 81.5 L 50 81.5 L 50 75.5 L 47 75.5 L 47 68.25 L 50 68.25 L 50 62.25 L 47 62.25 L 47 55 L 50 55 L 50 49 L 47 49 L 47 41.75 L 50 41.75 L 50 35.75 L 47 35.75 L 47 28.5 L 50 28.5 L 50 22.5 L 47 22.5 L 47 15.25 L 50 15.25 L 50 9.25 L 47 9.25 L 47 2"/>
-      <path id="hole" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88.5 94.75 L 88.5 88.75 L 91.5 88.75 L 91.5 94.75 L 88.5 94.75 Z"/>
-      <path id="hole_001" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88.5 81.5 L 88.5 75.5 L 91.5 75.5 L 91.5 81.5 L 88.5 81.5 Z"/>
-      <path id="hole_002" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88.5 68.25 L 88.5 62.25 L 91.5 62.25 L 91.5 68.25 L 88.5 68.25 Z"/>
-      <path id="hole_003" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88.5 55 L 88.5 49 L 91.5 49 L 91.5 55 L 88.5 55 Z"/>
-      <path id="hole_004" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88.5 41.75 L 88.5 35.75 L 91.5 35.75 L 91.5 41.75 L 88.5 41.75 Z"/>
-      <path id="hole_005" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88.5 28.5 L 88.5 22.5 L 91.5 22.5 L 91.5 28.5 L 88.5 28.5 Z"/>
-      <path id="hole_006" style="fill:none;stroke:#000000;stroke-width:0.0508" d="M 88.5 15.25 L 88.5 9.25 L 91.5 9.25 L 91.5 15.25 L 88.5 15.25 Z"/>
     </g>
   </g>
 </svg>

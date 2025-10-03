@@ -642,48 +642,47 @@ class TabbedBoxMaker(CliEnabledGenerator):
             ftTabInfo = 0b1010
             bkTabInfo = 0b1010
 
-        def fixTabBits(tabbed : bool, tabInfo : int, bit : int) -> tuple[bool, int]:
+        def fixTabBits(tabbed : bool, bit : int) -> tuple[bool, int]:
             newTabbed = tabbed & ~bit
-            newTabInfo = tabInfo & ~bit  # set bit to 0 to use tab tip line
-            return newTabbed, newTabInfo
+            return newTabbed
 
         # Update the tab bits based on which sides of the box don't exist
         tpTabbed = bmTabbed = ltTabbed = rtTabbed = ftTabbed = bkTabbed = 0b1111
         if PieceType.Top not in pieceTypes:
-            bkTabbed, bkTabInfo = fixTabBits(bkTabbed, bkTabInfo, 0b0010)
-            ftTabbed, ftTabInfo = fixTabBits(ftTabbed, ftTabInfo, 0b1000)
-            ltTabbed, ltTabInfo = fixTabBits(ltTabbed, ltTabInfo, 0b0001)
-            rtTabbed, rtTabInfo = fixTabBits(rtTabbed, rtTabInfo, 0b0100)
+            bkTabbed = fixTabBits(bkTabbed, 0b0010)
+            ftTabbed = fixTabBits(ftTabbed, 0b1000)
+            ltTabbed = fixTabBits(ltTabbed, 0b0001)
+            rtTabbed = fixTabBits(rtTabbed, 0b0100)
             tpTabbed = 0
         if PieceType.Bottom not in pieceTypes:
-            bkTabbed, bkTabInfo = fixTabBits(bkTabbed, bkTabInfo, 0b1000)
-            ftTabbed, ftTabInfo = fixTabBits(ftTabbed, ftTabInfo, 0b0010)
-            ltTabbed, ltTabInfo = fixTabBits(ltTabbed, ltTabInfo, 0b0100)
-            rtTabbed, rtTabInfo = fixTabBits(rtTabbed, rtTabInfo, 0b0001)
+            bkTabbed = fixTabBits(bkTabbed, 0b1000)
+            ftTabbed = fixTabBits(ftTabbed, 0b0010)
+            ltTabbed = fixTabBits(ltTabbed, 0b0100)
+            rtTabbed = fixTabBits(rtTabbed, 0b0001)
             bmTabbed = 0
         if PieceType.Front not in pieceTypes:
-            tpTabbed, tpTabInfo = fixTabBits(tpTabbed, tpTabInfo, 0b1000)
-            bmTabbed, bmTabInfo = fixTabBits(bmTabbed, bmTabInfo, 0b1000)
-            ltTabbed, ltTabInfo = fixTabBits(ltTabbed, ltTabInfo, 0b1000)
-            rtTabbed, rtTabInfo = fixTabBits(rtTabbed, rtTabInfo, 0b1000)
+            tpTabbed = fixTabBits(tpTabbed, 0b1000)
+            bmTabbed = fixTabBits(bmTabbed, 0b1000)
+            ltTabbed = fixTabBits(ltTabbed, 0b1000)
+            rtTabbed = fixTabBits(rtTabbed, 0b1000)
             ftTabbed = 0
         if PieceType.Back not in pieceTypes:
-            tpTabbed, tpTabInfo = fixTabBits(tpTabbed, tpTabInfo, 0b0010)
-            bmTabbed, bmTabInfo = fixTabBits(bmTabbed, bmTabInfo, 0b0010)
-            ltTabbed, ltTabInfo = fixTabBits(ltTabbed, ltTabInfo, 0b0010)
-            rtTabbed, rtTabInfo = fixTabBits(rtTabbed, rtTabInfo, 0b0010)
+            tpTabbed = fixTabBits(tpTabbed, 0b0010)
+            bmTabbed = fixTabBits(bmTabbed, 0b0010)
+            ltTabbed = fixTabBits(ltTabbed, 0b0010)
+            rtTabbed = fixTabBits(rtTabbed, 0b0010)
             bkTabbed = 0
         if PieceType.Left not in pieceTypes:
-            tpTabbed, tpTabInfo = fixTabBits(tpTabbed, tpTabInfo, 0b0100)
-            bmTabbed, bmTabInfo = fixTabBits(bmTabbed, bmTabInfo, 0b0001)
-            bkTabbed, bkTabInfo = fixTabBits(bkTabbed, bkTabInfo, 0b0001)
-            ftTabbed, ftTabInfo = fixTabBits(ftTabbed, ftTabInfo, 0b0001)
+            tpTabbed = fixTabBits(tpTabbed, 0b0100)
+            bmTabbed = fixTabBits(bmTabbed, 0b0001)
+            bkTabbed = fixTabBits(bkTabbed, 0b0001)
+            ftTabbed = fixTabBits(ftTabbed, 0b0001)
             ltTabbed = 0
         if PieceType.Right not in pieceTypes:
-            tpTabbed, tpTabInfo = fixTabBits(tpTabbed, tpTabInfo, 0b0001)
-            bmTabbed, bmTabInfo = fixTabBits(bmTabbed, bmTabInfo, 0b0100)
-            bkTabbed, bkTabInfo = fixTabBits(bkTabbed, bkTabInfo, 0b0100)
-            ftTabbed, ftTabInfo = fixTabBits(ftTabbed, ftTabInfo, 0b0100)
+            tpTabbed = fixTabBits(tpTabbed, 0b0001)
+            bmTabbed = fixTabBits(bmTabbed, 0b0100)
+            bkTabbed = fixTabBits(bkTabbed, 0b0100)
+            ftTabbed = fixTabBits(ftTabbed, 0b0100)
             rtTabbed = 0
 
         return TabConfiguration(
@@ -1035,17 +1034,12 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 floor = pieceType in [PieceType.Bottom, PieceType.Top]
 
                 if pieceType not in [PieceType.Front, PieceType.Back] and (settings.keydiv_floor or wall) and (settings.keydiv_walls or floor):
-                    if sides[Sides.A].has_tabs:
+                    if sides[Sides.A].has_tabs or sides[Sides.C].has_tabs:
                         sides[Sides.A].num_dividers = settings.div_x
-                    elif sides[Sides.C].has_tabs:
-                        sides[Sides.C].num_dividers = settings.div_x
-
 
                 if pieceType not in [PieceType.Left, PieceType.Right] and ((settings.keydiv_floor or wall) and (settings.keydiv_walls or floor)):
-                    if sides[Sides.B].has_tabs:
+                    if sides[Sides.B].has_tabs or sides[Sides.D].has_tabs:
                         sides[Sides.B].num_dividers = settings.div_y
-                    elif sides[Sides.D].has_tabs:
-                        sides[Sides.D].num_dividers = settings.div_y
 
             return sides
 
@@ -1331,7 +1325,7 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
         s.append(Move(*vector))
 
-        if side.has_tabs or not (settings.combine or settings.cutout):
+        if side.has_tabs:
             if (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC and piece.pieceType in [PieceType.Bottom, PieceType.Top]) or \
                     (side.has_tabs and side.prev.has_tabs and side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and piece.pieceType ==  PieceType.Top and side.is_male and not (side.prev.has_tabs and side.prev.is_male)):
                 p = vector + toInside * -(thickness + halfkerf)

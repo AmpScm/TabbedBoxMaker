@@ -14,6 +14,8 @@ from tabbedboxmaker import TabbedBoxMaker
 from shapely.affinity import translate
 from shapely.geometry import Polygon
 
+export_compare_v = int(os.environ.get("EXPORT_COMPARE", "0"))
+
 
 def mask_unstable(svgin: str) -> str:
     """Mask out unstable parts of SVG output that may vary between runs."""
@@ -687,8 +689,15 @@ def run_one(name, args, make_relative=False, optimize=False, mask=True) -> tuple
     with open(actual_file, "w", encoding="utf-8") as f:
         f.write(output)
 
+    o_output = output
     if mask:
         output, expected = mask_unstable(output), mask_unstable(expected)
+
+    if export_compare_v == 1 or (export_compare_v == 3 and output != expected):
+        with open(expected_file, "w", encoding="utf-8") as f:
+            f.write(o_output)
+        expected = output
+
     return (output, expected)
 
 
@@ -1171,7 +1180,7 @@ def test_output_area_dividers():
             b_args += ['--div-l=2', '--keydiv=1']
 
         # We assume the total area of the box polygons * thickness is the volume of material needed to make the box
-        base_expected_area = {
+        expected_area = {
             101: (20.0*30.0*40.0 - 16.0*26.0*36.0 + 2*16.0*36.0*thickness) / 2.0,  # 5664.0, #FULLY_ENCLOSED with dividers
             102: 5312.0,  # ONE_SIDE_OPEN with dividers
             103: 4704.0,  # TWO_SIDES_OPEN with dividers
@@ -1193,13 +1202,6 @@ def test_output_area_dividers():
             polies = make_box_polygons(args, optimize=True)
             area = 0.0
 
-            offset = {
-                (204, 2): -16,
-                (206, 2): -20,
-            }.get((boxtype, sym), 0)
-
-            expected_area = base_expected_area + offset
-
             for k, p in polies.items():
                 if p.area == 0:
                     print(f"Warning: zero area polygon for ({boxtype, sym}: {" " .join(args)}")
@@ -1208,7 +1210,7 @@ def test_output_area_dividers():
             area = round(area, 3)
             expected_area = round(expected_area, 3)
 
-            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area} (difference {area - base_expected_area}, expected difference={offset})"
+            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"
 
 def test_output_area_dividers_inside():
     thickness = 2
@@ -1245,19 +1247,12 @@ def test_output_area_dividers_inside():
         elif boxtype > 100:
             b_args += ['--div-l=2', '--keydiv=1']
 
-        base_expected_area =  base_expected_data.get(boxtype, 0)
+        expected_area =  base_expected_data.get(boxtype, 0)
         for sym in [0, 1, 2]:
             args = b_args + [f'--tabsymmetry={sym}']
 
             polies = make_box_polygons(args, optimize=True)
             area = 0.0
-
-            offset = {
-                (204, 2): -20,
-                (206, 2): -20,
-            }.get((boxtype, sym), 0)
-
-            expected_area = base_expected_area + offset
 
             for k, p in polies.items():
                 if p.area == 0:
@@ -1267,4 +1262,4 @@ def test_output_area_dividers_inside():
             area = round(area, 3)
             expected_area = round(expected_area, 3)
 
-            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area} (difference {area - base_expected_area}, expected difference={offset})"
+            assert area == expected_area, f"Area mismatch for ({boxtype, sym}: {" " .join(args)}: {area} != {expected_area}"

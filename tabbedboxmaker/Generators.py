@@ -16,6 +16,7 @@ class CliEnabledGenerator(GenerateExtension):
     cli_args: list[str] = []
     nextId: dict[str, int] = {}
     doument_unit: str = None
+    container_layer: bool = True # Override inherited value to create in layer instead of group
 
     def __init__(self, cli=True, inkscape=False):
         self.cli = cli
