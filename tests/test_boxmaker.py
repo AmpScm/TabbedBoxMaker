@@ -1211,7 +1211,7 @@ def test_output_area_dividers():
                 assert area == expected_area, f"Area mismatch for ({boxtype, sym, keydiv}: {" " .join(args)}: {area} != {expected_area}"
 
 
-def no_test_hole_placement():
+def test_hole_placement():
     thickness = 3
     arg_base = [
             "--unit=mm",
@@ -1224,33 +1224,49 @@ def no_test_hole_placement():
             "--kerf=0",
             f"--thickness={thickness}"]
 
+    decs = 3
+
     for hv in ['--div-w=1', '--div-l=1']:
         for keydiv in [0, 1, 2]:
             for sym in [0, 1, 2]:
-                for bt in [1, 2, 3, 4, 5, 6]:
+                for bt in [1, 2, 3, 4, 5]: # No boxtype 6, as that doesn't handle keying
 
                     args = arg_base + [f'--boxtype={bt}', hv, f'--keydiv={keydiv}', f'--tabsymmetry={sym}']
 
                     polies = make_box_polygons(args, optimize=True, force_interiors=True)
 
                     xdiv = polies.get('xdivider')
-                    xdiv_bounds = xdiv.bounds if xdiv is not None else (0,0,0,0)
                     ydiv = polies.get('ydivider')
-                    ydiv_bounds = ydiv.bounds if ydiv is not None else (0,0,0,0)
 
                     if ydiv and keydiv in [1] and bt not in [6]:
-                        ydiv = translate(ydiv, yoff=thickness)
+                        ydiv = translate(ydiv, yoff=thickness).normalize()
+
+                    if ydiv and keydiv in [2] and bt not in [2, 3, 4, 5, 6]:
+                        ydiv = translate(ydiv, xoff=thickness).normalize()
+
+                    if xdiv and keydiv in [1] and bt not in [6]:
+                        xdiv = translate(xdiv, xoff=thickness).normalize()
+
+                    if xdiv and keydiv in [2] and bt not in [2, 3, 4, 5, 6]:
+                        xdiv = translate(xdiv, yoff=thickness).normalize()
 
                     bottom = polies.get('bottom')
+                    top = polies.get('top')
+                    left = polies.get('left')
+                    right = polies.get('right')
+                    front = polies.get('front')
+                    back = polies.get('back')
 
                     def get_out_points(p : Polygon):
                         if p is None:
                             return [], [], [], []
                         bounds = p.bounds
-                        v = [round(p[0], 4) for p in p.exterior.coords[:-1] if p[1] == bounds[1]], \
-                                [round(p[1], 4) for p in p.exterior.coords[:-1] if p[0] == bounds[0]], \
-                                [round(p[0], 4) for p in p.exterior.coords[:-1] if p[1] == bounds[3]], \
-                                [round(p[1], 4) for p in p.exterior.coords[:-1] if p[0] == bounds[2]] \
+                        v = [round(p[0], decs) for p in p.exterior.coords[:-1] if p[1] == bounds[1]], \
+                                [round(p[1], decs) for p in p.exterior.coords[:-1] if p[0] == bounds[0]], \
+                                [round(p[0], decs) for p in p.exterior.coords[:-1] if p[1] == bounds[3]], \
+                                [round(p[1], decs) for p in p.exterior.coords[:-1] if p[0] == bounds[2]] \
+
+                        v = list(set(v[0])), list(set(v[1])), list(set(v[2])), list(set(v[3]))
 
                         v[0].sort()
                         v[1].sort()
@@ -1261,31 +1277,85 @@ def no_test_hole_placement():
                             assert v[0] == v[2]
                             assert v[3] == v[3]
 
-                        return list(set(v[0])), list(set(v[1])), list(set(v[2])), list(set(v[3]))
+                        return v
 
                     def get_hole_points(p : Polygon):
                         if p is None:
                             return [], [], [], []
                         bounds = p.bounds
-                        v = [round(p[0], 4) for inter in p.interiors for p in inter.coords] , \
-                                [round(p[1], 4) for inter in p.interiors for p in inter.coords]
+                        v = [round(p[0], decs) for inter in p.interiors for p in inter.coords].copy() , \
+                                [round(p[1], decs) for inter in p.interiors for p in inter.coords].copy()
 
+                        v= list(set(v[0])), list(set(v[1]))
                         v[0].sort()
                         v[1].sort()
-
-                        return list(set(v[0])), list(set(v[1]))
+                        return v
 
                     xdiv_info = get_out_points(xdiv)
                     ydiv_info = get_out_points(ydiv)
-                    bottom_info = get_out_points(bottom)
 
-                    if bottom is not None:
+                    if bottom is not None and keydiv != DividerKeying.WALLS:
                         holes = get_hole_points(bottom)
 
-                        if ydiv and keydiv != DividerKeying.WALLS:
-                            print(f"YDIV: {ydiv_info} HOLES: {holes} for ({bt, sym, keydiv}: {" " .join(args)}")
+                        if ydiv:
                             assert ydiv_info[3] == holes[1], f"Bottom holes do not match ydivider for ({bt, sym, keydiv}: {" " .join(args)}"
-                        if xdiv and keydiv != DividerKeying.WALLS:
+                        if xdiv:
                             assert xdiv_info[2] == holes[0], f"Bottom holes do not match xdivider for ({bt, sym, keydiv}: {" " .join(args)}"
 
-                    #assert 1 == 0, print(f"Tested {" ".join(args)}")
+                    if top is not None and keydiv != DividerKeying.WALLS:
+                        # Top is rotated for the X axis
+                        holes = get_hole_points(top)
+                        bb = top.bounds
+
+                        rev_holes = [round(bb[2] - h, decs) for h in holes[0]]
+                        rev_holes.sort()
+                        holes = rev_holes, holes[1]
+
+
+                        if ydiv:
+                            if ydiv_info[1] != holes[1]:
+                                print(f'ydiv: {ydiv} bb = {ydiv.bounds}')
+                                print(f'top: {top}, bb = {top.bounds}')
+                                print(f'ydiv_info[1]: {ydiv_info[1]}')
+                                print(f'holes[1]: {holes[1]}')
+                            assert ydiv_info[1] == holes[1], f"Top holes do not match ydivider for ({bt, sym, keydiv}: {" " .join(args)}"
+                        if xdiv:
+                            assert xdiv_info[0] == holes[0], f"Top holes do not match xdivider for ({bt, sym, keydiv}: {" " .join(args)}"
+
+                    if left is not None and keydiv != DividerKeying.FLOOR_CEILING:
+                        holes = get_hole_points(left)
+
+                        if xdiv:
+                            assert xdiv_info[1] == holes[0], f"Left holes do not match xdivider for ({bt, sym, keydiv}: {" " .join(args)}"
+
+
+                    if right is not None and keydiv != DividerKeying.FLOOR_CEILING:
+                        # Rotate holes
+                        holes = get_hole_points(right)
+                        bb = right.bounds
+
+                        rev_holes = [round(bb[2] - h, decs) for h in holes[0]]
+                        rev_holes.sort()
+                        holes = rev_holes, holes[1]
+
+                        if xdiv:
+                            assert xdiv_info[3] == holes[0], f"Right holes do not match xdivider for ({bt, sym, keydiv}: {" " .join(args)}"
+
+                    if front is not None and keydiv != DividerKeying.FLOOR_CEILING:
+                        holes = get_hole_points(front)
+
+                        if ydiv:
+                            assert ydiv_info[0] == holes[1], f"Front holes do not match ydivider for ({bt, sym, keydiv}: {" " .join(args)}"
+
+
+                    if back is not None and keydiv != DividerKeying.FLOOR_CEILING:
+                        holes = get_hole_points(back)
+
+                        bb = back.bounds
+
+                        rev_holes = [round(bb[3] - h, decs) for h in holes[1]]
+                        rev_holes.sort()
+                        holes = holes[0], rev_holes
+
+                        if ydiv:
+                            assert ydiv_info[2] == holes[1], f"Back holes do not match ydivider for ({bt, sym, keydiv}: {" " .join(args)}"

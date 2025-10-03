@@ -125,7 +125,7 @@ def polygon_to_path(poly):
 
     return path
 
-def best_effort_inkex_combine_paths(paths: list[inkex.Path], force_interors=False):
+def best_effort_inkex_combine_paths(paths: list[inkex.PathElement], force_interiors=False):
     panel = paths[0]
     group = panel.getparent()
     holes = paths[1:]
@@ -163,7 +163,7 @@ def best_effort_inkex_combine_paths(paths: list[inkex.Path], force_interors=Fals
                 hole_bb.top <= panel_bb.top or hole_bb.bottom >= panel_bb.bottom):
             continue
 
-        if any(hole_bb & dont for dont in dont_touch) and not force_interors:
+        if any(hole_bb & dont for dont in dont_touch) and not force_interiors:
             continue
 
         dont_touch.append(hole_bb)
@@ -335,9 +335,12 @@ def try_clean_paths(paths: list[inkex.BaseElement]):
 
 
 
-def try_combine_paths(paths: list[inkex.Path], inkscape: bool = False, no_subtract: bool = False, force_interiors=False):
+def try_combine_paths(paths: list[PathElement], inkscape: bool = False, no_subtract: bool = False, force_interiors=False):
     if len(paths) < 2:
         return
+
+    panel = paths[0]
+    assert len(panel.path) > 0 and isinstance(panel.path[-1], inkex.paths.ZoneClose), f"Panel is not closed: {panel}"
 
     if inkscape or no_subtract or force_interiors:
         return best_effort_inkex_combine_paths(paths, force_interiors)

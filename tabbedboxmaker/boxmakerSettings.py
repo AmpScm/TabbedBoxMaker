@@ -202,6 +202,7 @@ class Side:
     tab_width: float
     gap_width: float
     thickness: float
+    pieceType : PieceType
     inside_length: float = 0.0  # Inside dimension
     line_thickness: float = 0.1  # default line thickness
     prev: "Side" = None
@@ -233,7 +234,16 @@ class Side:
         # For now, exactly match existing is_male behavior
         if self.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
             return self.has_tabs  # Always use offset for rotational symmetry (starts inside)
+        elif self.tab_symmetry == TabSymmetry.ANTISYMMETRIC and self.drop_start_tab:
+            return True
         return self.is_male and self.has_tabs
+
+    @property
+    def drop_start_tab(self) -> bool:
+        """Whether to drop the start tab for this side (for layout purposes)"""
+        if self.tab_symmetry == TabSymmetry.ANTISYMMETRIC and self.pieceType in (PieceType.XDivider, PieceType.YDivider) and self.prev and not self.prev.end_hole and not self.is_male and self.has_tabs and self.prev.has_tabs:
+            return True
+        return False
 
     @property
     def end_hole(self) -> bool:
@@ -263,11 +273,12 @@ class Side:
 
         return len
 
-    def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, inside_length: float):
+    def __init__(self, settings : BoxSettings, name: Sides, is_male: bool, has_tabs: bool, inside_length: float, pieceType: PieceType):
         self.name = name
         self.is_male = is_male
         self._originally_had_tabs = self.has_tabs = has_tabs
         self.inside_length = inside_length  # Inside dimension passed explicitly
+        self.pieceType = pieceType
         self.divider_spacings = []
 
         baseDirection = Vec(1, 0)  # default direction

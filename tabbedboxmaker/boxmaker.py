@@ -1015,10 +1015,10 @@ class TabbedBoxMaker(CliEnabledGenerator):
 
             # Sides: A=top, B=right, C=bottom, D=left
             sides = [
-                Side(settings, Sides.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), inside_dx),
-                Side(settings, Sides.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), inside_dy),
-                Side(settings, Sides.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), inside_dx),
-                Side(settings, Sides.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), inside_dy)
+                Side(settings, Sides.A, bool(tabInfo & 0b1000), bool(tabbed & 0b1000), inside_dx, pieceType),
+                Side(settings, Sides.B, bool(tabInfo & 0b0100), bool(tabbed & 0b0100), inside_dy, pieceType),
+                Side(settings, Sides.C, bool(tabInfo & 0b0010), bool(tabbed & 0b0010), inside_dx, pieceType),
+                Side(settings, Sides.D, bool(tabInfo & 0b0001), bool(tabbed & 0b0001), inside_dy, pieceType)
             ]
 
             # Assign divider spacings to appropriate sides
@@ -1337,6 +1337,11 @@ class TabbedBoxMaker(CliEnabledGenerator):
                 ## TODO: Add dimple if necessary
                 p -= toInside * -(thickness + halfkerf)
                 s.append(Line(*p))
+            elif side.tab_symmetry == TabSymmetry.ANTISYMMETRIC and side.drop_start_tab:
+                vector += direction * (thickness + kerf)
+                s.append(Line(*vector))
+                vector += toInside * -(thickness + halfkerf)
+                s.append(Line(*vector))
 
 
             # Set vector for tab generation
@@ -1528,11 +1533,11 @@ class TabbedBoxMaker(CliEnabledGenerator):
         isMale = side.is_male
 
         if side.tab_symmetry == TabSymmetry.ROTATE_SYMMETRIC:
-            if side.name in (Sides.B, Sides.D):
+            if side.name in (Sides.B, Sides.D) and piece.pieceType != PieceType.Top:
                 isMale = not isMale  # swap tab type for rotate symmetry.
         elif side.tab_symmetry == TabSymmetry.ANTISYMMETRIC:
-            if side.name in (Sides.B, Sides.D) and piece.pieceType == PieceType.Bottom:
-                isMale = not isMale  # swap tab type for rotate symmetry.
+            if side.name in (Sides.B, Sides.D) and piece.pieceType in (PieceType.Bottom, PieceType.Back, PieceType.Front):
+                isMale = not isMale  # swap tab type for antisymmetry.
 
         thickness = side.thickness
 
